@@ -1,0 +1,32 @@
+{
+    "name": "event-registrations",
+    "displayName": "Inscripciones a eventos",
+    "version": "1.0.0",
+    "namespace": "Modules\\EventRegistrations",
+    "provider": "EventRegistrationsServiceProvider",
+    "description": "Sistema de inscripciones a eventos para la asociación",
+    "author": "GuildForge",
+    "requires": {
+        "php": ">=8.2",
+        "laravel": ">=12.0"
+    },
+    "dependencies": [],
+    "provides": {
+        "permissions": [
+            "registrations.view_any",
+            "registrations.view",
+            "registrations.create",
+            "registrations.update",
+            "registrations.delete",
+            "registrations.manage_config",
+            "registrations.export"
+        ],
+        "routes": [
+            "api",
+            "web"
+        ],
+        "filament": true,
+        "frontend": true,
+        "inertia_share": true
+    }
+}
