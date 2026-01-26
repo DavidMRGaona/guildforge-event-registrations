@@ -25,6 +25,7 @@ return new class extends Migration
             $table->boolean('members_only')->default(false);
             $table->json('custom_fields')->nullable();
             $table->text('confirmation_message')->nullable();
+            $table->string('notification_email')->nullable();
             $table->timestamps();
 
             // Foreign key

@@ -21,10 +21,8 @@ use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\Event;
+use Modules\EventRegistrations\Application\Services\EventRegistrationServiceInterface;
 use Modules\EventRegistrations\Domain\Enums\RegistrationState;
-use Modules\EventRegistrations\Domain\Events\RegistrationConfirmed;
-use Modules\EventRegistrations\Domain\Events\RegistrationRejected;
 use Modules\EventRegistrations\Infrastructure\Persistence\Eloquent\Models\EventRegistrationConfigModel;
 use Modules\EventRegistrations\Infrastructure\Persistence\Eloquent\Models\EventRegistrationModel;
 
@@ -171,16 +169,8 @@ final class RegistrationsRelationManager extends RelationManager
                     ->modalDescription(__('event-registrations::messages.modal.confirm_description'))
                     ->modalSubmitActionLabel(__('event-registrations::messages.actions.confirm'))
                     ->action(function (EventRegistrationModel $record): void {
-                        $record->state = RegistrationState::Confirmed;
-                        $record->confirmed_at = now();
-                        $record->position = null;
-                        $record->save();
-
-                        Event::dispatch(RegistrationConfirmed::create(
-                            registrationId: (string) $record->id,
-                            eventId: (string) $record->event_id,
-                            userId: (string) $record->user_id,
-                        ));
+                        $service = resolve(EventRegistrationServiceInterface::class);
+                        $service->confirm((string) $record->id);
 
                         Notification::make()
                             ->title(__('event-registrations::messages.notifications.confirmed'))
@@ -197,14 +187,8 @@ final class RegistrationsRelationManager extends RelationManager
                     ->modalDescription(__('event-registrations::messages.modal.reject_description'))
                     ->modalSubmitActionLabel(__('event-registrations::messages.actions.reject'))
                     ->action(function (EventRegistrationModel $record): void {
-                        $record->state = RegistrationState::Rejected;
-                        $record->save();
-
-                        Event::dispatch(RegistrationRejected::create(
-                            registrationId: (string) $record->id,
-                            eventId: (string) $record->event_id,
-                            userId: (string) $record->user_id,
-                        ));
+                        $service = resolve(EventRegistrationServiceInterface::class);
+                        $service->reject((string) $record->id);
 
                         Notification::make()
                             ->title(__('event-registrations::messages.notifications.rejected'))
@@ -221,14 +205,8 @@ final class RegistrationsRelationManager extends RelationManager
                     ->modalDescription(__('event-registrations::messages.modal.move_to_waiting_description'))
                     ->modalSubmitActionLabel(__('event-registrations::messages.actions.move_to_waiting'))
                     ->action(function (EventRegistrationModel $record): void {
-                        $maxPosition = EventRegistrationModel::where('event_id', $record->event_id)
-                            ->where('state', RegistrationState::WaitingList->value)
-                            ->max('position');
-
-                        $record->state = RegistrationState::WaitingList;
-                        $record->position = ($maxPosition ?? 0) + 1;
-                        $record->confirmed_at = null;
-                        $record->save();
+                        $service = resolve(EventRegistrationServiceInterface::class);
+                        $service->moveToWaitingList((string) $record->id);
 
                         Notification::make()
                             ->title(__('event-registrations::messages.notifications.moved_to_waiting'))
@@ -250,27 +228,18 @@ final class RegistrationsRelationManager extends RelationManager
                         ->modalDescription(__('event-registrations::messages.bulk.confirm_description'))
                         ->modalSubmitActionLabel(__('event-registrations::messages.actions.confirm'))
                         ->action(function (Collection $records, RelationManager $livewire): void {
+                            $service = resolve(EventRegistrationServiceInterface::class);
                             $count = 0;
 
                             foreach ($records as $record) {
                                 /** @var EventRegistrationModel $registration */
-                                $registration = EventRegistrationModel::find($record->getKey());
+                                $registration = $record;
 
-                                if ($registration === null || $registration->state === RegistrationState::Confirmed) {
+                                if ($registration->state === RegistrationState::Confirmed) {
                                     continue;
                                 }
 
-                                $registration->state = RegistrationState::Confirmed;
-                                $registration->confirmed_at = now();
-                                $registration->position = null;
-                                $registration->save();
-
-                                Event::dispatch(RegistrationConfirmed::create(
-                                    registrationId: (string) $registration->id,
-                                    eventId: (string) $registration->event_id,
-                                    userId: (string) $registration->user_id,
-                                ));
-
+                                $service->confirm((string) $registration->id);
                                 $count++;
                             }
 
@@ -302,25 +271,18 @@ final class RegistrationsRelationManager extends RelationManager
                         ->modalDescription(__('event-registrations::messages.bulk.reject_description'))
                         ->modalSubmitActionLabel(__('event-registrations::messages.actions.reject'))
                         ->action(function (Collection $records, RelationManager $livewire): void {
+                            $service = resolve(EventRegistrationServiceInterface::class);
                             $count = 0;
 
                             foreach ($records as $record) {
                                 /** @var EventRegistrationModel $registration */
-                                $registration = EventRegistrationModel::find($record->getKey());
+                                $registration = $record;
 
-                                if ($registration === null || $registration->state === RegistrationState::Rejected) {
+                                if ($registration->state === RegistrationState::Rejected) {
                                     continue;
                                 }
 
-                                $registration->state = RegistrationState::Rejected;
-                                $registration->save();
-
-                                Event::dispatch(RegistrationRejected::create(
-                                    registrationId: (string) $registration->id,
-                                    eventId: (string) $registration->event_id,
-                                    userId: (string) $registration->user_id,
-                                ));
-
+                                $service->reject((string) $registration->id);
                                 $count++;
                             }
 

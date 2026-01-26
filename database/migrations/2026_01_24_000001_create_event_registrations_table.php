@@ -13,7 +13,7 @@ return new class extends Migration
         Schema::create('event_registrations_registrations', function (Blueprint $table): void {
             $table->uuid('id')->primary();
             $table->uuid('event_id');
-            $table->unsignedBigInteger('user_id');
+            $table->uuid('user_id');
             $table->string('state')->default('pending');
             $table->integer('position')->nullable();
             $table->json('form_data')->nullable();
