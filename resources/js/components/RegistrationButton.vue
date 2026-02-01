@@ -279,7 +279,7 @@ onMounted(async () => {
         <!-- Error message -->
         <div
             v-if="error"
-            class="mb-4 rounded-lg bg-red-50 p-4 text-sm text-red-800 dark:bg-red-900/20 dark:text-red-400"
+            class="mb-4 rounded-lg bg-red-50 p-4 text-sm text-error dark:bg-red-900/20"
         >
             {{ error }}
         </div>
@@ -302,8 +302,8 @@ onMounted(async () => {
             :class="{
                 'bg-amber-600 text-white hover:bg-amber-700 focus:ring-amber-500':
                     canRegister || canJoinWaitingList,
-                'bg-red-600 text-white hover:bg-red-700 focus:ring-red-500': canCancel,
-                'cursor-not-allowed bg-gray-300 text-gray-500 dark:bg-stone-700 dark:text-stone-500':
+                'bg-error text-white hover:bg-red-700 focus:ring-red-500': canCancel,
+                'cursor-not-allowed bg-gray-300 text-base-muted dark:bg-stone-700':
                     buttonDisabled,
             }"
             @click="handleClick"
@@ -336,7 +336,7 @@ onMounted(async () => {
         <!-- Capacity info -->
         <div
             v-if="config && config.max_participants"
-            class="mt-2 text-center text-sm text-gray-500 dark:text-stone-400"
+            class="mt-2 text-center text-sm text-base-muted"
         >
             {{ config.current_participants }} / {{ config.max_participants }}
             {{ $t('eventRegistrations.stats.confirmed').toLowerCase() }}
@@ -371,12 +371,12 @@ onMounted(async () => {
                     >
                         <div
                             v-if="showCancelConfirm"
-                            class="w-full max-w-md rounded-xl bg-white p-6 shadow-2xl dark:bg-stone-800"
+                            class="w-full max-w-md rounded-xl bg-surface p-6 shadow-2xl"
                         >
                             <!-- Icon -->
                             <div class="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/30">
                                 <svg
-                                    class="h-6 w-6 text-red-600 dark:text-red-400"
+                                    class="h-6 w-6 text-error"
                                     fill="none"
                                     stroke="currentColor"
                                     viewBox="0 0 24 24"
@@ -391,12 +391,12 @@ onMounted(async () => {
                             </div>
 
                             <!-- Title -->
-                            <h3 class="mb-2 text-center text-lg font-semibold text-gray-900 dark:text-stone-100">
+                            <h3 class="mb-2 text-center text-lg font-semibold text-base-primary">
                                 {{ $t('eventRegistrations.cancelRegistration') }}
                             </h3>
 
                             <!-- Message -->
-                            <p class="mb-6 text-center text-sm text-gray-600 dark:text-stone-400">
+                            <p class="mb-6 text-center text-sm text-base-muted">
                                 {{ $t('eventRegistrations.confirmCancel') }}
                             </p>
 
@@ -404,14 +404,14 @@ onMounted(async () => {
                             <div class="flex gap-3">
                                 <button
                                     type="button"
-                                    class="flex-1 rounded-lg border border-gray-300 px-4 py-2.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-300 dark:border-stone-600 dark:text-stone-300 dark:hover:bg-stone-700"
+                                    class="flex-1 rounded-lg border border-default px-4 py-2.5 text-sm font-medium text-base-secondary transition-colors hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-300 dark:hover:bg-stone-700"
                                     @click="showCancelConfirm = false"
                                 >
                                     {{ $t('common.cancel') }}
                                 </button>
                                 <button
                                     type="button"
-                                    class="flex-1 rounded-lg bg-red-600 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
+                                    class="flex-1 rounded-lg bg-error px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
                                     @click="handleCancel"
                                 >
                                     {{ $t('buttons.confirm') }}

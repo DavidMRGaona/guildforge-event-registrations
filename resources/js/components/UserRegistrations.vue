@@ -35,15 +35,15 @@ function getStateClasses(state: string): string {
 
     switch (color) {
         case 'green':
-            return `${baseClasses} bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400`;
+            return `${baseClasses} bg-success-light text-success`;
         case 'yellow':
-            return `${baseClasses} bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400`;
+            return `${baseClasses} bg-warning-light text-warning`;
         case 'blue':
-            return `${baseClasses} bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400`;
+            return `${baseClasses} bg-info-light text-info`;
         case 'red':
-            return `${baseClasses} bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400`;
+            return `${baseClasses} bg-error-light text-error`;
         default:
-            return `${baseClasses} bg-gray-100 text-gray-800 dark:bg-stone-700 dark:text-stone-300`;
+            return `${baseClasses} bg-muted text-base-secondary`;
     }
 }
 
@@ -54,7 +54,7 @@ onMounted(() => {
 
 <template>
     <div class="user-registrations">
-        <h2 class="mb-4 text-xl font-semibold text-gray-900 dark:text-stone-100">
+        <h2 class="mb-4 text-xl font-semibold text-base-primary">
             {{ t('eventRegistrations.myRegistrations') }}
         </h2>
 
@@ -64,7 +64,7 @@ onMounted(() => {
             class="flex items-center justify-center py-8"
         >
             <svg
-                class="h-8 w-8 animate-spin text-amber-600"
+                class="h-8 w-8 animate-spin text-primary"
                 fill="none"
                 viewBox="0 0 24 24"
             >
@@ -87,7 +87,7 @@ onMounted(() => {
         <!-- Error state -->
         <div
             v-else-if="error"
-            class="rounded-lg bg-red-50 p-4 text-center text-red-800 dark:bg-red-900/20 dark:text-red-400"
+            class="rounded-lg bg-error-light p-4 text-center text-error"
         >
             {{ error }}
         </div>
@@ -95,10 +95,10 @@ onMounted(() => {
         <!-- Empty state -->
         <div
             v-else-if="registrations.length === 0"
-            class="rounded-lg bg-gray-50 p-8 text-center dark:bg-stone-800/50"
+            class="rounded-lg bg-muted p-8 text-center"
         >
             <svg
-                class="mx-auto h-12 w-12 text-gray-400 dark:text-stone-500"
+                class="mx-auto h-12 w-12 text-base-muted"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -110,12 +110,12 @@ onMounted(() => {
                     d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
                 />
             </svg>
-            <p class="mt-4 text-gray-500 dark:text-stone-400">
+            <p class="mt-4 text-base-muted">
                 {{ t('common.no_results') }}
             </p>
             <a
                 href="/eventos"
-                class="mt-4 inline-block text-amber-600 hover:text-amber-700 dark:text-amber-500 dark:hover:text-amber-400"
+                class="mt-4 inline-block text-primary hover:underline"
             >
                 {{ t('common.viewAll') }} {{ t('common.events').toLowerCase() }}
             </a>
@@ -129,11 +129,11 @@ onMounted(() => {
             <div
                 v-for="registration in registrations"
                 :key="registration.id"
-                class="rounded-lg border border-gray-200 bg-white p-4 dark:border-stone-700 dark:bg-stone-800"
+                class="rounded-lg border border-default bg-surface p-4"
             >
                 <div class="flex items-start justify-between">
                     <div>
-                        <h3 class="font-medium text-gray-900 dark:text-stone-100">
+                        <h3 class="font-medium text-base-primary">
                             {{ registration.event_id }}
                         </h3>
                         <span :class="getStateClasses(registration.state)">
@@ -141,13 +141,13 @@ onMounted(() => {
                         </span>
                     </div>
 
-                    <div class="text-right text-sm text-gray-500 dark:text-stone-400">
+                    <div class="text-right text-sm text-base-muted">
                         <p v-if="registration.created_at">
                             {{ new Date(registration.created_at).toLocaleDateString() }}
                         </p>
                         <p
                             v-if="registration.state === 'waiting_list' && registration.position"
-                            class="font-medium text-blue-600 dark:text-blue-400"
+                            class="font-medium text-info"
                         >
                             #{{ registration.position }}
                         </p>

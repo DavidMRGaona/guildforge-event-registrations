@@ -65,8 +65,8 @@ function handleSubmit(): void {
 </script>
 
 <template>
-    <div class="rounded-lg border border-gray-200 bg-white p-4 shadow-sm dark:border-stone-700 dark:bg-stone-800">
-        <h3 class="mb-4 text-lg font-semibold text-gray-900 dark:text-stone-100">
+    <div class="rounded-lg border border-default bg-surface p-4 shadow-sm">
+        <h3 class="mb-4 text-lg font-semibold text-base-primary">
             {{ t('eventRegistrations.register') }}
         </h3>
 
@@ -79,10 +79,10 @@ function handleSubmit(): void {
                 >
                     <label
                         :for="field.name"
-                        class="mb-1 block text-sm font-medium text-gray-700 dark:text-stone-300"
+                        class="mb-1 block text-sm font-medium text-base-secondary"
                     >
                         {{ field.label }}
-                        <span v-if="field.required" class="text-red-500">*</span>
+                        <span v-if="field.required" class="text-error">*</span>
                     </label>
 
                     <!-- Text input -->
@@ -92,8 +92,8 @@ function handleSubmit(): void {
                         v-model="formData[field.name]"
                         :type="field.type"
                         :required="field.required"
-                        class="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500 dark:border-stone-600 dark:bg-stone-700 dark:text-stone-100"
-                        :class="{ 'border-red-500': errors[field.name] }"
+                        class="w-full rounded-lg border border-default bg-surface px-3 py-2 text-base-primary focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
+                        :class="{ 'border-error': errors[field.name] }"
                     />
 
                     <!-- Textarea -->
@@ -103,8 +103,8 @@ function handleSubmit(): void {
                         v-model="formData[field.name]"
                         :required="field.required"
                         rows="3"
-                        class="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500 dark:border-stone-600 dark:bg-stone-700 dark:text-stone-100"
-                        :class="{ 'border-red-500': errors[field.name] }"
+                        class="w-full rounded-lg border border-default bg-surface px-3 py-2 text-base-primary focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
+                        :class="{ 'border-error': errors[field.name] }"
                     ></textarea>
 
                     <!-- Select -->
@@ -113,8 +113,8 @@ function handleSubmit(): void {
                         :id="field.name"
                         v-model="formData[field.name]"
                         :required="field.required"
-                        class="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500 dark:border-stone-600 dark:bg-stone-700 dark:text-stone-100"
-                        :class="{ 'border-red-500': errors[field.name] }"
+                        class="w-full rounded-lg border border-default bg-surface px-3 py-2 text-base-primary focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
+                        :class="{ 'border-error': errors[field.name] }"
                     >
                         <option value="">{{ t('common.select') }}...</option>
                         <option
@@ -136,11 +136,11 @@ function handleSubmit(): void {
                             v-model="formData[field.name]"
                             type="checkbox"
                             :required="field.required"
-                            class="h-4 w-4 rounded border-gray-300 text-amber-600 focus:ring-amber-500 dark:border-stone-600 dark:bg-stone-700"
+                            class="h-4 w-4 rounded border-default bg-surface text-accent focus:ring-accent"
                         />
                         <label
                             :for="field.name"
-                            class="ml-2 text-sm text-gray-700 dark:text-stone-300"
+                            class="ml-2 text-sm text-base-secondary"
                         >
                             {{ field.label }}
                         </label>
@@ -149,7 +149,7 @@ function handleSubmit(): void {
                     <!-- Error message -->
                     <p
                         v-if="errors[field.name]"
-                        class="mt-1 text-sm text-red-500"
+                        class="mt-1 text-sm text-error"
                     >
                         {{ errors[field.name] }}
                     </p>
@@ -159,7 +159,7 @@ function handleSubmit(): void {
                 <div>
                     <label
                         for="notes"
-                        class="mb-1 block text-sm font-medium text-gray-700 dark:text-stone-300"
+                        class="mb-1 block text-sm font-medium text-base-secondary"
                     >
                         {{ t('eventRegistrations.fields.notes') }}
                     </label>
@@ -168,7 +168,7 @@ function handleSubmit(): void {
                         v-model="notes"
                         rows="2"
                         maxlength="500"
-                        class="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500 dark:border-stone-600 dark:bg-stone-700 dark:text-stone-100"
+                        class="w-full rounded-lg border border-default bg-surface px-3 py-2 text-base-primary focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
                         :placeholder="t('eventRegistrations.fields.notes') + '...'"
                     ></textarea>
                 </div>
@@ -178,7 +178,7 @@ function handleSubmit(): void {
             <div class="mt-6 flex justify-end gap-3">
                 <button
                     type="button"
-                    class="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-stone-600 dark:text-stone-300 dark:hover:bg-stone-700"
+                    class="rounded-lg border border-default px-4 py-2 text-sm font-medium text-base-secondary hover:bg-surface-hover"
                     @click="emit('cancel')"
                 >
                     {{ t('common.cancel') }}
@@ -186,7 +186,7 @@ function handleSubmit(): void {
                 <button
                     type="submit"
                     :disabled="!isValid || loading"
-                    class="rounded-lg bg-amber-600 px-4 py-2 text-sm font-medium text-white hover:bg-amber-700 disabled:cursor-not-allowed disabled:bg-gray-300 disabled:text-gray-500"
+                    class="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent-hover disabled:cursor-not-allowed disabled:bg-base-muted disabled:text-base-secondary"
                 >
                     <span v-if="loading" class="flex items-center">
                         <svg
