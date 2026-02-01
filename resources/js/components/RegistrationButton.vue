@@ -142,7 +142,7 @@ async function fetchStatus(): Promise<void> {
     if (!resolvedEventId.value) return;
 
     try {
-        const response = await fetch(`/api/events/${resolvedEventId.value}/registration/status`);
+        const response = await fetch(`/eventos/${resolvedEventId.value}/inscripcion/estado`);
         const data = await response.json();
         config.value = data.data;
     } catch (e) {
@@ -157,7 +157,7 @@ async function fetchRegistration(): Promise<void> {
 
     registrationLoading.value = true;
     try {
-        const response = await fetch(`/api/events/${resolvedEventId.value}/registration`, {
+        const response = await fetch(`/eventos/${resolvedEventId.value}/inscripcion`, {
             credentials: 'include',
         });
         const data = await response.json();
@@ -174,7 +174,7 @@ async function handleRegister(formData: RegistrationFormData): Promise<void> {
     error.value = null;
 
     try {
-        const response = await fetch(`/api/events/${resolvedEventId.value}/registration`, {
+        const response = await fetch(`/eventos/${resolvedEventId.value}/inscripcion`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -212,7 +212,7 @@ async function handleCancel(): Promise<void> {
     error.value = null;
 
     try {
-        const response = await fetch(`/api/events/${resolvedEventId.value}/registration`, {
+        const response = await fetch(`/eventos/${resolvedEventId.value}/inscripcion`, {
             method: 'DELETE',
             headers: {
                 'Accept': 'application/json',
@@ -239,7 +239,7 @@ async function handleCancel(): Promise<void> {
 
 function handleClick(): void {
     if (!isAuthenticated.value) {
-        window.location.href = '/login?redirect=' + encodeURIComponent(window.location.pathname);
+        window.location.href = '/iniciar-sesion?redirect=' + encodeURIComponent(window.location.pathname);
         return;
     }
 

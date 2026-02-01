@@ -5,15 +5,22 @@ declare(strict_types=1);
 use Illuminate\Support\Facades\Route;
 use Modules\EventRegistrations\Http\Controllers\EventRegistrationController;
 
-// API-like routes using web middleware for session-based auth (Inertia SPA)
-// Note: These are in web.php (not api.php) because ModuleServiceProvider adds
-// prefix('api') to api.php files, which would result in /api/api/...
-Route::prefix('api/events/{eventId}/registration')
+/*
+|--------------------------------------------------------------------------
+| Event Registrations Web Routes
+|--------------------------------------------------------------------------
+|
+| Routes for the Event Registrations module using web middleware for
+| session-based functionality with Inertia.js frontend.
+|
+*/
+
+Route::prefix('eventos/{eventId}/inscripcion')
     ->whereUuid('eventId')
-    ->name('event-registrations.api.')
+    ->name('event-registrations.')
     ->group(function (): void {
         // Public endpoint - get event registration status
-        Route::get('/status', [EventRegistrationController::class, 'status'])
+        Route::get('/estado', [EventRegistrationController::class, 'status'])
             ->name('status');
 
         // Authenticated endpoints
@@ -29,9 +36,8 @@ Route::prefix('api/events/{eventId}/registration')
 
 // User's registrations
 Route::middleware('auth')
-    ->prefix('api')
-    ->name('event-registrations.api.')
+    ->name('event-registrations.')
     ->group(function (): void {
-        Route::get('/my-registrations', [EventRegistrationController::class, 'myRegistrations'])
+        Route::get('/mis-inscripciones', [EventRegistrationController::class, 'myRegistrations'])
             ->name('my-registrations');
     });
