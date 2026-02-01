@@ -300,7 +300,7 @@ onMounted(async () => {
             :disabled="buttonDisabled"
             class="w-full rounded-lg px-6 py-3 text-center font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2"
             :class="{
-                'bg-amber-600 text-white hover:bg-amber-700 focus:ring-amber-500':
+                'bg-primary text-white hover:bg-primary-700 focus:ring-primary-500':
                     canRegister || canJoinWaitingList,
                 'bg-error text-white hover:bg-red-700 focus:ring-red-500': canCancel,
                 'cursor-not-allowed bg-gray-300 text-base-muted dark:bg-stone-700':
