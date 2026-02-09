@@ -1,7 +1,7 @@
 {
   "name": "event-registrations",
   "displayName": "Inscripciones a eventos",
-  "version": "1.0.2-beta",
+  "version": "1.0.3-beta",
   "namespace": "Modules\\EventRegistrations",
   "provider": "EventRegistrationsServiceProvider",
   "description": "Sistema de inscripciones a eventos para la asociación",
