@@ -11,7 +11,7 @@ use Modules\EventRegistrations\Infrastructure\Persistence\Eloquent\Models\EventR
 
 final class RegistrationStatsWidget extends StatsOverviewWidget
 {
-    protected static ?int $sort = 3;
+    protected static ?int $sort = 5;
 
     /**
      * @return array<Stat>
