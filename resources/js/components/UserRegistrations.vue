@@ -1,10 +1,15 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { VENUE_TIMEZONE } from '@/utils/datetime';
 import type { UserRegistration } from '../types/registration';
 import { getStateColor } from '../types/registration';
 
-const { t } = useI18n();
+const { t, locale } = useI18n();
+function formatDate(iso: string): string {
+    return new Date(iso).toLocaleDateString(locale.value, { timeZone: VENUE_TIMEZONE });
+}
+
 
 const registrations = ref<UserRegistration[]>([]);
 const loading = ref(true);
@@ -143,7 +148,7 @@ onMounted(() => {
 
                     <div class="text-right text-sm text-base-muted">
                         <p v-if="registration.created_at">
-                            {{ new Date(registration.created_at).toLocaleDateString() }}
+                            {{ formatDate(registration.created_at) }}
                         </p>
                         <p
                             v-if="registration.state === 'waiting_list' && registration.position"

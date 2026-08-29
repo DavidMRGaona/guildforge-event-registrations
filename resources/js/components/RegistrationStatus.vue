@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { VENUE_TIMEZONE } from '@/utils/datetime';
 import type { UserRegistration, RegistrationConfig } from '../types/registration';
 import { getStateColor, isActiveState, isWaitingState } from '../types/registration';
 
@@ -11,7 +12,11 @@ interface Props {
 
 const props = defineProps<Props>();
 
-const { t } = useI18n();
+const { t, locale } = useI18n();
+function formatDate(iso: string): string {
+    return new Date(iso).toLocaleDateString(locale.value, { timeZone: VENUE_TIMEZONE });
+}
+
 
 const stateClasses = computed(() => {
     const color = getStateColor(props.registration.state);
@@ -140,11 +145,11 @@ const showPosition = computed(() => {
         >
             <p v-if="registration.confirmed_at">
                 {{ t('eventRegistrations.fields.confirmedAt') }}:
-                {{ new Date(registration.confirmed_at).toLocaleDateString() }}
+                {{ formatDate(registration.confirmed_at) }}
             </p>
             <p v-else-if="registration.created_at">
                 {{ t('eventRegistrations.fields.createdAt') }}:
-                {{ new Date(registration.created_at).toLocaleDateString() }}
+                {{ formatDate(registration.created_at) }}
             </p>
         </div>
     </div>
