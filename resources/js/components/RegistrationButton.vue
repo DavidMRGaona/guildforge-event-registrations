@@ -279,7 +279,7 @@ onMounted(async () => {
         <!-- Error message -->
         <div
             v-if="error"
-            class="mb-4 rounded-lg bg-red-50 p-4 text-sm text-error dark:bg-red-900/20"
+            class="mb-4 rounded-lg bg-error-light p-4 text-sm text-error"
         >
             {{ error }}
         </div>
@@ -302,8 +302,8 @@ onMounted(async () => {
             :class="{
                 'bg-primary text-white hover:bg-primary-700 focus:ring-primary-500':
                     canRegister || canJoinWaitingList,
-                'bg-error text-white hover:bg-red-700 focus:ring-red-500': canCancel,
-                'cursor-not-allowed bg-gray-300 text-base-muted dark:bg-stone-700':
+                'bg-error text-white hover:opacity-90 focus:ring-2 focus:ring-primary': canCancel,
+                'cursor-not-allowed bg-muted text-base-muted':
                     buttonDisabled,
             }"
             @click="handleClick"
@@ -374,7 +374,7 @@ onMounted(async () => {
                             class="w-full max-w-md rounded-xl bg-surface p-6 shadow-2xl"
                         >
                             <!-- Icon -->
-                            <div class="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/30">
+                            <div class="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-error-light">
                                 <svg
                                     class="h-6 w-6 text-error"
                                     fill="none"
@@ -404,14 +404,14 @@ onMounted(async () => {
                             <div class="flex gap-3">
                                 <button
                                     type="button"
-                                    class="flex-1 rounded-lg border border-default px-4 py-2.5 text-sm font-medium text-base-secondary transition-colors hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-300 dark:hover:bg-stone-700"
+                                    class="flex-1 rounded-lg border border-default px-4 py-2.5 text-sm font-medium text-base-secondary transition-colors hover:bg-muted focus:outline-none focus:ring-2 focus:ring-primary"
                                     @click="showCancelConfirm = false"
                                 >
                                     {{ $t('common.cancel') }}
                                 </button>
                                 <button
                                     type="button"
-                                    class="flex-1 rounded-lg bg-error px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
+                                    class="flex-1 rounded-lg bg-error px-4 py-2.5 text-sm font-medium text-white transition-colors hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-primary"
                                     @click="handleCancel"
                                 >
                                     {{ $t('buttons.confirm') }}
