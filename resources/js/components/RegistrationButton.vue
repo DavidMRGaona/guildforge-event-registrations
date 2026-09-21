@@ -2,6 +2,7 @@
 import { ref, computed, onMounted, Teleport, Transition } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { usePage } from '@inertiajs/vue3';
+import { csrfHeaders, isCsrfFailure } from '@/utils/csrf';
 import type {
     RegistrationConfig,
     UserRegistration,
@@ -56,12 +57,6 @@ const isRegistrationPeriodPassed = computed(() => {
 });
 
 const { t } = useI18n();
-
-// Get CSRF token from meta tag
-const getCsrfToken = (): string => {
-    const meta = document.querySelector('meta[name="csrf-token"]');
-    return meta?.getAttribute('content') ?? '';
-};
 
 const config = ref<RegistrationConfig | null>(props.initialConfig ?? null);
 const registration = ref<UserRegistration | null>(props.initialRegistration ?? null);
@@ -179,11 +174,16 @@ async function handleRegister(formData: RegistrationFormData): Promise<void> {
             headers: {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json',
-                'X-CSRF-TOKEN': getCsrfToken(),
+                ...csrfHeaders(),
             },
             credentials: 'include',
             body: JSON.stringify(formData),
         });
+
+        if (isCsrfFailure(response)) {
+            error.value = t('eventRegistrations.errors.sessionExpired');
+            return;
+        }
 
         const data = await response.json();
 
@@ -216,10 +216,15 @@ async function handleCancel(): Promise<void> {
             method: 'DELETE',
             headers: {
                 'Accept': 'application/json',
-                'X-CSRF-TOKEN': getCsrfToken(),
+                ...csrfHeaders(),
             },
             credentials: 'include',
         });
+
+        if (isCsrfFailure(response)) {
+            error.value = t('eventRegistrations.errors.sessionExpired');
+            return;
+        }
 
         const data = await response.json();
 
