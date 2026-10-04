@@ -88,7 +88,7 @@ final class EventRegistrationConfigModel extends Model
     }
 
     /**
-     * @return BelongsTo<EventModel, self>
+     * @return BelongsTo<EventModel, $this>
      */
     public function event(): BelongsTo
     {

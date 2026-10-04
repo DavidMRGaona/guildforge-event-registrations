@@ -28,12 +28,13 @@ final class RegistrationConfigRelationManager extends RelationManager
 
     protected static ?string $recordTitleAttribute = 'event_id';
 
-    protected static string $view = 'event-registrations::filament.relation-managers.registration-config-form';
+    // The module registers its view namespace at runtime, so Larastan cannot resolve it as a view-string
+    protected static string $view = 'event-registrations::filament.relation-managers.registration-config-form'; // @phpstan-ignore property.defaultValue
 
     /** @var array<string, mixed> */
     public array $configData = [];
 
-    public static function getTitle($ownerRecord, string $pageClass): string
+    public static function getTitle(Model $ownerRecord, string $pageClass): string
     {
         return __('event-registrations::messages.config.title');
     }

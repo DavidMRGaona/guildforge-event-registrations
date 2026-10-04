@@ -16,7 +16,6 @@ use Filament\Forms\Contracts\HasForms;
 use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
-use Illuminate\Contracts\Support\Htmlable;
 use Modules\EventRegistrations\Application\DTOs\UpdateRegistrationConfigDTO;
 use Modules\EventRegistrations\Application\Services\EventRegistrationServiceInterface;
 use Modules\EventRegistrations\Domain\Repositories\EventRegistrationConfigRepositoryInterface;
@@ -61,7 +60,7 @@ final class EventRegistrationConfigPage extends Page implements HasForms
         ]);
     }
 
-    public function getTitle(): string|Htmlable
+    public function getTitle(): string
     {
         return __('event-registrations::messages.config.title');
     }

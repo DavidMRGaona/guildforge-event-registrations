@@ -32,7 +32,7 @@ final class RegistrationsRelationManager extends RelationManager
 
     protected static ?string $recordTitleAttribute = 'id';
 
-    public static function getTitle($ownerRecord, string $pageClass): string
+    public static function getTitle(Model $ownerRecord, string $pageClass): string
     {
         return __('event-registrations::messages.navigation');
     }
@@ -46,8 +46,8 @@ final class RegistrationsRelationManager extends RelationManager
             return false;
         }
 
-        // Check if there are any registrations
-        $hasRegistrations = $ownerRecord->registrations()->exists();
+        // Check if there are any registrations (registrations() is added at runtime, invisible to static analysis)
+        $hasRegistrations = EventRegistrationModel::where('event_id', $ownerRecord->id)->exists();
         if ($hasRegistrations) {
             return true;
         }

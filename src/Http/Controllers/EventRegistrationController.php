@@ -63,6 +63,12 @@ final class EventRegistrationController extends Controller
     {
         $user = $request->user();
 
+        if ($user === null) {
+            return response()->json([
+                'message' => __('event-registrations::messages.errors.unauthenticated'),
+            ], 401);
+        }
+
         try {
             $registration = $this->registrationService->register(new RegisterToEventDTO(
                 eventId: $eventId,

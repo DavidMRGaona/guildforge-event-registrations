@@ -65,7 +65,7 @@ final class EventRegistrationModel extends Model
     }
 
     /**
-     * @return BelongsTo<EventModel, self>
+     * @return BelongsTo<EventModel, $this>
      */
     public function event(): BelongsTo
     {
@@ -73,7 +73,7 @@ final class EventRegistrationModel extends Model
     }
 
     /**
-     * @return BelongsTo<UserModel, self>
+     * @return BelongsTo<UserModel, $this>
      */
     public function user(): BelongsTo
     {
