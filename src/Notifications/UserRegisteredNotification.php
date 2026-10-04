@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\EventRegistrations\Notifications;
 
 use App\Infrastructure\Persistence\Eloquent\Models\EventModel;
+use App\Infrastructure\Persistence\Eloquent\Models\UserModel;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -31,8 +32,9 @@ final class UserRegisteredNotification extends Notification implements ShouldQue
 
     public function toMail(object $notifiable): MailMessage
     {
+        /** @var UserModel $notifiable */
         $message = (new MailMessage)
-            ->subject(__('event-registrations::messages.emails.registered_subject', [
+            ->subject(__($this->subjectKey(), [
                 'event' => $this->event->title,
             ]))
             ->greeting(__('event-registrations::messages.emails.greeting', [
@@ -62,6 +64,19 @@ final class UserRegisteredNotification extends Notification implements ShouldQue
             })
             ->action(__('event-registrations::messages.emails.view_event'), url('/eventos/'.$this->event->slug))
             ->salutation(__('event-registrations::messages.emails.salutation'));
+    }
+
+    /**
+     * The registration email is the only one sent on sign-up, so its subject
+     * must reflect the resulting state instead of always saying "received".
+     */
+    private function subjectKey(): string
+    {
+        return match ($this->registration->state()) {
+            RegistrationState::Confirmed => 'event-registrations::messages.emails.confirmed_subject',
+            RegistrationState::WaitingList => 'event-registrations::messages.emails.waiting_list_subject',
+            default => 'event-registrations::messages.emails.registered_subject',
+        };
     }
 
     /**
