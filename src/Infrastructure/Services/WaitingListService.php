@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Event;
 use Modules\EventRegistrations\Application\DTOs\EventRegistrationResponseDTO;
 use Modules\EventRegistrations\Application\Services\WaitingListServiceInterface;
 use Modules\EventRegistrations\Domain\Entities\EventRegistration;
+use Modules\EventRegistrations\Domain\Enums\ConfirmationSource;
 use Modules\EventRegistrations\Domain\Enums\RegistrationState;
 use Modules\EventRegistrations\Domain\Events\RegistrationConfirmed;
 use Modules\EventRegistrations\Domain\Events\UserRegisteredToEvent;
@@ -91,7 +92,7 @@ final readonly class WaitingListService implements WaitingListServiceInterface
             registrationId: $registration->id()->value,
             eventId: $registration->eventId(),
             userId: $registration->userId(),
-            automatic: true,
+            source: ConfirmationSource::WaitingListPromotion,
         ));
 
         return EventRegistrationResponseDTO::fromEntity($registration);

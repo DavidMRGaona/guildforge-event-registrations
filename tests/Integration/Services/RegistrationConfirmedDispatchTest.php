@@ -9,6 +9,7 @@ use Modules\EventRegistrations\Application\DTOs\RegisterToEventDTO;
 use Modules\EventRegistrations\Application\Services\WaitingListServiceInterface;
 use Modules\EventRegistrations\Domain\Entities\EventRegistration;
 use Modules\EventRegistrations\Domain\Entities\EventRegistrationConfig;
+use Modules\EventRegistrations\Domain\Enums\ConfirmationSource;
 use Modules\EventRegistrations\Domain\Enums\RegistrationState;
 use Modules\EventRegistrations\Domain\Events\RegistrationConfirmed;
 use Modules\EventRegistrations\Domain\Repositories\EventRegistrationConfigRepositoryInterface;
@@ -35,7 +36,7 @@ final class RegistrationConfirmedDispatchTest extends TestCase
         Event::fake();
     }
 
-    public function test_auto_confirmed_registration_dispatches_automatic_confirmation(): void
+    public function test_auto_confirmed_registration_dispatches_confirmation_from_registration(): void
     {
         $this->configRepository
             ->method('findByEventOrDefault')
@@ -45,11 +46,11 @@ final class RegistrationConfirmedDispatchTest extends TestCase
 
         Event::assertDispatched(
             RegistrationConfirmed::class,
-            fn (RegistrationConfirmed $event): bool => $event->automatic === true,
+            fn (RegistrationConfirmed $event): bool => $event->source === ConfirmationSource::Registration,
         );
     }
 
-    public function test_manual_confirmation_dispatches_non_automatic_confirmation(): void
+    public function test_manual_confirmation_dispatches_manual_confirmation(): void
     {
         $registration = new EventRegistration(
             id: EventRegistrationId::generate(),
@@ -64,11 +65,11 @@ final class RegistrationConfirmedDispatchTest extends TestCase
 
         Event::assertDispatched(
             RegistrationConfirmed::class,
-            fn (RegistrationConfirmed $event): bool => $event->automatic === false,
+            fn (RegistrationConfirmed $event): bool => $event->source === ConfirmationSource::Manual,
         );
     }
 
-    public function test_waiting_list_promotion_dispatches_automatic_confirmation(): void
+    public function test_waiting_list_promotion_dispatches_confirmation_from_promotion(): void
     {
         $registration = new EventRegistration(
             id: EventRegistrationId::generate(),
@@ -84,7 +85,7 @@ final class RegistrationConfirmedDispatchTest extends TestCase
 
         Event::assertDispatched(
             RegistrationConfirmed::class,
-            fn (RegistrationConfirmed $event): bool => $event->automatic === true,
+            fn (RegistrationConfirmed $event): bool => $event->source === ConfirmationSource::WaitingListPromotion,
         );
     }
 

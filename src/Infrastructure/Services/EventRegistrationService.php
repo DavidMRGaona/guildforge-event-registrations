@@ -12,6 +12,7 @@ use Modules\EventRegistrations\Application\Services\EventRegistrationServiceInte
 use Modules\EventRegistrations\Application\Services\WaitingListServiceInterface;
 use Modules\EventRegistrations\Domain\Entities\EventRegistration;
 use Modules\EventRegistrations\Domain\Entities\EventRegistrationConfig;
+use Modules\EventRegistrations\Domain\Enums\ConfirmationSource;
 use Modules\EventRegistrations\Domain\Enums\RegistrationState;
 use Modules\EventRegistrations\Domain\Events\RegistrationConfirmed;
 use Modules\EventRegistrations\Domain\Events\UserRegisteredToEvent;
@@ -117,7 +118,7 @@ final readonly class EventRegistrationService implements EventRegistrationServic
                 registrationId: $registration->id()->value,
                 eventId: $registration->eventId(),
                 userId: $registration->userId(),
-                automatic: true,
+                source: ConfirmationSource::Registration,
             ));
         }
 

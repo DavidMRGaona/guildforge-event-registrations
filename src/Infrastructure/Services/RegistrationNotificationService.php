@@ -9,6 +9,7 @@ use App\Infrastructure\Persistence\Eloquent\Models\UserModel;
 use Illuminate\Support\Facades\Notification;
 use Modules\EventRegistrations\Application\Services\RegistrationNotificationServiceInterface;
 use Modules\EventRegistrations\Domain\Entities\EventRegistration;
+use Modules\EventRegistrations\Domain\Enums\ConfirmationSource;
 use Modules\EventRegistrations\Infrastructure\Persistence\Eloquent\Models\EventRegistrationConfigModel;
 use Modules\EventRegistrations\Notifications\AdminNewRegistrationNotification;
 use Modules\EventRegistrations\Notifications\RegistrationCancelledNotification;
@@ -58,6 +59,15 @@ final readonly class RegistrationNotificationService implements RegistrationNoti
         }
 
         $user->notify(new RegistrationConfirmedNotification($event, $registration));
+    }
+
+    public function confirmationAlreadyAnnounced(ConfirmationSource $source): bool
+    {
+        return match ($source) {
+            ConfirmationSource::Manual => false,
+            ConfirmationSource::Registration => (bool) config('modules.settings.event-registrations.send_registration_email', true),
+            ConfirmationSource::WaitingListPromotion => (bool) config('modules.settings.event-registrations.send_promotion_email', true),
+        };
     }
 
     public function sendWaitingListEmail(EventRegistration $registration, int $position): void

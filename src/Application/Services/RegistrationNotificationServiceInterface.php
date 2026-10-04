@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\EventRegistrations\Application\Services;
 
 use Modules\EventRegistrations\Domain\Entities\EventRegistration;
+use Modules\EventRegistrations\Domain\Enums\ConfirmationSource;
 
 interface RegistrationNotificationServiceInterface
 {
@@ -17,6 +18,12 @@ interface RegistrationNotificationServiceInterface
      * Send confirmation email when registration is confirmed.
      */
     public function sendConfirmationEmail(EventRegistration $registration): void;
+
+    /**
+     * Whether another enabled email (registration or promotion) already tells
+     * the user about this confirmation, making the confirmation email redundant.
+     */
+    public function confirmationAlreadyAnnounced(ConfirmationSource $source): bool;
 
     /**
      * Send email when user is added to waiting list.
