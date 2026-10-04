@@ -19,6 +19,11 @@ final class SendRegistrationConfirmedEmail implements ShouldQueue
 
     public function handle(RegistrationConfirmed $event): void
     {
+        // Automatic confirmations are already covered by the registration or promotion email
+        if ($event->automatic) {
+            return;
+        }
+
         $registration = $this->registrationRepository->find(
             EventRegistrationId::fromString($event->registrationId)
         );

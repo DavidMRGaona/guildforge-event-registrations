@@ -117,6 +117,7 @@ final readonly class EventRegistrationService implements EventRegistrationServic
                 registrationId: $registration->id()->value,
                 eventId: $registration->eventId(),
                 userId: $registration->userId(),
+                automatic: true,
             ));
         }
 

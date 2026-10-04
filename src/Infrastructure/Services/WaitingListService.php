@@ -91,6 +91,7 @@ final readonly class WaitingListService implements WaitingListServiceInterface
             registrationId: $registration->id()->value,
             eventId: $registration->eventId(),
             userId: $registration->userId(),
+            automatic: true,
         ));
 
         return EventRegistrationResponseDTO::fromEntity($registration);
