@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\EventRegistrations\Notifications;
 
 use App\Infrastructure\Persistence\Eloquent\Models\EventModel;
+use App\Infrastructure\Persistence\Eloquent\Models\UserModel;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -30,6 +31,7 @@ final class RegistrationCancelledNotification extends Notification implements Sh
 
     public function toMail(object $notifiable): MailMessage
     {
+        /** @var UserModel $notifiable */
         return (new MailMessage)
             ->subject(__('event-registrations::messages.emails.cancelled_subject', [
                 'event' => $this->event->title,
