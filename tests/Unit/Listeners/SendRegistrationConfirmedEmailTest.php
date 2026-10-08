@@ -21,7 +21,7 @@ final class SendRegistrationConfirmedEmailTest extends TestCase
     {
         $registration = $this->confirmedRegistration();
 
-        $repository = $this->createMock(EventRegistrationRepositoryInterface::class);
+        $repository = $this->createStub(EventRegistrationRepositoryInterface::class);
         $repository->method('find')->willReturn($registration);
 
         $notificationService = $this->createMock(RegistrationNotificationServiceInterface::class);
@@ -42,7 +42,7 @@ final class SendRegistrationConfirmedEmailTest extends TestCase
     {
         $registration = $this->confirmedRegistration();
 
-        $repository = $this->createMock(EventRegistrationRepositoryInterface::class);
+        $repository = $this->createStub(EventRegistrationRepositoryInterface::class);
         $repository->method('find')->willReturn($registration);
 
         $notificationService = $this->createMock(RegistrationNotificationServiceInterface::class);

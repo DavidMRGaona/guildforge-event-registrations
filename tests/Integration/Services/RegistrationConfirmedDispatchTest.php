@@ -17,21 +17,21 @@ use Modules\EventRegistrations\Domain\Repositories\EventRegistrationRepositoryIn
 use Modules\EventRegistrations\Domain\ValueObjects\EventRegistrationId;
 use Modules\EventRegistrations\Infrastructure\Services\EventRegistrationService;
 use Modules\EventRegistrations\Infrastructure\Services\WaitingListService;
-use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\MockObject\Stub;
 use Tests\TestCase;
 
 final class RegistrationConfirmedDispatchTest extends TestCase
 {
-    private EventRegistrationRepositoryInterface&MockObject $registrationRepository;
+    private EventRegistrationRepositoryInterface&Stub $registrationRepository;
 
-    private EventRegistrationConfigRepositoryInterface&MockObject $configRepository;
+    private EventRegistrationConfigRepositoryInterface&Stub $configRepository;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->registrationRepository = $this->createMock(EventRegistrationRepositoryInterface::class);
-        $this->configRepository = $this->createMock(EventRegistrationConfigRepositoryInterface::class);
+        $this->registrationRepository = $this->createStub(EventRegistrationRepositoryInterface::class);
+        $this->configRepository = $this->createStub(EventRegistrationConfigRepositoryInterface::class);
 
         Event::fake();
     }
@@ -94,7 +94,7 @@ final class RegistrationConfirmedDispatchTest extends TestCase
         return new EventRegistrationService(
             $this->registrationRepository,
             $this->configRepository,
-            $this->createMock(WaitingListServiceInterface::class),
+            $this->createStub(WaitingListServiceInterface::class),
         );
     }
 }
