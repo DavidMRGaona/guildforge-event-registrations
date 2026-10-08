@@ -28,6 +28,11 @@ use Modules\EventRegistrations\Infrastructure\Persistence\Eloquent\Models\EventR
 
 final class RegistrationsRelationManager extends RelationManager
 {
+    /**
+     * Key of the tab on the event edit page, used in its `?relation=` query string.
+     */
+    public const RELATION_KEY = 'registrations';
+
     protected static string $relationship = 'registrations';
 
     protected static ?string $recordTitleAttribute = 'id';

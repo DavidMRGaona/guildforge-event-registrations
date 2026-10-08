@@ -12,6 +12,7 @@ use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 use Modules\EventRegistrations\Domain\Entities\EventRegistration;
 use Modules\EventRegistrations\Domain\Enums\RegistrationState;
+use Modules\EventRegistrations\Filament\RelationManagers\RegistrationsRelationManager;
 
 final class AdminNewRegistrationNotification extends Notification implements ShouldQueue
 {
@@ -63,7 +64,7 @@ final class AdminNewRegistrationNotification extends Notification implements Sho
         }
 
         return $mail
-            ->action(__('event-registrations::messages.emails.admin_view_registrations'), url('/admin/events/'.$this->event->id.'/edit?activeRelationManager=1'))
+            ->action(__('event-registrations::messages.emails.admin_view_registrations'), url('/admin/events/'.$this->event->id.'/edit?relation='.RegistrationsRelationManager::RELATION_KEY))
             ->salutation(__('event-registrations::messages.emails.salutation'));
     }
 

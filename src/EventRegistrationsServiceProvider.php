@@ -167,9 +167,10 @@ final class EventRegistrationsServiceProvider extends ModuleServiceProvider
         // Add RelationManagers:
         // 1. Config tab (always visible) - for configuring registration settings
         // 2. Registrations tab (visible when enabled OR has registrations) - for managing registered users
+        // Keyed so links can open a tab with `?relation=<key>` whatever other modules add
         EventResource::extendRelations([
-            RegistrationConfigRelationManager::class,
-            RegistrationsRelationManager::class,
+            RegistrationConfigRelationManager::RELATION_KEY => RegistrationConfigRelationManager::class,
+            RegistrationsRelationManager::RELATION_KEY => RegistrationsRelationManager::class,
         ]);
     }
 

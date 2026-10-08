@@ -13,6 +13,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Notifications\Notification;
 use Filament\Resources\RelationManagers\RelationManager;
+use Filament\Schemas\Schema;
 use Illuminate\Database\Eloquent\Model;
 use Modules\EventRegistrations\Application\DTOs\UpdateRegistrationConfigDTO;
 use Modules\EventRegistrations\Application\Services\EventRegistrationServiceInterface;
@@ -23,6 +24,11 @@ use Modules\EventRegistrations\Domain\Repositories\EventRegistrationConfigReposi
  */
 final class RegistrationConfigRelationManager extends RelationManager
 {
+    /**
+     * Key of the tab on the event edit page, used in its `?relation=` query string.
+     */
+    public const RELATION_KEY = 'registration-config';
+
     protected static string $relationship = 'registrationConfig';
 
     protected static ?string $recordTitleAttribute = 'event_id';
@@ -68,16 +74,11 @@ final class RegistrationConfigRelationManager extends RelationManager
         ]);
     }
 
-    /**
-     * @return array<string, \Filament\Schemas\Schema>
-     */
-    protected function getForms(): array
+    public function configForm(Schema $schema): Schema
     {
-        return [
-            'configForm' => $this->makeForm()
-                ->components($this->getFormSchema())
-                ->statePath('configData'),
-        ];
+        return $schema
+            ->components($this->getFormSchema())
+            ->statePath('configData');
     }
 
     /**
