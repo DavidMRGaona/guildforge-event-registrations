@@ -4,18 +4,18 @@ declare(strict_types=1);
 
 namespace Modules\EventRegistrations\Filament\RelationManagers;
 
+use Filament\Schemas\Schema;
+use Filament\Actions\Action;
+use Filament\Actions\EditAction;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\BulkAction;
+use Filament\Actions\DeleteBulkAction;
 use App\Infrastructure\Persistence\Eloquent\Models\EventModel;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
-use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Resources\RelationManagers\RelationManager;
-use Filament\Tables\Actions\Action;
-use Filament\Tables\Actions\BulkAction;
-use Filament\Tables\Actions\BulkActionGroup;
-use Filament\Tables\Actions\DeleteAction;
-use Filament\Tables\Actions\DeleteBulkAction;
-use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
@@ -58,10 +58,10 @@ final class RegistrationsRelationManager extends RelationManager
         return $config !== null && $config->registration_enabled === true;
     }
 
-    public function form(Form $form): Form
+    public function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
+        return $schema
+            ->components([
                 Select::make('state')
                     ->label(__('event-registrations::messages.fields.state'))
                     ->options(RegistrationState::options())
@@ -158,7 +158,7 @@ final class RegistrationsRelationManager extends RelationManager
                             ->send();
                     }),
             ])
-            ->actions([
+            ->recordActions([
                 Action::make('confirm')
                     ->label(__('event-registrations::messages.actions.confirm'))
                     ->icon('heroicon-o-check-circle')
@@ -216,7 +216,7 @@ final class RegistrationsRelationManager extends RelationManager
                 EditAction::make(),
                 DeleteAction::make(),
             ])
-            ->bulkActions([
+            ->toolbarActions([
                 BulkActionGroup::make([
                     BulkAction::make('confirm_selected')
                         ->label(__('event-registrations::messages.actions.confirm_selected'))

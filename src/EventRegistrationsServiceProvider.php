@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Modules\EventRegistrations;
 
+use Filament\Schemas\Components\Section;
 use App\Application\Modules\DTOs\PermissionDTO;
 use App\Application\Modules\DTOs\SlotRegistrationDTO;
 use App\Filament\Resources\EventResource;
 use App\Infrastructure\Persistence\Eloquent\Models\EventModel;
 use App\Modules\ModuleServiceProvider;
-use Filament\Forms\Components\Section;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Illuminate\Support\Facades\Event;
@@ -315,7 +315,7 @@ final class EventRegistrationsServiceProvider extends ModuleServiceProvider
     }
 
     /**
-     * @return array<\Filament\Forms\Components\Component>
+     * @return array<\Filament\Schemas\Components\Component>
      */
     public function getSettingsSchema(): array
     {

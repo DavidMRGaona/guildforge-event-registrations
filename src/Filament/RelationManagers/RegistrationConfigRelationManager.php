@@ -4,14 +4,13 @@ declare(strict_types=1);
 
 namespace Modules\EventRegistrations\Filament\RelationManagers;
 
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Fieldset;
+use Filament\Schemas\Components\Utilities\Get;
 use App\Infrastructure\Persistence\Eloquent\Models\EventModel;
 use Filament\Forms\Components\DateTimePicker;
-use Filament\Forms\Components\Fieldset;
-use Filament\Forms\Components\Section;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
-use Filament\Forms\Form;
-use Filament\Forms\Get;
 use Filament\Notifications\Notification;
 use Filament\Resources\RelationManagers\RelationManager;
 use Illuminate\Database\Eloquent\Model;
@@ -20,7 +19,7 @@ use Modules\EventRegistrations\Application\Services\EventRegistrationServiceInte
 use Modules\EventRegistrations\Domain\Repositories\EventRegistrationConfigRepositoryInterface;
 
 /**
- * @property Form $configForm
+ * @property \Filament\Schemas\Schema $configForm
  */
 final class RegistrationConfigRelationManager extends RelationManager
 {
@@ -29,7 +28,7 @@ final class RegistrationConfigRelationManager extends RelationManager
     protected static ?string $recordTitleAttribute = 'event_id';
 
     // The module registers its view namespace at runtime, so Larastan cannot resolve it as a view-string
-    protected static string $view = 'event-registrations::filament.relation-managers.registration-config-form'; // @phpstan-ignore property.defaultValue
+    protected string $view = 'event-registrations::filament.relation-managers.registration-config-form'; // @phpstan-ignore property.defaultValue
 
     /** @var array<string, mixed> */
     public array $configData = [];
@@ -70,19 +69,19 @@ final class RegistrationConfigRelationManager extends RelationManager
     }
 
     /**
-     * @return array<string, Form>
+     * @return array<string, \Filament\Schemas\Schema>
      */
     protected function getForms(): array
     {
         return [
             'configForm' => $this->makeForm()
-                ->schema($this->getFormSchema())
+                ->components($this->getFormSchema())
                 ->statePath('configData'),
         ];
     }
 
     /**
-     * @return array<\Filament\Forms\Components\Component>
+     * @return array<\Filament\Schemas\Components\Component>
      */
     protected function getFormSchema(): array
     {

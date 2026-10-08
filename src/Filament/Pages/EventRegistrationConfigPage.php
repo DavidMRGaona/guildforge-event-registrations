@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Modules\EventRegistrations\Filament\Pages;
 
+use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Fieldset;
 use Filament\Actions\Action;
 use Filament\Forms\Components\DateTimePicker;
-use Filament\Forms\Components\Fieldset;
-use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
-use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Modules\EventRegistrations\Application\DTOs\UpdateRegistrationConfigDTO;
@@ -21,15 +21,15 @@ use Modules\EventRegistrations\Application\Services\EventRegistrationServiceInte
 use Modules\EventRegistrations\Domain\Repositories\EventRegistrationConfigRepositoryInterface;
 
 /**
- * @property Form $form
+ * @property \Filament\Schemas\Schema $form
  */
 final class EventRegistrationConfigPage extends Page implements HasForms
 {
     use InteractsWithForms;
 
-    protected static ?string $navigationIcon = 'heroicon-o-cog-6-tooth';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-cog-6-tooth';
 
-    protected static string $view = 'event-registrations::filament.pages.event-registration-config';
+    protected string $view = 'event-registrations::filament.pages.event-registration-config';
 
     protected static bool $shouldRegisterNavigation = false;
 
@@ -65,10 +65,10 @@ final class EventRegistrationConfigPage extends Page implements HasForms
         return __('event-registrations::messages.config.title');
     }
 
-    public function form(Form $form): Form
+    public function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
+        return $schema
+            ->components([
                 Section::make(__('event-registrations::messages.config.general'))
                     ->schema([
                         Toggle::make('registration_enabled')
