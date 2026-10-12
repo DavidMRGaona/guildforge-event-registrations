@@ -39,10 +39,14 @@ final class AdminNewRegistrationNotificationTest extends ModuleTestCase
         $url = (new AdminNewRegistrationNotification($event, $registration, $admin))->toMail($admin)->actionUrl;
         parse_str((string) parse_url($url, PHP_URL_QUERY), $query);
 
+        // The panel finds events by slug: the link must carry it, not the id
+        $this->assertSame(1, preg_match('~/admin/events/([^/]+)/edit$~', (string) parse_url($url, PHP_URL_PATH), $path));
+        $this->assertSame($event->slug, $path[1]);
+
         $this->actingAs($admin);
         Filament::setCurrentPanel(Filament::getPanel('admin'));
         Livewire::withQueryParams($query)
-            ->test(EditEvent::class, ['record' => $event->getRouteKey()])
+            ->test(EditEvent::class, ['record' => $path[1]])
             ->assertSeeLivewire(RegistrationsRelationManager::class)
             ->assertDontSeeLivewire(RegistrationConfigRelationManager::class);
     }

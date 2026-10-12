@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\EventRegistrations\Notifications;
 
+use App\Filament\Resources\EventResource;
 use App\Infrastructure\Persistence\Eloquent\Models\EventModel;
 use App\Infrastructure\Persistence\Eloquent\Models\UserModel;
 use Illuminate\Bus\Queueable;
@@ -64,7 +65,11 @@ final class AdminNewRegistrationNotification extends Notification implements Sho
         }
 
         return $mail
-            ->action(__('event-registrations::messages.emails.admin_view_registrations'), url('/admin/events/'.$this->event->id.'/edit?relation='.RegistrationsRelationManager::RELATION_KEY))
+            ->action(
+                __('event-registrations::messages.emails.admin_view_registrations'),
+                // The panel finds events by slug (EventModel::getRouteKeyName())
+                EventResource::getUrl('edit', ['record' => $this->event, 'relation' => RegistrationsRelationManager::RELATION_KEY]),
+            )
             ->salutation(__('event-registrations::messages.emails.salutation'));
     }
 
