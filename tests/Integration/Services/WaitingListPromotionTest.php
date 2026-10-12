@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Modules\EventRegistrations\Tests\Integration\Services;
 
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use App\Infrastructure\Persistence\Eloquent\Models\EventModel;
+use App\Infrastructure\Persistence\Eloquent\Models\UserModel;
+use Illuminate\Support\Facades\Notification;
 use Modules\EventRegistrations\Domain\Entities\EventRegistration;
 use Modules\EventRegistrations\Domain\Entities\EventRegistrationConfig;
 use Modules\EventRegistrations\Domain\Enums\RegistrationState;
@@ -14,11 +16,16 @@ use Modules\EventRegistrations\Domain\Repositories\EventRegistrationRepositoryIn
 use Modules\EventRegistrations\Domain\ValueObjects\EventRegistrationId;
 use Modules\EventRegistrations\Infrastructure\Services\WaitingListService;
 use Modules\EventRegistrations\Listeners\PromoteFromWaitingListOnCancellation;
-use Tests\TestCase;
+use Tests\Support\Modules\ModuleTestCase;
 
-final class WaitingListPromotionTest extends TestCase
+final class WaitingListPromotionTest extends ModuleTestCase
 {
-    use RefreshDatabase;
+    protected ?string $moduleName = 'event-registrations';
+
+    protected bool $autoEnableModule = true;
+
+    /** @var array<string, string> */
+    private array $users = [];
 
     private EventRegistrationRepositoryInterface $registrationRepository;
 
@@ -30,9 +37,10 @@ final class WaitingListPromotionTest extends TestCase
     {
         parent::setUp();
 
-        // Skip if module tables don't exist
-        if (! $this->app->bound(EventRegistrationRepositoryInterface::class)) {
-            $this->markTestSkipped('Event registrations module not loaded');
+        Notification::fake();
+
+        foreach (['user-1', 'user-2', 'user-3', 'user-4'] as $alias) {
+            $this->users[$alias] = UserModel::factory()->create()->id;
         }
 
         $this->registrationRepository = $this->app->make(EventRegistrationRepositoryInterface::class);
@@ -42,7 +50,7 @@ final class WaitingListPromotionTest extends TestCase
 
     public function test_promotes_next_user_when_participant_cancels(): void
     {
-        $eventId = 'test-event-'.uniqid();
+        $eventId = EventModel::factory()->create()->id;
 
         // Create event config with max 2 participants
         $config = new EventRegistrationConfig(
@@ -64,11 +72,15 @@ final class WaitingListPromotionTest extends TestCase
         $this->registrationRepository->save($confirmed2);
         $this->registrationRepository->save($waiting);
 
+        // Cancel as EventRegistrationService::cancel() does before it dispatches the event
+        $confirmed1->cancel();
+        $this->registrationRepository->save($confirmed1);
+
         // Simulate cancellation event
         $event = UserUnregisteredFromEvent::create(
             registrationId: $confirmed1->id()->value,
             eventId: $eventId,
-            userId: 'user-1',
+            userId: $this->users['user-1'],
             previousState: RegistrationState::Confirmed,
         );
 
@@ -77,7 +89,7 @@ final class WaitingListPromotionTest extends TestCase
         $listener->handle($event);
 
         // Verify waiting list user was promoted
-        $promotedRegistration = $this->registrationRepository->findByUserAndEvent('user-3', $eventId);
+        $promotedRegistration = $this->registrationRepository->findByUserAndEvent($this->users['user-3'], $eventId);
 
         $this->assertNotNull($promotedRegistration);
         $this->assertEquals(RegistrationState::Confirmed, $promotedRegistration->state());
@@ -87,7 +99,7 @@ final class WaitingListPromotionTest extends TestCase
 
     public function test_does_not_promote_if_waiting_list_empty(): void
     {
-        $eventId = 'test-event-'.uniqid();
+        $eventId = EventModel::factory()->create()->id;
 
         // Create event config
         $config = new EventRegistrationConfig(
@@ -112,7 +124,7 @@ final class WaitingListPromotionTest extends TestCase
         $event = UserUnregisteredFromEvent::create(
             registrationId: $confirmed1->id()->value,
             eventId: $eventId,
-            userId: 'user-1',
+            userId: $this->users['user-1'],
             previousState: RegistrationState::Confirmed,
         );
 
@@ -131,7 +143,7 @@ final class WaitingListPromotionTest extends TestCase
 
     public function test_updates_waiting_list_positions_after_promotion(): void
     {
-        $eventId = 'test-event-'.uniqid();
+        $eventId = EventModel::factory()->create()->id;
 
         // Create event config
         $config = new EventRegistrationConfig(
@@ -158,12 +170,12 @@ final class WaitingListPromotionTest extends TestCase
         $this->waitingListService->promoteNext($eventId);
 
         // Verify promoted user
-        $promoted = $this->registrationRepository->findByUserAndEvent('user-2', $eventId);
+        $promoted = $this->registrationRepository->findByUserAndEvent($this->users['user-2'], $eventId);
         $this->assertEquals(RegistrationState::Confirmed, $promoted->state());
 
         // Verify remaining positions were recalculated
-        $remaining2 = $this->registrationRepository->findByUserAndEvent('user-3', $eventId);
-        $remaining3 = $this->registrationRepository->findByUserAndEvent('user-4', $eventId);
+        $remaining2 = $this->registrationRepository->findByUserAndEvent($this->users['user-3'], $eventId);
+        $remaining3 = $this->registrationRepository->findByUserAndEvent($this->users['user-4'], $eventId);
 
         $this->assertEquals(1, $remaining2->position()); // Was 2, now 1
         $this->assertEquals(2, $remaining3->position()); // Was 3, now 2
@@ -171,7 +183,7 @@ final class WaitingListPromotionTest extends TestCase
 
     public function test_does_not_promote_when_cancellation_was_from_waiting_list(): void
     {
-        $eventId = 'test-event-'.uniqid();
+        $eventId = EventModel::factory()->create()->id;
 
         // Create event config
         $config = new EventRegistrationConfig(
@@ -194,7 +206,7 @@ final class WaitingListPromotionTest extends TestCase
         $event = UserUnregisteredFromEvent::create(
             registrationId: $waiting1->id()->value,
             eventId: $eventId,
-            userId: 'user-2',
+            userId: $this->users['user-2'],
             previousState: RegistrationState::WaitingList, // Key: was on waiting list
         );
 
@@ -202,7 +214,7 @@ final class WaitingListPromotionTest extends TestCase
         $listener->handle($event);
 
         // Verify user-3 was NOT promoted (still on waiting list)
-        $user3 = $this->registrationRepository->findByUserAndEvent('user-3', $eventId);
+        $user3 = $this->registrationRepository->findByUserAndEvent($this->users['user-3'], $eventId);
         $this->assertEquals(RegistrationState::WaitingList, $user3->state());
     }
 
@@ -215,7 +227,7 @@ final class WaitingListPromotionTest extends TestCase
         return new EventRegistration(
             id: EventRegistrationId::generate(),
             eventId: $eventId,
-            userId: $userId,
+            userId: $this->users[$userId],
             state: $state,
             position: $position,
         );
