@@ -7,6 +7,7 @@ namespace Modules\EventRegistrations\Tests\Feature\Filament;
 use App\Filament\Resources\EventResource\Pages\EditEvent;
 use App\Infrastructure\Persistence\Eloquent\Models\EventModel;
 use App\Infrastructure\Persistence\Eloquent\Models\UserModel;
+use Livewire\Features\SupportTesting\Testable;
 use Livewire\Livewire;
 use Modules\EventRegistrations\Domain\Enums\RegistrationState;
 use Modules\EventRegistrations\EventRegistrationsServiceProvider;
@@ -96,7 +97,7 @@ final class EventRegistrationsPanelTest extends ModuleTestCase
             ->callTableAction('export')
             ->assertFileDownloaded("inscripciones-{$this->event->slug}.csv");
 
-        $csv = base64_decode((string) data_get($component->effects, 'download.content'));
+        $csv = $this->downloadedContent($component);
 
         $this->assertStringStartsWith("\u{FEFF}", $csv);
         $this->assertStringContainsString(__('event-registrations::messages.fields.email'), $csv);
@@ -119,7 +120,7 @@ final class EventRegistrationsPanelTest extends ModuleTestCase
         $component = Livewire::test(RegistrationsRelationManager::class, ['ownerRecord' => $this->event, 'pageClass' => EditEvent::class])
             ->callTableAction('export');
 
-        $csv = base64_decode((string) data_get($component->effects, 'download.content'));
+        $csv = $this->downloadedContent($component);
         $rows = array_map(fn (string $line): array => str_getcsv($line, escape: ''), array_values(array_filter(explode("\n", $csv))));
 
         $this->assertSame('\'=HYPERLINK("http://x")', $rows[1][0]);
@@ -153,5 +154,17 @@ final class EventRegistrationsPanelTest extends ModuleTestCase
         $this->actingAs(UserModel::factory()->create());
 
         $this->assertFalse(RegistrationStatsWidget::canView());
+    }
+
+    /**
+     * Content of the file the component sent for download (Livewire keeps it base64 encoded in its effects).
+     *
+     * @param  Testable<RegistrationsRelationManager>  $component
+     */
+    private function downloadedContent(Testable $component): string
+    {
+        $content = data_get($component->__get('effects'), 'download.content');
+
+        return base64_decode(is_string($content) ? $content : '');
     }
 }
