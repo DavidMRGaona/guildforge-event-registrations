@@ -144,18 +144,30 @@ final class RegistrationsRelationManager extends RelationManager
             ], escape: '');
 
             foreach ($registrations as $registration) {
-                fputcsv($output, [
+                fputcsv($output, array_map(self::neutraliseCsvFormula(...), [
                     $registration->user->name,
                     $registration->user->email,
                     $registration->state->label(),
                     $registration->position,
                     $registration->confirmed_at?->format('d/m/Y H:i'),
                     $registration->created_at?->format('d/m/Y H:i'),
-                ], escape: '');
+                ]), escape: '');
             }
 
             fclose($output);
         }, "inscripciones-{$event->slug}.csv", ['Content-Type' => 'text/csv; charset=UTF-8']);
+    }
+
+    /**
+     * Prefix values a spreadsheet would run as a formula (CSV injection) with a single quote.
+     */
+    private static function neutraliseCsvFormula(string|int|null $value): string|int|null
+    {
+        if (is_string($value) && preg_match('/^[=+\-@\t\r]/', $value) === 1) {
+            return "'".$value;
+        }
+
+        return $value;
     }
 
     public function table(Table $table): Table

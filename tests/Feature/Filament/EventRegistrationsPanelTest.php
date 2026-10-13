@@ -106,6 +106,26 @@ final class EventRegistrationsPanelTest extends ModuleTestCase
         $this->assertStringNotContainsString('outsider@example.com', $csv);
     }
 
+    public function test_export_neutralises_values_that_spreadsheets_would_run_as_formulas(): void
+    {
+        EventRegistrationConfigModel::create(['event_id' => $this->event->id, 'registration_enabled' => true]);
+        $attendee = UserModel::factory()->create(['name' => '=HYPERLINK("http://x")', 'email' => 'formula@example.com']);
+        EventRegistrationModel::create([
+            'event_id' => $this->event->id,
+            'user_id' => $attendee->id,
+            'state' => RegistrationState::Confirmed,
+        ]);
+
+        $component = Livewire::test(RegistrationsRelationManager::class, ['ownerRecord' => $this->event, 'pageClass' => EditEvent::class])
+            ->callTableAction('export');
+
+        $csv = base64_decode((string) data_get($component->effects, 'download.content'));
+        $rows = array_map(fn (string $line): array => str_getcsv($line, escape: ''), array_values(array_filter(explode("\n", $csv))));
+
+        $this->assertSame('\'=HYPERLINK("http://x")', $rows[1][0]);
+        $this->assertSame('formula@example.com', $rows[1][1]);
+    }
+
     public function test_export_is_hidden_without_the_export_permission(): void
     {
         EventRegistrationConfigModel::create(['event_id' => $this->event->id, 'registration_enabled' => true]);
