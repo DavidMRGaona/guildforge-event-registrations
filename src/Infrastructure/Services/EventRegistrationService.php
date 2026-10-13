@@ -9,6 +9,7 @@ use Modules\EventRegistrations\Application\DTOs\EventRegistrationResponseDTO;
 use Modules\EventRegistrations\Application\DTOs\RegisterToEventDTO;
 use Modules\EventRegistrations\Application\DTOs\UpdateRegistrationConfigDTO;
 use Modules\EventRegistrations\Application\Services\EventRegistrationServiceInterface;
+use Modules\EventRegistrations\Application\Services\MembershipCheckerInterface;
 use Modules\EventRegistrations\Application\Services\WaitingListServiceInterface;
 use Modules\EventRegistrations\Domain\Entities\EventRegistration;
 use Modules\EventRegistrations\Domain\Entities\EventRegistrationConfig;
@@ -20,6 +21,7 @@ use Modules\EventRegistrations\Domain\Events\UserUnregisteredFromEvent;
 use Modules\EventRegistrations\Domain\Exceptions\AlreadyRegisteredException;
 use Modules\EventRegistrations\Domain\Exceptions\CannotCancelRegistrationException;
 use Modules\EventRegistrations\Domain\Exceptions\EventFullException;
+use Modules\EventRegistrations\Domain\Exceptions\MembersOnlyException;
 use Modules\EventRegistrations\Domain\Exceptions\RegistrationClosedException;
 use Modules\EventRegistrations\Domain\Exceptions\RegistrationNotFoundException;
 use Modules\EventRegistrations\Domain\Repositories\EventRegistrationConfigRepositoryInterface;
@@ -32,6 +34,7 @@ final readonly class EventRegistrationService implements EventRegistrationServic
         private EventRegistrationRepositoryInterface $registrationRepository,
         private EventRegistrationConfigRepositoryInterface $configRepository,
         private WaitingListServiceInterface $waitingListService,
+        private MembershipCheckerInterface $membershipChecker,
     ) {}
 
     public function register(RegisterToEventDTO $dto): EventRegistrationResponseDTO
@@ -53,6 +56,11 @@ final readonly class EventRegistrationService implements EventRegistrationServic
                 throw RegistrationClosedException::notYetOpen($dto->eventId);
             }
             throw RegistrationClosedException::alreadyClosed($dto->eventId);
+        }
+
+        // Members-only events, checked before the waiting list is considered
+        if ($config->isMembersOnly() && ! $this->membershipChecker->isMember($dto->userId)) {
+            throw MembersOnlyException::membersOnly($dto->eventId);
         }
 
         // Check capacity

@@ -103,7 +103,7 @@ return [
         'requires_payment' => 'Requiere pago',
         'requires_payment_help' => 'El usuario debe realizar el pago para confirmar la inscripción',
         'members_only' => 'Solo socios',
-        'members_only_help' => 'Solo los socios pueden inscribirse',
+        'members_only_help' => 'Solo pueden inscribirse los usuarios con el rol Socio (member)',
         'messages' => 'Mensajes',
         'confirmation_message' => 'Mensaje de confirmación',
         'confirmation_message_help' => 'Mensaje personalizado que se incluirá en el email de confirmación',
@@ -126,6 +126,7 @@ return [
         'not_found' => 'Inscripción no encontrada',
         'cannot_cancel' => 'No se puede cancelar la inscripción',
         'unauthenticated' => 'Debes iniciar sesión',
+        'members_only' => 'Solo los socios pueden inscribirse en este evento',
     ],
 
     // Success

@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Event;
 use Inertia\Inertia;
 use Livewire\Livewire;
 use Modules\EventRegistrations\Application\Services\EventRegistrationServiceInterface;
+use Modules\EventRegistrations\Application\Services\MembershipCheckerInterface;
 use Modules\EventRegistrations\Application\Services\RegistrationNotificationServiceInterface;
 use Modules\EventRegistrations\Application\Services\RegistrationQueryServiceInterface;
 use Modules\EventRegistrations\Application\Services\WaitingListServiceInterface;
@@ -37,6 +38,7 @@ use Modules\EventRegistrations\Infrastructure\Persistence\Eloquent\Repositories\
 use Modules\EventRegistrations\Infrastructure\Services\EventRegistrationService;
 use Modules\EventRegistrations\Infrastructure\Services\RegistrationNotificationService;
 use Modules\EventRegistrations\Infrastructure\Services\RegistrationQueryService;
+use Modules\EventRegistrations\Infrastructure\Services\RoleMembershipChecker;
 use Modules\EventRegistrations\Infrastructure\Services\WaitingListService;
 use Modules\EventRegistrations\Listeners\PromoteFromWaitingListOnCancellation;
 use Modules\EventRegistrations\Listeners\SendRegistrationConfirmedEmail;
@@ -89,6 +91,11 @@ final class EventRegistrationsServiceProvider extends ModuleServiceProvider
         $this->app->bind(
             RegistrationNotificationServiceInterface::class,
             RegistrationNotificationService::class
+        );
+
+        $this->app->bind(
+            MembershipCheckerInterface::class,
+            RoleMembershipChecker::class
         );
     }
 
