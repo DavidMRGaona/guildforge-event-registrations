@@ -7,7 +7,5 @@ return [
     'default_max_participants' => '15',
     'default_max_waiting_list' => '0',
     'send_confirmation_email' => true,
-    'send_waiting_list_email' => true,
     'send_promotion_email' => true,
-    'send_cancellation_email' => true,
 ];

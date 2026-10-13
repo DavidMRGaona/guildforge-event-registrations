@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\EventRegistrations\Tests\Feature\Filament;
 
+use App\Filament\Pages\ModuleSettingsPage;
 use App\Filament\Resources\EventResource\Pages\EditEvent;
 use App\Infrastructure\Persistence\Eloquent\Models\EventModel;
 use App\Infrastructure\Persistence\Eloquent\Models\UserModel;
@@ -154,6 +155,34 @@ final class EventRegistrationsPanelTest extends ModuleTestCase
         $this->actingAs(UserModel::factory()->create());
 
         $this->assertFalse(RegistrationStatsWidget::canView());
+    }
+
+    public function test_the_settings_form_offers_only_the_emails_the_module_sends(): void
+    {
+        Livewire::test(ModuleSettingsPage::class, ['module' => 'event-registrations'])
+            ->assertOk()
+            ->assertFormFieldExists('send_registration_email')
+            ->assertFormFieldExists('send_confirmation_email')
+            ->assertFormFieldExists('send_promotion_email')
+            ->assertFormFieldDoesNotExist('send_waiting_list_email')
+            ->assertFormFieldDoesNotExist('send_cancellation_email')
+            ->assertFormFieldDoesNotExist('send_rejection_email');
+    }
+
+    public function test_settings_saved_with_the_removed_email_toggles_still_load(): void
+    {
+        config()->set('modules.settings.event-registrations', [
+            'default_registration_enabled' => true,
+            'send_promotion_email' => false,
+            'send_waiting_list_email' => true,
+            'send_cancellation_email' => true,
+            'send_rejection_email' => true,
+        ]);
+
+        Livewire::test(ModuleSettingsPage::class, ['module' => 'event-registrations'])
+            ->assertOk()
+            ->assertSet('data.default_registration_enabled', true)
+            ->assertSet('data.send_promotion_email', false);
     }
 
     /**

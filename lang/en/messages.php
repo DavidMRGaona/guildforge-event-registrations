@@ -213,10 +213,7 @@ return [
         'default_max_waiting_list' => 'Default maximum on waiting list',
         'emails' => 'Emails',
         'send_confirmation_email' => 'Send confirmation email',
-        'send_waiting_list_email' => 'Send waiting list email',
         'send_promotion_email' => 'Send promotion email',
-        'send_cancellation_email' => 'Send cancellation email',
         'send_registration_email' => 'Send registration email',
-        'send_rejection_email' => 'Send rejection email',
     ],
 ];

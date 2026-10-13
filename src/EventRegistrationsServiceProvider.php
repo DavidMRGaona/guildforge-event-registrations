@@ -370,17 +370,8 @@ final class EventRegistrationsServiceProvider extends ModuleServiceProvider
                     Toggle::make('send_confirmation_email')
                         ->label(__('event-registrations::messages.settings.send_confirmation_email'))
                         ->default(true),
-                    Toggle::make('send_waiting_list_email')
-                        ->label(__('event-registrations::messages.settings.send_waiting_list_email'))
-                        ->default(true),
                     Toggle::make('send_promotion_email')
                         ->label(__('event-registrations::messages.settings.send_promotion_email'))
-                        ->default(true),
-                    Toggle::make('send_cancellation_email')
-                        ->label(__('event-registrations::messages.settings.send_cancellation_email'))
-                        ->default(true),
-                    Toggle::make('send_rejection_email')
-                        ->label(__('event-registrations::messages.settings.send_rejection_email'))
                         ->default(true),
                 ]),
         ];

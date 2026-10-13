@@ -213,10 +213,7 @@ return [
         'default_max_waiting_list' => 'Máximo en lista de espera por defecto',
         'emails' => 'Emails',
         'send_confirmation_email' => 'Enviar email de confirmación',
-        'send_waiting_list_email' => 'Enviar email de lista de espera',
         'send_promotion_email' => 'Enviar email de promoción',
-        'send_cancellation_email' => 'Enviar email de cancelación',
         'send_registration_email' => 'Enviar email de inscripción',
-        'send_rejection_email' => 'Enviar email de rechazo',
     ],
 ];
