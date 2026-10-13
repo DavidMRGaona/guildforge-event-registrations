@@ -82,11 +82,21 @@ Se editan en el panel: **Módulos** → Inscripciones a eventos → **Configurar
 | Máximo de participantes por defecto | Aforo inicial (vacío = sin límite) |
 | Máximo en lista de espera por defecto | Límite inicial de la lista de espera (vacío o 0 = sin límite) |
 | Enviar email de inscripción | Email al inscribirse (confirmada, pendiente o en lista de espera) |
-| Enviar email de confirmación | Email cuando se confirma una inscripción desde el panel |
+| Enviar email de confirmación | Email de inscripción confirmada (ver [Emails](#emails)) |
 | Enviar email de promoción | Email cuando se libera una plaza y alguien pasa de la lista de espera a confirmado |
-| Enviar email de lista de espera, de cancelación y de rechazo | Sin efecto en esta versión: estos emails no se envían |
 
 Los ajustes se guardan en el `config/settings.php` del módulo, y una actualización con ZIP sustituye ese archivo: conviene revisarlos después de cada actualización.
+
+### Emails
+
+| Email | Destinatario | Cuándo |
+|-------|--------------|--------|
+| Inscripción recibida | Usuario | Al inscribirse; el asunto y el texto dicen si queda confirmada, pendiente o en lista de espera (con su posición) |
+| Inscripción confirmada | Usuario | Cuando se confirma desde el panel; también en las confirmaciones automáticas (al inscribirse o por promoción) si el email de inscripción o el de promoción está desactivado |
+| Plaza disponible | Usuario | Cuando pasa de la lista de espera a confirmado |
+| Nueva inscripción | Email de notificación del evento | Con cada inscripción, si el evento tiene ese email configurado |
+
+No se envían emails de eventos ya terminados.
 
 ### Widget del dashboard
 
