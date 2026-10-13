@@ -26,6 +26,7 @@ final class SendRegistrationConfirmedEmailTest extends TestCase
 
         $notificationService = $this->createMock(RegistrationNotificationServiceInterface::class);
         $notificationService
+            ->expects($this->once())
             ->method('confirmationAlreadyAnnounced')
             ->with(ConfirmationSource::Manual)
             ->willReturn(false);
@@ -47,6 +48,7 @@ final class SendRegistrationConfirmedEmailTest extends TestCase
 
         $notificationService = $this->createMock(RegistrationNotificationServiceInterface::class);
         $notificationService
+            ->expects($this->once())
             ->method('confirmationAlreadyAnnounced')
             ->with(ConfirmationSource::Registration)
             ->willReturn(true);
