@@ -12,6 +12,7 @@ use App\Infrastructure\Persistence\Eloquent\Models\EventModel;
 use App\Modules\ModuleServiceProvider;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
+use Filament\Widgets\Widget;
 use Illuminate\Support\Facades\Event;
 use Inertia\Inertia;
 use Livewire\Livewire;
@@ -290,6 +291,18 @@ final class EventRegistrationsServiceProvider extends ModuleServiceProvider
                 module: 'event-registrations',
                 roles: ['editor'],
             ),
+        ];
+    }
+
+    /**
+     * Dashboard widgets, discovered by the admin panel.
+     *
+     * @return array<class-string<Widget>>
+     */
+    public function registerFilamentWidgets(): array
+    {
+        return [
+            RegistrationStatsWidget::class,
         ];
     }
 

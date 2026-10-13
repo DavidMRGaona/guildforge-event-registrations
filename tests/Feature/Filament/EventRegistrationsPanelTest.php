@@ -9,6 +9,7 @@ use App\Infrastructure\Persistence\Eloquent\Models\EventModel;
 use App\Infrastructure\Persistence\Eloquent\Models\UserModel;
 use Livewire\Livewire;
 use Modules\EventRegistrations\Domain\Enums\RegistrationState;
+use Modules\EventRegistrations\EventRegistrationsServiceProvider;
 use Modules\EventRegistrations\Filament\Pages\EventRegistrationConfigPage;
 use Modules\EventRegistrations\Filament\RelationManagers\RegistrationConfigRelationManager;
 use Modules\EventRegistrations\Filament\RelationManagers\RegistrationsRelationManager;
@@ -112,5 +113,25 @@ final class EventRegistrationsPanelTest extends ModuleTestCase
 
         Livewire::test(RegistrationsRelationManager::class, ['ownerRecord' => $this->event, 'pageClass' => EditEvent::class])
             ->assertTableActionHidden('export');
+    }
+
+    public function test_the_stats_widget_is_registered_on_the_dashboard(): void
+    {
+        $this->assertContains(
+            RegistrationStatsWidget::class,
+            (new EventRegistrationsServiceProvider($this->app))->registerFilamentWidgets(),
+        );
+    }
+
+    public function test_the_stats_widget_is_visible_to_users_who_can_list_registrations(): void
+    {
+        $this->assertTrue(RegistrationStatsWidget::canView());
+    }
+
+    public function test_the_stats_widget_is_hidden_without_permission_to_list_registrations(): void
+    {
+        $this->actingAs(UserModel::factory()->create());
+
+        $this->assertFalse(RegistrationStatsWidget::canView());
     }
 }
