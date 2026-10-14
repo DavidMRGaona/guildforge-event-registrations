@@ -1,0 +1,93 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Modules\EventRegistrations\Tests\Integration\Services;
+
+use App\Application\Authorization\Services\AssociationMembershipServiceInterface;
+use App\Application\Services\SettingsServiceInterface;
+use App\Domain\Enums\UserRole;
+use App\Infrastructure\Persistence\Eloquent\Models\RoleModel;
+use App\Infrastructure\Persistence\Eloquent\Models\UserModel;
+use Illuminate\Support\Str;
+use Modules\EventRegistrations\Application\Services\MembershipCheckerInterface;
+use Modules\EventRegistrations\Infrastructure\Services\AssociationMembershipChecker;
+use Tests\Support\Modules\ModuleTestCase;
+
+final class AssociationMembershipCheckerTest extends ModuleTestCase
+{
+    protected ?string $moduleName = 'event-registrations';
+
+    protected bool $autoEnableModule = true;
+
+    public function test_the_checker_is_bound_to_the_association_membership_implementation(): void
+    {
+        $this->assertInstanceOf(AssociationMembershipChecker::class, $this->app->make(MembershipCheckerInterface::class));
+    }
+
+    public function test_a_user_with_the_association_member_role_is_a_member(): void
+    {
+        $user = $this->userWithRole(AssociationMembershipServiceInterface::DEFAULT_ROLE);
+
+        $this->assertTrue($this->checker()->isMember((string) $user->id));
+    }
+
+    public function test_a_user_with_only_the_member_role_is_not_a_member(): void
+    {
+        $user = $this->userWithRole(UserRole::Member->value);
+
+        $this->assertFalse($this->checker()->isMember((string) $user->id));
+    }
+
+    public function test_an_admin_without_the_association_member_role_is_not_a_member(): void
+    {
+        $user = $this->userWithRole(UserRole::Admin->value);
+
+        $this->assertFalse($this->checker()->isMember((string) $user->id));
+    }
+
+    public function test_the_configured_association_member_role_is_respected(): void
+    {
+        app(SettingsServiceInterface::class)->set(AssociationMembershipServiceInterface::SETTING_KEY, 'junta');
+        $board = $this->userWithRole('junta');
+        $socio = $this->userWithRole(AssociationMembershipServiceInterface::DEFAULT_ROLE);
+
+        $this->assertTrue($this->checker()->isMember((string) $board->id));
+        $this->assertFalse($this->checker()->isMember((string) $socio->id));
+    }
+
+    public function test_a_user_without_roles_is_not_a_member(): void
+    {
+        $user = UserModel::factory()->create();
+        $user->roles()->detach();
+
+        $this->assertFalse($this->checker()->isMember((string) $user->id));
+    }
+
+    public function test_an_unknown_user_is_not_a_member(): void
+    {
+        $this->assertFalse($this->checker()->isMember(Str::uuid()->toString()));
+    }
+
+    public function test_the_legacy_role_column_does_not_make_a_user_a_member(): void
+    {
+        $user = UserModel::factory()->create(['role' => UserRole::Member]);
+        $user->roles()->detach();
+
+        $this->assertFalse($this->checker()->isMember((string) $user->id));
+    }
+
+    private function checker(): MembershipCheckerInterface
+    {
+        return $this->app->make(MembershipCheckerInterface::class);
+    }
+
+    private function userWithRole(string $roleName): UserModel
+    {
+        $role = RoleModel::firstOrCreate(['name' => $roleName], ['display_name' => ucfirst($roleName)]);
+        $user = UserModel::factory()->create();
+        $user->roles()->attach($role->id);
+
+        return $user;
+    }
+}

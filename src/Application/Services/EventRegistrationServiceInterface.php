@@ -10,6 +10,7 @@ use Modules\EventRegistrations\Application\DTOs\UpdateRegistrationConfigDTO;
 use Modules\EventRegistrations\Domain\Exceptions\AlreadyRegisteredException;
 use Modules\EventRegistrations\Domain\Exceptions\CannotCancelRegistrationException;
 use Modules\EventRegistrations\Domain\Exceptions\EventFullException;
+use Modules\EventRegistrations\Domain\Exceptions\MembersOnlyException;
 use Modules\EventRegistrations\Domain\Exceptions\RegistrationClosedException;
 use Modules\EventRegistrations\Domain\Exceptions\RegistrationNotFoundException;
 
@@ -21,8 +22,16 @@ interface EventRegistrationServiceInterface
      * @throws RegistrationClosedException
      * @throws EventFullException
      * @throws AlreadyRegisteredException
+     * @throws MembersOnlyException
      */
     public function register(RegisterToEventDTO $dto): EventRegistrationResponseDTO;
+
+    /**
+     * Whether the user meets the members-only requirement of the event: always true when the
+     * event is open to everyone; for a members-only event, only association members do
+     * (a guest, null, never does). The same check register() enforces.
+     */
+    public function meetsMembersOnly(string $eventId, ?string $userId): bool;
 
     /**
      * Cancel a user's registration.

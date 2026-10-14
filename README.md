@@ -8,14 +8,14 @@ Inscripciones a los eventos de GuildForge: aforo, lista de espera con promoción
 - **Aforo y lista de espera**: máximo de participantes y de plazas en espera; cuando un inscrito cancela, la primera persona de la lista pasa a confirmada.
 - **Confirmación manual**: las inscripciones quedan pendientes hasta que alguien las confirma desde el panel.
 - **Fechas**: apertura y cierre de inscripciones y fecha límite para cancelar.
-- **Solo socios**: si se activa en el evento, solo pueden inscribirse (o entrar en la lista de espera) los usuarios con el rol `member` del core. El resto recibe "Solo los socios pueden inscribirse en este evento" (HTTP 403).
+- **Solo socios**: si se activa en el evento, solo pueden inscribirse (o entrar en la lista de espera) los socios de la asociación, es decir, los usuarios con el rol de socio del core. La ficha del evento no ofrece la inscripción a quien no lo es (el botón muestra "Solo para socios") y el servidor la rechaza igualmente con "Solo los socios pueden inscribirse en este evento" (HTTP 403).
 - **Emails**: inscripción recibida (con la posición si queda en lista de espera), confirmación desde el panel y plaza liberada; aviso opcional a un email del organizador. No se envían emails de eventos ya terminados.
 - **Exportación**: descarga en CSV de las inscripciones de un evento.
 - **Widget del dashboard**: totales de inscripciones confirmadas, en lista de espera y pendientes.
 
 ## Requisitos
 
-- GuildForge core `^3.0`
+- GuildForge core `^3.8` (rol de socio configurable)
 - PHP >= 8.5, Laravel >= 13, Filament 5
 
 El core rechaza el módulo si no se cumplen (`module.json` → `requires`).
@@ -63,12 +63,14 @@ La acción **Exportar** de la pestaña **Inscripciones** descarga `inscripciones
 | Cierre de inscripciones | Hasta cuándo se aceptan inscripciones |
 | Fecha límite de cancelación | Hasta cuándo puede cancelar el usuario |
 | Requiere confirmación manual | Las inscripciones quedan pendientes hasta que se confirman |
-| Solo socios | Solo pueden inscribirse los usuarios con el rol `member` |
+| Solo socios | Solo pueden inscribirse los socios (rol de socio del core) |
 | Email de notificación | Recibe un aviso con cada inscripción nueva |
 
 ### Quién es socio
 
-Un socio es un usuario con el rol `member` del core. Un administrador puede asignarlo en **Usuarios** (sección de roles); el módulo de socios (`memberships`) también puede asignarlo y retirarlo si tiene activada la asignación de rol. Si en ese módulo se cambia el nombre del rol, este módulo sigue comprobando `member`.
+Un socio es un usuario con el rol de socio del core, el que se elige en **Configuración del sitio** → **Autenticación** (`socio` por defecto). El rol `member`, que tiene cualquier usuario registrado, no basta. El módulo se lo pregunta al core en cada comprobación, así que un cambio en ese ajuste se aplica sin tocar el módulo. Los administradores no tienen excepción: sin el rol de socio tampoco pueden inscribirse en un evento solo para socios.
+
+La comprobación se hace en dos sitios con la misma regla: al inscribirse (el servidor responde 403) y en el estado del evento (`meets_members_only`), que la ficha usa para desactivar el botón. Los visitantes sin sesión siguen viendo el botón, que los lleva a iniciar sesión. Quien ya tenía una inscripción activa la conserva y puede cancelarla aunque haya perdido el rol de socio.
 
 ### Ajustes del módulo
 
@@ -122,7 +124,7 @@ Son rutas web (sesión y CSRF) que responden JSON.
 
 | Método | Ruta | Descripción |
 |--------|------|-------------|
-| `GET` | `/eventos/{eventId}/inscripcion/estado` | Estado público de las inscripciones del evento |
+| `GET` | `/eventos/{eventId}/inscripcion/estado` | Estado público de las inscripciones del evento; `meets_members_only` indica si el visitante actual cumple el requisito de solo socios (siempre `true` si el evento está abierto a todos, `false` sin sesión en un evento solo para socios) |
 | `GET` | `/eventos/{eventId}/inscripcion` | Inscripción del usuario (requiere sesión) |
 | `POST` | `/eventos/{eventId}/inscripcion` | Inscribirse (requiere sesión; `notes`, `form_data`) |
 | `DELETE` | `/eventos/{eventId}/inscripcion` | Cancelar la inscripción (requiere sesión) |
@@ -177,6 +179,7 @@ src/modules/event-registrations/
 ├── resources/
 │   ├── css/                # Estilos del módulo
 │   ├── js/components/      # Componentes Vue
+│   ├── js/locales/         # Textos de la ficha del evento (es, en)
 │   ├── js/types/           # Tipos TypeScript
 │   └── views/filament/     # Vistas Blade del panel
 ├── routes/web.php          # Rutas JSON

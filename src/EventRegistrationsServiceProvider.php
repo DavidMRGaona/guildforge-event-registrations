@@ -36,10 +36,10 @@ use Modules\EventRegistrations\Infrastructure\Persistence\Eloquent\Models\EventR
 use Modules\EventRegistrations\Infrastructure\Persistence\Eloquent\Models\EventRegistrationModel;
 use Modules\EventRegistrations\Infrastructure\Persistence\Eloquent\Repositories\EloquentEventRegistrationConfigRepository;
 use Modules\EventRegistrations\Infrastructure\Persistence\Eloquent\Repositories\EloquentEventRegistrationRepository;
+use Modules\EventRegistrations\Infrastructure\Services\AssociationMembershipChecker;
 use Modules\EventRegistrations\Infrastructure\Services\EventRegistrationService;
 use Modules\EventRegistrations\Infrastructure\Services\RegistrationNotificationService;
 use Modules\EventRegistrations\Infrastructure\Services\RegistrationQueryService;
-use Modules\EventRegistrations\Infrastructure\Services\RoleMembershipChecker;
 use Modules\EventRegistrations\Infrastructure\Services\WaitingListService;
 use Modules\EventRegistrations\Listeners\PromoteFromWaitingListOnCancellation;
 use Modules\EventRegistrations\Listeners\SendRegistrationConfirmedEmail;
@@ -96,7 +96,7 @@ final class EventRegistrationsServiceProvider extends ModuleServiceProvider
 
         $this->app->bind(
             MembershipCheckerInterface::class,
-            RoleMembershipChecker::class
+            AssociationMembershipChecker::class
         );
     }
 
