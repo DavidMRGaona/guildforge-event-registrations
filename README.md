@@ -49,7 +49,7 @@ Al editar un evento aparecen dos pestañas:
 - **Configuración** (siempre visible): opciones de inscripción del evento.
 - **Inscripciones** (visible si las inscripciones están habilitadas o el evento ya tiene inscripciones): listado con filtro por estado y las acciones confirmar, rechazar, mover a lista de espera, editar y eliminar; en bloque, confirmar, rechazar y eliminar.
 
-La acción **Exportar** de la pestaña **Inscripciones** descarga `inscripciones-<slug>.csv` con nombre, email, estado, posición, fecha de confirmación y fecha de inscripción. El archivo va en UTF-8 con BOM para que las hojas de cálculo respeten los acentos, y los valores que una hoja de cálculo ejecutaría como fórmula (los que empiezan por `=`, `+`, `-`, `@`, tabulador o retorno de carro) se exportan precedidos de un apóstrofo. Solo la ven quienes tienen el permiso `registrations.export`.
+La acción **Exportar** de la pestaña **Inscripciones** descarga `inscripciones-<slug>.csv` con nombre, email, estado, posición, fecha de confirmación y fecha de inscripción, también de los usuarios desactivados. El archivo va en UTF-8 con BOM para que las hojas de cálculo respeten los acentos y usa `;` como separador (el que espera Excel con la configuración regional española). Los valores que una hoja de cálculo ejecutaría como fórmula (los que empiezan por `=`, `+`, `-`, `@`, tabulador o retorno de carro) se exportan precedidos de un apóstrofo. Solo la ven quienes tienen el permiso `registrations.export`.
 
 ### Configuración por evento
 
