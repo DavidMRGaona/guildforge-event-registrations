@@ -9,6 +9,8 @@ use FilesystemIterator;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
+use PHPUnit\Framework\AssertionFailedError;
+use PHPUnit\Framework\Attributes\DataProvider;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use SplFileInfo;
@@ -22,7 +24,8 @@ use Tests\Support\Modules\ModuleTestCase;
  * not exist (such as an /api/ path) would only show up as a 404 in the browser.
  *
  * URLs must be string literals so they can be checked: `${…}` placeholders are filled with
- * a UUID and the query string is ignored.
+ * a UUID and the query string is ignored. The method too: when a call takes options, they
+ * must be an object literal whose `method` (if any) is a string literal, or the test fails.
  */
 final class FrontendRequestUrlsTest extends ModuleTestCase
 {
@@ -84,6 +87,70 @@ final class FrontendRequestUrlsTest extends ModuleTestCase
         }
     }
 
+    public function test_the_profile_section_request_is_found(): void
+    {
+        $reached = [];
+
+        foreach ($this->frontendRequests() as $request) {
+            if (str_ends_with($request['file'], 'components/UserRegistrations.vue')) {
+                $reached[] = $request['method'] . ' ' . $this->matchingRouteName($request['method'], $request['url']);
+            }
+        }
+
+        $this->assertContains('GET event-registrations.my-registrations', $reached);
+    }
+
+    /**
+     * @return array<string, array{string, string}>
+     */
+    public static function readableMethodProvider(): array
+    {
+        return [
+            'no options' => ["fetch('/eventos')", 'GET'],
+            'options without a method' => ["fetch('/eventos', { headers: { Accept: 'application/json' } })", 'GET'],
+            'literal method' => ["fetch('/eventos', { method: 'DELETE' })", 'DELETE'],
+            'nested method in the body is not the request method' => [
+                "fetch('/eventos', { method: 'POST', body: JSON.stringify({ method: 'GET' }) })",
+                'POST',
+            ],
+            'router visit' => ["router.visit('/eventos', { method: 'patch' })", 'PATCH'],
+        ];
+    }
+
+    #[DataProvider('readableMethodProvider')]
+    public function test_the_method_is_read_from_the_top_level_options(string $source, string $method): void
+    {
+        $this->assertSame([['method' => $method, 'url' => '/eventos']], $this->requestsIn($source));
+    }
+
+    /**
+     * @return array<string, array{string}>
+     */
+    public static function unreadableMethodProvider(): array
+    {
+        return [
+            'ternary' => ["fetch('/eventos', { method: isRegistered ? 'DELETE' : 'POST' })"],
+            'variable' => ["fetch('/eventos', { method: verb })"],
+            'shorthand' => ["fetch('/eventos', { method })"],
+            'spread' => ["fetch('/eventos', { ...options })"],
+            'options variable' => ["fetch('/eventos', options)"],
+        ];
+    }
+
+    #[DataProvider('unreadableMethodProvider')]
+    public function test_a_method_that_cannot_be_read_fails_the_check(string $source): void
+    {
+        try {
+            $this->requestsIn($source);
+        } catch (AssertionFailedError $e) {
+            $this->assertStringContainsString('method', $e->getMessage());
+
+            return;
+        }
+
+        $this->fail("A method that cannot be read was taken as GET: {$source}");
+    }
+
     public function test_no_frontend_file_calls_an_api_prefixed_url(): void
     {
         foreach ($this->frontendRequests() as $request) {
@@ -142,7 +209,7 @@ final class FrontendRequestUrlsTest extends ModuleTestCase
                 $arguments = $this->argumentsAfter($source, $match[0][1] + strlen($match[0][0]), $isAssignment);
                 $resolvedMethod = match (true) {
                     $method === '$1' => strtoupper($match[1][0] ?? $this->fail("{$pattern} captures no method")),
-                    $method === null => $this->methodOption($arguments),
+                    $method === null => $this->methodOption($arguments, $match[0][0]),
                     default => $method,
                 };
 
@@ -208,13 +275,77 @@ final class FrontendRequestUrlsTest extends ModuleTestCase
         $this->fail('Unterminated string at offset ' . $start);
     }
 
-    private function methodOption(string $arguments): string
+    /**
+     * The method set in a call's options (its second argument): GET without options or
+     * without `method`. Options that hide the method (a variable, a spread, a `method` that is
+     * not a string literal) fail the test instead of being taken as GET.
+     */
+    private function methodOption(string $arguments, string $call): string
     {
-        if (preg_match('/\bmethod\s*:\s*[\'"`](\w+)[\'"`]/', $arguments, $match) === 1) {
-            return strtoupper($match[1]);
+        $options = trim($this->topLevelParts($arguments)[1] ?? '');
+
+        if ($options === '') {
+            return 'GET';
         }
 
-        return 'GET';
+        if (! str_starts_with($options, '{') || ! str_ends_with($options, '}')) {
+            $this->fail("{$call} must receive its options as an object literal to read the method, got: " . Str::limit($options, 80));
+        }
+
+        $method = 'GET';
+
+        foreach ($this->topLevelParts(substr($options, 1, -1)) as $property) {
+            $property = trim($property);
+
+            if (str_starts_with($property, '...')) {
+                $this->fail("{$call} spreads its options, so the method cannot be read: " . Str::limit($property, 80));
+            }
+
+            if (preg_match('/^[\'"]?method[\'"]?\b/', $property) !== 1) {
+                continue;
+            }
+
+            if (preg_match('/^[\'"]?method[\'"]?\s*:\s*([\'"`])(\w+)\1$/', $property, $match) !== 1) {
+                $this->fail("{$call} must set its method as a string literal, got: " . Str::limit($property, 80));
+            }
+
+            $method = strtoupper($match[2]);
+        }
+
+        return $method;
+    }
+
+    /**
+     * Splits a list (call arguments or object properties) at its top-level commas, skipping
+     * strings and nested brackets.
+     *
+     * @return list<string>
+     */
+    private function topLevelParts(string $text): array
+    {
+        $parts = [];
+        $depth = 0;
+        $start = 0;
+        $length = strlen($text);
+
+        for ($i = 0; $i < $length; $i++) {
+            $char = $text[$i];
+
+            if ($char === '\'' || $char === '"' || $char === '`') {
+                $i = $this->endOfString($text, $i);
+            } elseif (in_array($char, ['(', '[', '{'], true)) {
+                $depth++;
+            } elseif (in_array($char, [')', ']', '}'], true)) {
+                $depth--;
+            } elseif ($char === ',' && $depth === 0) {
+                $parts[] = substr($text, $start, $i - $start);
+                $start = $i + 1;
+            }
+        }
+
+        $parts[] = substr($text, $start);
+
+        return array_values(array_filter($parts, fn (string $part): bool => trim($part) !== ''));
     }
 
     /**
