@@ -15,7 +15,7 @@ Inscripciones a los eventos de GuildForge: aforo, lista de espera con promoción
 
 ## Requisitos
 
-- GuildForge core `^3.0`
+- GuildForge core `^3.8` (rol de socio configurable)
 - PHP >= 8.5, Laravel >= 13, Filament 5
 
 El core rechaza el módulo si no se cumplen (`module.json` → `requires`).
