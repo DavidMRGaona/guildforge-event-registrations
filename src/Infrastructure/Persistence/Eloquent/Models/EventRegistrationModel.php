@@ -25,7 +25,7 @@ use Modules\EventRegistrations\Domain\Enums\RegistrationState;
  * @property \Carbon\Carbon|null $created_at
  * @property \Carbon\Carbon|null $updated_at
  * @property-read EventModel $event
- * @property-read UserModel $user
+ * @property-read UserModel|null $user (null once the user is soft-deleted, unless loaded withTrashed)
  */
 final class EventRegistrationModel extends Model
 {

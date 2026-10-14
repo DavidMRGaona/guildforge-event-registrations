@@ -13,6 +13,7 @@ use Modules\EventRegistrations\Application\Services\RegistrationQueryServiceInte
 use Modules\EventRegistrations\Domain\Exceptions\AlreadyRegisteredException;
 use Modules\EventRegistrations\Domain\Exceptions\CannotCancelRegistrationException;
 use Modules\EventRegistrations\Domain\Exceptions\EventFullException;
+use Modules\EventRegistrations\Domain\Exceptions\MembersOnlyException;
 use Modules\EventRegistrations\Domain\Exceptions\RegistrationClosedException;
 use Modules\EventRegistrations\Domain\Exceptions\RegistrationNotFoundException;
 use Modules\EventRegistrations\Http\Requests\RegisterToEventRequest;
@@ -96,6 +97,11 @@ final class EventRegistrationController extends Controller
                 'message' => __('event-registrations::messages.errors.already_registered'),
                 'error' => $e->getMessage(),
             ], 422);
+        } catch (MembersOnlyException $e) {
+            return response()->json([
+                'message' => __('event-registrations::messages.errors.members_only'),
+                'error' => $e->getMessage(),
+            ], 403);
         }
     }
 

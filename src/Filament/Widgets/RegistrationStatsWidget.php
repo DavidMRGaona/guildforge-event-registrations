@@ -13,6 +13,11 @@ final class RegistrationStatsWidget extends StatsOverviewWidget
 {
     protected static ?int $sort = 5;
 
+    public static function canView(): bool
+    {
+        return auth()->user()?->can('viewAny', EventRegistrationModel::class) ?? false;
+    }
+
     /**
      * @return array<Stat>
      */

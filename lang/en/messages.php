@@ -103,7 +103,7 @@ return [
         'requires_payment' => 'Requires payment',
         'requires_payment_help' => 'User must pay to confirm registration',
         'members_only' => 'Members only',
-        'members_only_help' => 'Only members can register',
+        'members_only_help' => 'Only users with the Member role (member) can register',
         'messages' => 'Messages',
         'confirmation_message' => 'Confirmation message',
         'confirmation_message_help' => 'Custom message to include in the confirmation email',
@@ -118,6 +118,11 @@ return [
         'empty_description' => 'Configure registration settings for this event',
     ],
 
+    // Export
+    'export' => [
+        'deleted_user' => 'Deleted user',
+    ],
+
     // Errors
     'errors' => [
         'registration_closed' => 'Registration is closed',
@@ -126,6 +131,7 @@ return [
         'not_found' => 'Registration not found',
         'cannot_cancel' => 'Cannot cancel registration',
         'unauthenticated' => 'You must log in',
+        'members_only' => 'Only members can register to this event',
     ],
 
     // Success
@@ -212,10 +218,7 @@ return [
         'default_max_waiting_list' => 'Default maximum on waiting list',
         'emails' => 'Emails',
         'send_confirmation_email' => 'Send confirmation email',
-        'send_waiting_list_email' => 'Send waiting list email',
         'send_promotion_email' => 'Send promotion email',
-        'send_cancellation_email' => 'Send cancellation email',
         'send_registration_email' => 'Send registration email',
-        'send_rejection_email' => 'Send rejection email',
     ],
 ];

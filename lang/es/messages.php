@@ -103,7 +103,7 @@ return [
         'requires_payment' => 'Requiere pago',
         'requires_payment_help' => 'El usuario debe realizar el pago para confirmar la inscripción',
         'members_only' => 'Solo socios',
-        'members_only_help' => 'Solo los socios pueden inscribirse',
+        'members_only_help' => 'Solo pueden inscribirse los usuarios con el rol Socio (member)',
         'messages' => 'Mensajes',
         'confirmation_message' => 'Mensaje de confirmación',
         'confirmation_message_help' => 'Mensaje personalizado que se incluirá en el email de confirmación',
@@ -118,6 +118,11 @@ return [
         'empty_description' => 'Configura los ajustes de inscripción para este evento',
     ],
 
+    // Export
+    'export' => [
+        'deleted_user' => 'Usuario eliminado',
+    ],
+
     // Errors
     'errors' => [
         'registration_closed' => 'Las inscripciones están cerradas',
@@ -126,6 +131,7 @@ return [
         'not_found' => 'Inscripción no encontrada',
         'cannot_cancel' => 'No se puede cancelar la inscripción',
         'unauthenticated' => 'Debes iniciar sesión',
+        'members_only' => 'Solo los socios pueden inscribirse en este evento',
     ],
 
     // Success
@@ -212,10 +218,7 @@ return [
         'default_max_waiting_list' => 'Máximo en lista de espera por defecto',
         'emails' => 'Emails',
         'send_confirmation_email' => 'Enviar email de confirmación',
-        'send_waiting_list_email' => 'Enviar email de lista de espera',
         'send_promotion_email' => 'Enviar email de promoción',
-        'send_cancellation_email' => 'Enviar email de cancelación',
         'send_registration_email' => 'Enviar email de inscripción',
-        'send_rejection_email' => 'Enviar email de rechazo',
     ],
 ];

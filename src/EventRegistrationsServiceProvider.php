@@ -12,10 +12,12 @@ use App\Infrastructure\Persistence\Eloquent\Models\EventModel;
 use App\Modules\ModuleServiceProvider;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
+use Filament\Widgets\Widget;
 use Illuminate\Support\Facades\Event;
 use Inertia\Inertia;
 use Livewire\Livewire;
 use Modules\EventRegistrations\Application\Services\EventRegistrationServiceInterface;
+use Modules\EventRegistrations\Application\Services\MembershipCheckerInterface;
 use Modules\EventRegistrations\Application\Services\RegistrationNotificationServiceInterface;
 use Modules\EventRegistrations\Application\Services\RegistrationQueryServiceInterface;
 use Modules\EventRegistrations\Application\Services\WaitingListServiceInterface;
@@ -37,6 +39,7 @@ use Modules\EventRegistrations\Infrastructure\Persistence\Eloquent\Repositories\
 use Modules\EventRegistrations\Infrastructure\Services\EventRegistrationService;
 use Modules\EventRegistrations\Infrastructure\Services\RegistrationNotificationService;
 use Modules\EventRegistrations\Infrastructure\Services\RegistrationQueryService;
+use Modules\EventRegistrations\Infrastructure\Services\RoleMembershipChecker;
 use Modules\EventRegistrations\Infrastructure\Services\WaitingListService;
 use Modules\EventRegistrations\Listeners\PromoteFromWaitingListOnCancellation;
 use Modules\EventRegistrations\Listeners\SendRegistrationConfirmedEmail;
@@ -89,6 +92,11 @@ final class EventRegistrationsServiceProvider extends ModuleServiceProvider
         $this->app->bind(
             RegistrationNotificationServiceInterface::class,
             RegistrationNotificationService::class
+        );
+
+        $this->app->bind(
+            MembershipCheckerInterface::class,
+            RoleMembershipChecker::class
         );
     }
 
@@ -287,6 +295,18 @@ final class EventRegistrationsServiceProvider extends ModuleServiceProvider
     }
 
     /**
+     * Dashboard widgets, discovered by the admin panel.
+     *
+     * @return array<class-string<Widget>>
+     */
+    public function registerFilamentWidgets(): array
+    {
+        return [
+            RegistrationStatsWidget::class,
+        ];
+    }
+
+    /**
      * @return array<string, array{icon?: string, sort?: int}>
      */
     public function registerNavigationGroups(): array
@@ -350,17 +370,8 @@ final class EventRegistrationsServiceProvider extends ModuleServiceProvider
                     Toggle::make('send_confirmation_email')
                         ->label(__('event-registrations::messages.settings.send_confirmation_email'))
                         ->default(true),
-                    Toggle::make('send_waiting_list_email')
-                        ->label(__('event-registrations::messages.settings.send_waiting_list_email'))
-                        ->default(true),
                     Toggle::make('send_promotion_email')
                         ->label(__('event-registrations::messages.settings.send_promotion_email'))
-                        ->default(true),
-                    Toggle::make('send_cancellation_email')
-                        ->label(__('event-registrations::messages.settings.send_cancellation_email'))
-                        ->default(true),
-                    Toggle::make('send_rejection_email')
-                        ->label(__('event-registrations::messages.settings.send_rejection_email'))
                         ->default(true),
                 ]),
         ];

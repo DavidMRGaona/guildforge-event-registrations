@@ -6,6 +6,7 @@ namespace Modules\EventRegistrations\Tests\Integration\Services;
 
 use Illuminate\Support\Facades\Event;
 use Modules\EventRegistrations\Application\DTOs\RegisterToEventDTO;
+use Modules\EventRegistrations\Application\Services\MembershipCheckerInterface;
 use Modules\EventRegistrations\Application\Services\WaitingListServiceInterface;
 use Modules\EventRegistrations\Domain\Entities\EventRegistration;
 use Modules\EventRegistrations\Domain\Entities\EventRegistrationConfig;
@@ -95,6 +96,7 @@ final class RegistrationConfirmedDispatchTest extends TestCase
             $this->registrationRepository,
             $this->configRepository,
             $this->createStub(WaitingListServiceInterface::class),
+            $this->createStub(MembershipCheckerInterface::class),
         );
     }
 }

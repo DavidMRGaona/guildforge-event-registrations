@@ -25,6 +25,7 @@ use Modules\EventRegistrations\Application\Services\EventRegistrationServiceInte
 use Modules\EventRegistrations\Domain\Enums\RegistrationState;
 use Modules\EventRegistrations\Infrastructure\Persistence\Eloquent\Models\EventRegistrationConfigModel;
 use Modules\EventRegistrations\Infrastructure\Persistence\Eloquent\Models\EventRegistrationModel;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 final class RegistrationsRelationManager extends RelationManager
 {
@@ -111,6 +112,66 @@ final class RegistrationsRelationManager extends RelationManager
         return implode(' · ', $parts);
     }
 
+    /**
+     * Download the event's registrations as a CSV file: UTF-8 with BOM, so spreadsheets read accents,
+     * and `;` as separator, which Excel expects with Spanish regional settings. Deactivated
+     * (soft-deleted) users are included.
+     */
+    private function exportCsv(): StreamedResponse
+    {
+        /** @var EventModel $event */
+        $event = $this->getOwnerRecord();
+
+        $registrations = EventRegistrationModel::query()
+            ->with(['user' => fn ($query) => $query->withTrashed()])
+            ->where('event_id', $event->id)
+            ->orderBy('created_at')
+            ->get();
+
+        return response()->streamDownload(function () use ($registrations): void {
+            $output = fopen('php://output', 'wb');
+
+            if ($output === false) {
+                return;
+            }
+
+            fwrite($output, "\u{FEFF}");
+            fputcsv($output, [
+                __('event-registrations::messages.fields.user'),
+                __('event-registrations::messages.fields.email'),
+                __('event-registrations::messages.fields.state'),
+                __('event-registrations::messages.fields.position'),
+                __('event-registrations::messages.fields.confirmed_at'),
+                __('event-registrations::messages.fields.created_at'),
+            ], separator: ';', escape: '');
+
+            foreach ($registrations as $registration) {
+                fputcsv($output, array_map(self::neutraliseCsvFormula(...), [
+                    $registration->user->name ?? __('event-registrations::messages.export.deleted_user'),
+                    $registration->user->email ?? '',
+                    $registration->state->label(),
+                    $registration->position,
+                    $registration->confirmed_at?->format('d/m/Y H:i'),
+                    $registration->created_at?->format('d/m/Y H:i'),
+                ]), separator: ';', escape: '');
+            }
+
+            fclose($output);
+        }, "inscripciones-{$event->slug}.csv", ['Content-Type' => 'text/csv; charset=UTF-8']);
+    }
+
+    /**
+     * Prefix values a spreadsheet would run as a formula (CSV injection) with a single quote.
+     */
+    private static function neutraliseCsvFormula(mixed $value): mixed
+    {
+        if (is_string($value) && preg_match('/^[=+\-@\t\r]/', $value) === 1) {
+            return "'".$value;
+        }
+
+        return $value;
+    }
+
     public function table(Table $table): Table
     {
         return $table
@@ -150,18 +211,12 @@ final class RegistrationsRelationManager extends RelationManager
                     ->options(RegistrationState::options()),
             ])
             ->headerActions([
-                // Export action placeholder
                 Action::make('export')
                     ->label(__('event-registrations::messages.actions.export'))
                     ->icon('heroicon-o-arrow-down-tray')
                     ->color('gray')
-                    ->action(function (): void {
-                        // TODO: Implement export
-                        Notification::make()
-                            ->title('Export coming soon')
-                            ->info()
-                            ->send();
-                    }),
+                    ->visible(fn (): bool => auth()->user()?->can('export', EventRegistrationModel::class) ?? false)
+                    ->action(fn (): StreamedResponse => $this->exportCsv()),
             ])
             ->recordActions([
                 Action::make('confirm')

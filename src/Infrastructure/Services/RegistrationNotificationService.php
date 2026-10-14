@@ -72,10 +72,6 @@ final readonly class RegistrationNotificationService implements RegistrationNoti
 
     public function sendWaitingListEmail(EventRegistration $registration, int $position): void
     {
-        if (! config('modules.settings.event-registrations.send_waiting_list_email', true)) {
-            return;
-        }
-
         $user = UserModel::find($registration->userId());
         $event = EventModel::find($registration->eventId());
 
@@ -112,10 +108,6 @@ final readonly class RegistrationNotificationService implements RegistrationNoti
 
     public function sendCancellationEmail(EventRegistration $registration): void
     {
-        if (! config('modules.settings.event-registrations.send_cancellation_email', true)) {
-            return;
-        }
-
         $user = UserModel::find($registration->userId());
         $event = EventModel::find($registration->eventId());
 
@@ -132,10 +124,6 @@ final readonly class RegistrationNotificationService implements RegistrationNoti
 
     public function sendRejectionEmail(EventRegistration $registration): void
     {
-        if (! config('modules.settings.event-registrations.send_rejection_email', true)) {
-            return;
-        }
-
         $user = UserModel::find($registration->userId());
         $event = EventModel::find($registration->eventId());
 
