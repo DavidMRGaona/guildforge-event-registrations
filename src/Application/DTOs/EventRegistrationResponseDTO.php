@@ -46,6 +46,9 @@ final readonly class EventRegistrationResponseDTO
     }
 
     /**
+     * The registration as its user receives it. The panel notes (adminNotes) are internal
+     * and stay out: the panel reads them from the registration itself.
+     *
      * @return array<string, mixed>
      */
     public function toArray(): array
@@ -60,7 +63,6 @@ final readonly class EventRegistrationResponseDTO
             'position' => $this->position,
             'form_data' => $this->formData,
             'notes' => $this->notes,
-            'admin_notes' => $this->adminNotes,
             'confirmed_at' => $this->confirmedAt,
             'cancelled_at' => $this->cancelledAt,
             'created_at' => $this->createdAt,

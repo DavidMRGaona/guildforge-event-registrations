@@ -42,7 +42,6 @@ export interface UserRegistration {
     position: number | null;
     form_data: Record<string, string>;
     notes: string | null;
-    admin_notes: string | null;
     confirmed_at: string | null;
     cancelled_at: string | null;
     created_at: string | null;
