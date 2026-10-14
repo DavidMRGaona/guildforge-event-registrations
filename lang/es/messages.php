@@ -118,6 +118,11 @@ return [
         'empty_description' => 'Configura los ajustes de inscripción para este evento',
     ],
 
+    // Export
+    'export' => [
+        'deleted_user' => 'Usuario eliminado',
+    ],
+
     // Errors
     'errors' => [
         'registration_closed' => 'Las inscripciones están cerradas',

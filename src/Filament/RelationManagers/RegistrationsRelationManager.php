@@ -113,7 +113,9 @@ final class RegistrationsRelationManager extends RelationManager
     }
 
     /**
-     * Download the event's registrations as a CSV file (UTF-8 with BOM, so spreadsheets read accents).
+     * Download the event's registrations as a CSV file: UTF-8 with BOM, so spreadsheets read accents,
+     * and `;` as separator, which Excel expects with Spanish regional settings. Deactivated
+     * (soft-deleted) users are included.
      */
     private function exportCsv(): StreamedResponse
     {
@@ -121,7 +123,7 @@ final class RegistrationsRelationManager extends RelationManager
         $event = $this->getOwnerRecord();
 
         $registrations = EventRegistrationModel::query()
-            ->with('user')
+            ->with(['user' => fn ($query) => $query->withTrashed()])
             ->where('event_id', $event->id)
             ->orderBy('created_at')
             ->get();
@@ -141,17 +143,17 @@ final class RegistrationsRelationManager extends RelationManager
                 __('event-registrations::messages.fields.position'),
                 __('event-registrations::messages.fields.confirmed_at'),
                 __('event-registrations::messages.fields.created_at'),
-            ], escape: '');
+            ], separator: ';', escape: '');
 
             foreach ($registrations as $registration) {
                 fputcsv($output, array_map(self::neutraliseCsvFormula(...), [
-                    $registration->user->name,
-                    $registration->user->email,
+                    $registration->user->name ?? __('event-registrations::messages.export.deleted_user'),
+                    $registration->user->email ?? '',
                     $registration->state->label(),
                     $registration->position,
                     $registration->confirmed_at?->format('d/m/Y H:i'),
                     $registration->created_at?->format('d/m/Y H:i'),
-                ]), escape: '');
+                ]), separator: ';', escape: '');
             }
 
             fclose($output);
@@ -161,7 +163,7 @@ final class RegistrationsRelationManager extends RelationManager
     /**
      * Prefix values a spreadsheet would run as a formula (CSV injection) with a single quote.
      */
-    private static function neutraliseCsvFormula(string|int|null $value): string|int|null
+    private static function neutraliseCsvFormula(mixed $value): mixed
     {
         if (is_string($value) && preg_match('/^[=+\-@\t\r]/', $value) === 1) {
             return "'".$value;

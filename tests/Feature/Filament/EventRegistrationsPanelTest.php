@@ -18,6 +18,7 @@ use Modules\EventRegistrations\Filament\RelationManagers\RegistrationsRelationMa
 use Modules\EventRegistrations\Filament\Widgets\RegistrationStatsWidget;
 use Modules\EventRegistrations\Infrastructure\Persistence\Eloquent\Models\EventRegistrationConfigModel;
 use Modules\EventRegistrations\Infrastructure\Persistence\Eloquent\Models\EventRegistrationModel;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Support\Modules\InteractsWithModulePanel;
 use Tests\Support\Modules\ModuleTestCase;
 
@@ -108,24 +109,56 @@ final class EventRegistrationsPanelTest extends ModuleTestCase
         $this->assertStringNotContainsString('outsider@example.com', $csv);
     }
 
-    public function test_export_neutralises_values_that_spreadsheets_would_run_as_formulas(): void
+    #[DataProvider('formulaValues')]
+    public function test_export_neutralises_values_that_spreadsheets_would_run_as_formulas(string $name): void
     {
-        EventRegistrationConfigModel::create(['event_id' => $this->event->id, 'registration_enabled' => true]);
-        $attendee = UserModel::factory()->create(['name' => '=HYPERLINK("http://x")', 'email' => 'formula@example.com']);
-        EventRegistrationModel::create([
-            'event_id' => $this->event->id,
-            'user_id' => $attendee->id,
-            'state' => RegistrationState::Confirmed,
-        ]);
+        $this->registerAttendee(UserModel::factory()->create(['name' => $name, 'email' => 'formula@example.com']));
 
-        $component = Livewire::test(RegistrationsRelationManager::class, ['ownerRecord' => $this->event, 'pageClass' => EditEvent::class])
-            ->callTableAction('export');
+        $rows = $this->exportedRows();
 
-        $csv = $this->downloadedContent($component);
-        $rows = array_map(fn (string $line): array => str_getcsv($line, escape: ''), array_values(array_filter(explode("\n", $csv))));
-
-        $this->assertSame('\'=HYPERLINK("http://x")', $rows[1][0]);
+        $this->assertSame("'".$name, $rows[1][0]);
         $this->assertSame('formula@example.com', $rows[1][1]);
+    }
+
+    /**
+     * @return array<string, array{string}>
+     */
+    public static function formulaValues(): array
+    {
+        return [
+            'equals' => ['=HYPERLINK("http://x")'],
+            'plus' => ['+1+1'],
+            'minus' => ['-1+1'],
+            'at' => ['@SUM(1;1)'],
+            'tab' => ["\t=1+1"],
+            'carriage return' => ["\r=1+1"],
+        ];
+    }
+
+    public function test_export_uses_semicolons_and_quotes_values_that_contain_them(): void
+    {
+        $this->registerAttendee(UserModel::factory()->create(['name' => 'Pérez; Ana', 'email' => 'ana@example.com']));
+
+        $csv = $this->exportedCsv();
+        $rows = $this->exportedRows();
+
+        $this->assertStringContainsString('"Pérez; Ana";ana@example.com;', $csv);
+        $this->assertCount(6, $rows[0]);
+        $this->assertSame('Pérez; Ana', $rows[1][0]);
+        $this->assertSame('ana@example.com', $rows[1][1]);
+    }
+
+    public function test_export_includes_registrations_of_deactivated_users(): void
+    {
+        $attendee = UserModel::factory()->create(['name' => 'Usuaria desactivada', 'email' => 'gone@example.com']);
+        $this->registerAttendee($attendee);
+        $attendee->delete();
+
+        $rows = $this->exportedRows();
+
+        $this->assertCount(2, $rows);
+        $this->assertSame('Usuaria desactivada', $rows[1][0]);
+        $this->assertSame('gone@example.com', $rows[1][1]);
     }
 
     public function test_export_is_hidden_without_the_export_permission(): void
@@ -183,6 +216,45 @@ final class EventRegistrationsPanelTest extends ModuleTestCase
             ->assertOk()
             ->assertSet('data.default_registration_enabled', true)
             ->assertSet('data.send_promotion_email', false);
+    }
+
+    private function registerAttendee(UserModel $attendee): void
+    {
+        EventRegistrationConfigModel::query()->firstOrCreate(['event_id' => $this->event->id], ['registration_enabled' => true]);
+        EventRegistrationModel::create([
+            'event_id' => $this->event->id,
+            'user_id' => $attendee->id,
+            'state' => RegistrationState::Confirmed,
+        ]);
+    }
+
+    private function exportedCsv(): string
+    {
+        $component = Livewire::test(RegistrationsRelationManager::class, ['ownerRecord' => $this->event, 'pageClass' => EditEvent::class])
+            ->callTableAction('export');
+
+        return $this->downloadedContent($component);
+    }
+
+    /**
+     * The exported file parsed as CSV (`;` separator), without the BOM.
+     *
+     * @return list<list<string|null>>
+     */
+    private function exportedRows(): array
+    {
+        $stream = fopen('php://memory', 'r+b');
+        $this->assertNotFalse($stream);
+        fwrite($stream, substr($this->exportedCsv(), strlen("\u{FEFF}")));
+        rewind($stream);
+
+        $rows = [];
+        while (($row = fgetcsv($stream, separator: ';', escape: '')) !== false) {
+            $rows[] = $row;
+        }
+        fclose($stream);
+
+        return $rows;
     }
 
     /**

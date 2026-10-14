@@ -118,6 +118,11 @@ return [
         'empty_description' => 'Configure registration settings for this event',
     ],
 
+    // Export
+    'export' => [
+        'deleted_user' => 'Deleted user',
+    ],
+
     // Errors
     'errors' => [
         'registration_closed' => 'Registration is closed',
