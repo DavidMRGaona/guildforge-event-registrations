@@ -73,7 +73,6 @@ final class AssociationMembershipCheckerTest extends ModuleTestCase
     {
         // The legacy users.role column defaults to "member" for everyone; it must not count
         $user = UserModel::factory()->create();
-        $user->roles()->detach();
 
         $this->assertFalse($this->checker()->isMember((string) $user->id));
     }
