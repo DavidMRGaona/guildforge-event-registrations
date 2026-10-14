@@ -87,7 +87,7 @@ Se editan en el panel: **Módulos** → Inscripciones a eventos → **Configurar
 | Enviar email de confirmación | Email de inscripción confirmada (ver [Emails](#emails)) |
 | Enviar email de promoción | Email cuando se libera una plaza y alguien pasa de la lista de espera a confirmado |
 
-Los ajustes se guardan en el `config/settings.php` del módulo, y una actualización con ZIP sustituye ese archivo: conviene revisarlos después de cada actualización.
+Los valores guardados desde el panel se conservan en la base de datos del core, así que sobreviven a las actualizaciones. `config/settings.php` solo trae los valores por defecto de cada versión.
 
 ### Emails
 
@@ -120,7 +120,7 @@ No se envían emails de eventos ya terminados.
 
 ### Rutas
 
-Son rutas web (sesión y CSRF) que responden JSON.
+Son rutas web (sesión y CSRF) que responden JSON; el módulo no registra rutas `/api`. Sin sesión, las que la requieren responden 401 a las peticiones JSON; una visita normal del navegador va a la página de inicio de sesión.
 
 | Método | Ruta | Descripción |
 |--------|------|-------------|
@@ -173,7 +173,7 @@ Los administradores tienen todos los permisos.
 src/modules/event-registrations/
 ├── config/
 │   ├── module.php          # Datos del módulo
-│   └── settings.php        # Ajustes guardados desde el panel
+│   └── settings.php        # Valores por defecto de los ajustes del panel
 ├── database/migrations/    # Inscripciones y configuración por evento
 ├── lang/                   # Traducciones (es, en)
 ├── resources/
