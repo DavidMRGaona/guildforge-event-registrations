@@ -27,7 +27,7 @@ async function fetchRegistrations(): Promise<void> {
 
         const data = await response.json();
         registrations.value = data.data;
-    } catch (e) {
+    } catch {
         error.value = t('eventRegistrations.errors.notFound');
     } finally {
         loading.value = false;
