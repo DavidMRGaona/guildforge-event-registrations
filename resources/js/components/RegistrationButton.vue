@@ -88,6 +88,17 @@ const isBlockedByMembersOnly = computed(() => {
     return config.value.meets_members_only === false;
 });
 
+// Shown while registration is open, to anyone without an active registration
+const showMembersOnlyNotice = computed(
+    () =>
+        !!config.value &&
+        config.value.members_only &&
+        config.value.is_open &&
+        !hasActiveRegistration.value,
+);
+
+const membersOnlyNoticeId = computed(() => `members-only-notice-${resolvedEventId.value}`);
+
 const canRegister = computed(() => {
     if (!config.value) return false;
     if (!config.value.is_open) return false;
@@ -323,6 +334,7 @@ onMounted(async () => {
             v-if="!showForm"
             type="button"
             :disabled="buttonDisabled"
+            :aria-describedby="showMembersOnlyNotice ? membersOnlyNoticeId : undefined"
             class="w-full rounded-lg px-6 py-3 text-center font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2"
             :class="{
                 'bg-primary text-white hover:bg-primary-700 focus:ring-primary-500':
@@ -360,7 +372,8 @@ onMounted(async () => {
 
         <!-- Members-only notice -->
         <p
-            v-if="config && config.members_only && !hasActiveRegistration"
+            v-if="showMembersOnlyNotice"
+            :id="membersOnlyNoticeId"
             class="mt-2 text-center text-sm text-base-muted"
         >
             {{ $t('eventRegistrationsEligibility.membersOnlyNotice') }}
