@@ -17,7 +17,7 @@ const error = ref<string | null>(null);
 
 async function fetchRegistrations(): Promise<void> {
     try {
-        const response = await fetch('/api/my-registrations', {
+        const response = await fetch('/mis-inscripciones', {
             credentials: 'include',
         });
 
