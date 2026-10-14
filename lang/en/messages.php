@@ -103,7 +103,7 @@ return [
         'requires_payment' => 'Requires payment',
         'requires_payment_help' => 'User must pay to confirm registration',
         'members_only' => 'Members only',
-        'members_only_help' => 'Only users with the Member role (member) can register',
+        'members_only_help' => 'Only association members can register: users holding the association member role chosen in Site Settings → Authentication.',
         'messages' => 'Messages',
         'confirmation_message' => 'Confirmation message',
         'confirmation_message_help' => 'Custom message to include in the confirmation email',
@@ -131,7 +131,7 @@ return [
         'not_found' => 'Registration not found',
         'cannot_cancel' => 'Cannot cancel registration',
         'unauthenticated' => 'You must log in',
-        'members_only' => 'Only members can register to this event',
+        'members_only' => 'Only association members can register for this event',
     ],
 
     // Success

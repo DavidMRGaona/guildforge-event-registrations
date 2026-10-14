@@ -27,13 +27,23 @@ final class EventRegistrationController extends Controller
 
     /**
      * Get registration status for an event (public).
+     *
+     * meets_members_only is computed for the current visitor with the same check the
+     * registration applies, so the page never offers a registration the server refuses.
      */
-    public function status(string $eventId): JsonResponse
+    public function status(Request $request, string $eventId): JsonResponse
     {
         $status = $this->queryService->getEventStatus($eventId);
+        $user = $request->user();
 
         return response()->json([
-            'data' => $status->toArray(),
+            'data' => [
+                ...$status->toArray(),
+                'meets_members_only' => $this->registrationService->meetsMembersOnly(
+                    $eventId,
+                    $user === null ? null : (string) $user->id,
+                ),
+            ],
         ]);
     }
 

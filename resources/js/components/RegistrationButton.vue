@@ -75,10 +75,24 @@ const isAuthenticated = computed(() => {
 // Initialize registration loading based on auth state and initial props
 const registrationLoading = ref(isAuthenticated.value && !props.initialRegistration);
 
+const hasActiveRegistration = computed(
+    () => !!registration.value && !isFinalState(registration.value.state),
+);
+
+// Signed-in users who are not association members cannot register to a members-only event;
+// the server refuses them too. Guests keep the button, which sends them to the login page.
+const isBlockedByMembersOnly = computed(() => {
+    if (!config.value || !config.value.members_only) return false;
+    if (!isAuthenticated.value) return false;
+    if (hasActiveRegistration.value) return false;
+    return config.value.meets_members_only === false;
+});
+
 const canRegister = computed(() => {
     if (!config.value) return false;
     if (!config.value.is_open) return false;
-    if (registration.value && !isFinalState(registration.value.state)) return false;
+    if (isBlockedByMembersOnly.value) return false;
+    if (hasActiveRegistration.value) return false;
     return true;
 });
 
@@ -87,6 +101,7 @@ const canJoinWaitingList = computed(() => {
     if (!config.value.is_open) return false;
     if (!config.value.is_full) return false;
     if (!config.value.waiting_list_enabled) return false;
+    if (isBlockedByMembersOnly.value) return false;
     if (registration.value && !isFinalState(registration.value.state)) return false;
     return true;
 });
@@ -112,6 +127,10 @@ const buttonText = computed(() => {
         return t('eventRegistrations.registrationClosed');
     }
 
+    if (isBlockedByMembersOnly.value) {
+        return t('eventRegistrationsEligibility.membersOnly');
+    }
+
     if (config.value.is_full) {
         if (config.value.waiting_list_enabled) {
             return t('eventRegistrations.joinWaitingList');
@@ -128,6 +147,7 @@ const buttonDisabled = computed(() => {
     // If registration period has passed, button is disabled but visible
     if (isRegistrationPeriodPassed.value) return true;
     if (!config.value.is_open) return true;
+    if (isBlockedByMembersOnly.value) return true;
     if (config.value.is_full && !config.value.waiting_list_enabled) return true;
     if (registration.value && !canCancel.value) return true;
     return false;
@@ -337,6 +357,14 @@ onMounted(async () => {
             </span>
             <span v-else>{{ buttonText }}</span>
         </button>
+
+        <!-- Members-only notice -->
+        <p
+            v-if="config && config.members_only && !hasActiveRegistration"
+            class="mt-2 text-center text-sm text-base-muted"
+        >
+            {{ $t('eventRegistrationsEligibility.membersOnlyNotice') }}
+        </p>
 
         <!-- Capacity info -->
         <div

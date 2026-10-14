@@ -20,6 +20,8 @@ export interface RegistrationConfig {
     available_spots: number;
     is_open: boolean;
     is_full: boolean;
+    // Whether the current visitor meets the members-only requirement (always true when the event is open to everyone)
+    meets_members_only: boolean;
 }
 
 export interface CustomField {

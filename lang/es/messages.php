@@ -103,7 +103,7 @@ return [
         'requires_payment' => 'Requiere pago',
         'requires_payment_help' => 'El usuario debe realizar el pago para confirmar la inscripción',
         'members_only' => 'Solo socios',
-        'members_only_help' => 'Solo pueden inscribirse los usuarios con el rol Socio (member)',
+        'members_only_help' => 'Solo pueden inscribirse los socios: los usuarios con el rol de socio elegido en Configuración del sitio → Autenticación.',
         'messages' => 'Mensajes',
         'confirmation_message' => 'Mensaje de confirmación',
         'confirmation_message_help' => 'Mensaje personalizado que se incluirá en el email de confirmación',

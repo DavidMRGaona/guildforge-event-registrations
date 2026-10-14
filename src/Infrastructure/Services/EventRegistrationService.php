@@ -37,6 +37,11 @@ final readonly class EventRegistrationService implements EventRegistrationServic
         private MembershipCheckerInterface $membershipChecker,
     ) {}
 
+    public function meetsMembersOnly(string $eventId, ?string $userId): bool
+    {
+        return $this->meetsMembersOnlyRequirement($this->configRepository->findByEventOrDefault($eventId), $userId);
+    }
+
     public function register(RegisterToEventDTO $dto): EventRegistrationResponseDTO
     {
         // Check if user is already registered
@@ -59,7 +64,7 @@ final readonly class EventRegistrationService implements EventRegistrationServic
         }
 
         // Members-only events, checked before the waiting list is considered
-        if ($config->isMembersOnly() && ! $this->membershipChecker->isMember($dto->userId)) {
+        if (! $this->meetsMembersOnlyRequirement($config, $dto->userId)) {
             throw MembersOnlyException::membersOnly($dto->eventId);
         }
 
@@ -273,5 +278,17 @@ final readonly class EventRegistrationService implements EventRegistrationServic
 
         // Full and no waiting list
         return null;
+    }
+
+    /**
+     * Members-only events accept association members only; other events accept everyone.
+     */
+    private function meetsMembersOnlyRequirement(EventRegistrationConfig $config, ?string $userId): bool
+    {
+        if (! $config->isMembersOnly()) {
+            return true;
+        }
+
+        return $userId !== null && $this->membershipChecker->isMember($userId);
     }
 }

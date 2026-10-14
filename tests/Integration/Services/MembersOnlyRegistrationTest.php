@@ -89,6 +89,45 @@ final class MembersOnlyRegistrationTest extends TestCase
         $this->makeService($checker)->register(new RegisterToEventDTO(eventId: 'event-1', userId: 'user-1'));
     }
 
+    public function test_a_member_meets_the_members_only_requirement(): void
+    {
+        $this->givenConfig(new EventRegistrationConfig(eventId: 'event-1', membersOnly: true));
+        $this->registrationRepository->expects($this->never())->method('save');
+
+        $this->assertTrue($this->makeService($this->checker(isMember: true))->meetsMembersOnly('event-1', 'user-1'));
+    }
+
+    public function test_a_non_member_does_not_meet_the_members_only_requirement(): void
+    {
+        $this->givenConfig(new EventRegistrationConfig(eventId: 'event-1', membersOnly: true));
+        $this->registrationRepository->expects($this->never())->method('save');
+
+        $this->assertFalse($this->makeService($this->checker(isMember: false))->meetsMembersOnly('event-1', 'user-1'));
+    }
+
+    public function test_a_guest_does_not_meet_the_members_only_requirement(): void
+    {
+        $this->givenConfig(new EventRegistrationConfig(eventId: 'event-1', membersOnly: true));
+        $this->registrationRepository->expects($this->never())->method('save');
+        $checker = $this->createMock(MembershipCheckerInterface::class);
+        $checker->expects($this->never())->method('isMember');
+
+        $this->assertFalse($this->makeService($checker)->meetsMembersOnly('event-1', null));
+    }
+
+    public function test_everyone_meets_the_requirement_of_an_event_open_to_everyone(): void
+    {
+        $this->givenConfig(new EventRegistrationConfig(eventId: 'event-1', membersOnly: false));
+        $this->registrationRepository->expects($this->never())->method('save');
+        $checker = $this->createMock(MembershipCheckerInterface::class);
+        $checker->expects($this->never())->method('isMember');
+
+        $service = $this->makeService($checker);
+
+        $this->assertTrue($service->meetsMembersOnly('event-1', 'user-1'));
+        $this->assertTrue($service->meetsMembersOnly('event-1', null));
+    }
+
     private function givenConfig(EventRegistrationConfig $config): void
     {
         $this->configRepository->method('findByEventOrDefault')->willReturn($config);
