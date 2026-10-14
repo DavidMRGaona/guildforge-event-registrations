@@ -141,7 +141,7 @@ final class FrontendRequestUrlsTest extends ModuleTestCase
                 $isAssignment = str_ends_with($match[0][0], '=');
                 $arguments = $this->argumentsAfter($source, $match[0][1] + strlen($match[0][0]), $isAssignment);
                 $resolvedMethod = match (true) {
-                    $method === '$1' => strtoupper($match[1][0]),
+                    $method === '$1' => strtoupper($match[1][0] ?? $this->fail("{$pattern} captures no method")),
                     $method === null => $this->methodOption($arguments),
                     default => $method,
                 };
