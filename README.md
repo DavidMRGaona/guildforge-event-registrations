@@ -5,6 +5,7 @@ Inscripciones a los eventos de GuildForge: aforo, lista de espera con promoción
 ## Características
 
 - **Inscripción desde la ficha del evento**: el botón se inyecta solo en la página del evento.
+- **Mis inscripciones en el perfil**: una pestaña del perfil lista las inscripciones del usuario, separadas en próximos eventos y eventos pasados, con la fecha, el lugar, el estado y la posición en la lista de espera.
 - **Aforo y lista de espera**: máximo de participantes y de plazas en espera; cuando un inscrito cancela, la primera persona de la lista pasa a confirmada.
 - **Confirmación manual**: las inscripciones quedan pendientes hasta que alguien las confirma desde el panel.
 - **Fechas**: apertura y cierre de inscripciones y fecha límite para cancelar.
@@ -118,6 +119,8 @@ No se envían emails de eventos ya terminados.
 
 `RegistrationButton` se inyecta en la ficha del evento (slot `event-detail-actions`) e incluye `RegistrationStatus` y `RegistrationForm`. Si la configuración del evento tiene campos personalizados (`custom_fields`), el botón pide esos datos antes de inscribir y los envía como `form_data`; el panel todavía no permite definirlos.
 
+`UserRegistrations` es la pestaña «Mis inscripciones» del perfil (slot `profile-sections`). Pide `GET /mis-inscripciones` al abrirse; si la sesión ha caducado, ofrece recargar la página para volver a iniciar sesión.
+
 ### Rutas
 
 Son rutas web (sesión y CSRF) que responden JSON; el módulo no registra rutas `/api`. Sin sesión, las que la requieren responden 401 a las peticiones JSON; una visita normal del navegador va a la página de inicio de sesión.
@@ -128,7 +131,9 @@ Son rutas web (sesión y CSRF) que responden JSON; el módulo no registra rutas 
 | `GET` | `/eventos/{eventId}/inscripcion` | Inscripción del usuario (requiere sesión) |
 | `POST` | `/eventos/{eventId}/inscripcion` | Inscribirse (requiere sesión; `notes`, `form_data`) |
 | `DELETE` | `/eventos/{eventId}/inscripcion` | Cancelar la inscripción (requiere sesión) |
-| `GET` | `/mis-inscripciones` | Inscripciones del usuario (requiere sesión) |
+| `GET` | `/mis-inscripciones` | Inscripciones del usuario, de la más reciente a la más antigua (requiere sesión) |
+
+Las inscripciones que recibe el usuario nunca incluyen las notas internas del panel (`admin_notes`). Cada elemento de `/mis-inscripciones` lleva además `event` con `id`, `title`, `slug`, `start_date`, `end_date`, `location` y `url` (la ficha del evento), o `null` si el evento no está publicado.
 
 `POST` responde 201 si crea la inscripción, 403 si el evento es solo para socios y el usuario no lo es, y 422 si las inscripciones están cerradas, el evento está completo o el usuario ya está inscrito.
 
@@ -179,7 +184,7 @@ src/modules/event-registrations/
 ├── resources/
 │   ├── css/                # Estilos del módulo
 │   ├── js/components/      # Componentes Vue
-│   ├── js/locales/         # Textos de la ficha del evento (es, en)
+│   ├── js/locales/         # Textos de la ficha del evento y del perfil (es, en)
 │   ├── js/types/           # Tipos TypeScript
 │   └── views/filament/     # Vistas Blade del panel
 ├── routes/web.php          # Rutas JSON
