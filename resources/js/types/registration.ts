@@ -48,6 +48,25 @@ export interface UserRegistration {
     updated_at: string | null;
 }
 
+// What GET /mis-inscripciones tells of the event; null when the event is not published
+export interface RegisteredEvent {
+    id: string;
+    title: string;
+    slug: string;
+    start_date: string;
+    end_date: string;
+    location: string | null;
+    url: string;
+}
+
+export interface MyRegistration extends UserRegistration {
+    event: RegisteredEvent | null;
+}
+
+export interface MyRegistrationsResponse {
+    data: MyRegistration[];
+}
+
 export interface RegistrationListItem {
     id: string;
     event_id: string;

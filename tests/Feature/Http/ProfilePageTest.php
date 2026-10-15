@@ -52,6 +52,45 @@ final class ProfilePageTest extends ModuleTestCase
         ]], $this->registrationsOf('event-registrations', $slots['event-detail-actions'] ?? []));
     }
 
+    public function test_the_profile_gets_a_registrations_tab(): void
+    {
+        $slots = $this->moduleSlots();
+
+        $this->assertSame([[
+            'slot' => 'profile-sections',
+            'component' => 'components/UserRegistrations.vue',
+            'module' => 'event-registrations',
+            'order' => 30,
+            'props' => [],
+            'dataKeys' => [],
+            'profileTab' => [
+                'tabId' => 'event-registrations',
+                'icon' => 'calendar',
+                'labelKey' => 'eventRegistrationsProfile.tabLabel',
+            ],
+        ]], $this->registrationsOf('event-registrations', $slots['profile-sections'] ?? []));
+        $this->assertFileExists(__DIR__ . '/../../../resources/js/components/UserRegistrations.vue');
+    }
+
+    public function test_the_registrations_tab_has_its_label_in_spanish_and_english(): void
+    {
+        $translations = $this->moduleTranslations();
+
+        $this->assertSame('Mis inscripciones', $translations['es']['eventRegistrationsProfile']['tabLabel'] ?? null);
+        $this->assertSame('My registrations', $translations['en']['eventRegistrationsProfile']['tabLabel'] ?? null);
+    }
+
+    public function test_both_locales_define_the_same_profile_texts(): void
+    {
+        $translations = $this->moduleTranslations();
+
+        $this->assertNotSame([], $this->keysOf($translations['es']['eventRegistrationsProfile'] ?? []));
+        $this->assertSame(
+            $this->keysOf($translations['es']['eventRegistrationsProfile'] ?? []),
+            $this->keysOf($translations['en']['eventRegistrationsProfile'] ?? []),
+        );
+    }
+
     public function test_the_eligibility_texts_keep_their_top_level_key(): void
     {
         $translations = $this->moduleTranslations();
@@ -104,6 +143,28 @@ final class ProfilePageTest extends ModuleTestCase
         $this->assertArrayHasKey('en', $translations);
 
         return $translations;
+    }
+
+    /**
+     * Dotted paths of every leaf, sorted.
+     *
+     * @return list<string>
+     */
+    private function keysOf(mixed $messages, string $prefix = ''): array
+    {
+        if (! is_array($messages)) {
+            return [rtrim($prefix, '.')];
+        }
+
+        $keys = [];
+
+        foreach ($messages as $key => $value) {
+            $keys = [...$keys, ...$this->keysOf($value, "{$prefix}{$key}.")];
+        }
+
+        sort($keys);
+
+        return $keys;
     }
 
     /**
