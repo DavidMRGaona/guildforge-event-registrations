@@ -16,6 +16,7 @@ export default {
         waitingListPosition: 'Position {position} on the waiting list',
         retry: 'Try again',
         reload: 'Reload the page',
+        verificationRequired: 'To see your registrations, verify your email.',
         errors: {
             loadFailed: 'Your registrations could not be loaded.',
             sessionExpired: 'Your session has expired. Reload the page to sign in again.',

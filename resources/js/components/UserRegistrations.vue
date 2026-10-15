@@ -3,18 +3,24 @@ import { computed, nextTick, onMounted, ref } from 'vue';
 import { Link } from '@inertiajs/vue3';
 import { useI18n } from 'vue-i18n';
 import { VENUE_TIMEZONE } from '@/utils/datetime';
+import { useVerificationGate } from '@/composables/useVerificationGate';
 import type {
     MyRegistration,
     MyRegistrationsResponse,
     RegistrationState,
 } from '../types/registration';
 
-type LoadState = 'loading' | 'ready' | 'error' | 'session-expired';
+type LoadState = 'loading' | 'ready' | 'error' | 'session-expired' | 'verification-required';
 
 const { t, locale } = useI18n();
+const gate = useVerificationGate();
 
 const registrations = ref<MyRegistration[]>([]);
-const loadState = ref<LoadState>('loading');
+// A blocked account never requests the list: start in its state, without a spinner first
+const loadState = ref<LoadState>(gate.blocked.value ? 'verification-required' : 'loading');
+// True when a request (load or Retry) ended in the verification state, so the live region
+// announces why the list is missing; reached on mount, it is just read with the page
+const verificationAnnounced = ref(false);
 const retryButton = ref<HTMLButtonElement | null>(null);
 const heading = ref<HTMLElement | null>(null);
 
@@ -31,13 +37,29 @@ function isMyRegistrationsResponse(body: unknown): body is MyRegistrationsRespon
 }
 
 async function fetchRegistrations(): Promise<void> {
+    // The server refuses the list while the account must verify its email: say why instead
+    if (gate.blocked.value) {
+        loadState.value = 'verification-required';
+
+        return;
+    }
+
     loadState.value = 'loading';
+    verificationAnnounced.value = false;
 
     try {
         const response = await fetch('/mis-inscripciones', {
             headers: { Accept: 'application/json' },
             credentials: 'same-origin',
         });
+
+        // The state changed after the page loaded (e.g. in another tab)
+        if (gate.isVerificationRequired(response)) {
+            loadState.value = 'verification-required';
+            verificationAnnounced.value = true;
+
+            return;
+        }
 
         // 401 without a session, 419 when the session token is no longer valid
         if (response.status === 401 || response.status === 419) {
@@ -140,7 +162,12 @@ onMounted(() => {
 
         <!-- Always mounted, so screen readers announce the text when it changes -->
         <p role="status" class="sr-only">
-            {{ loadState === 'loading' ? t('eventRegistrationsProfile.loading') : '' }}
+            <template v-if="loadState === 'loading'">
+                {{ t('eventRegistrationsProfile.loading') }}
+            </template>
+            <template v-else-if="loadState === 'verification-required' && verificationAnnounced">
+                {{ t('eventRegistrationsProfile.verificationRequired') }}
+            </template>
         </p>
 
         <!-- Loading -->
@@ -170,6 +197,23 @@ onMounted(() => {
             >
                 {{ t('eventRegistrationsProfile.reload') }}
             </button>
+        </div>
+
+        <!-- Email not verified (announced through the status region above, not here) -->
+        <div
+            v-else-if="loadState === 'verification-required'"
+            class="rounded-lg bg-warning-light p-4 text-sm text-base-primary"
+        >
+            <p>
+                {{ t('eventRegistrationsProfile.verificationRequired') }}
+                <Link
+                    :href="gate.noticeUrl"
+                    class="font-semibold underline underline-offset-2 hover:no-underline"
+                >
+                    {{ gate.linkLabel.value }}
+                    <span aria-hidden="true">→</span>
+                </Link>
+            </p>
         </div>
 
         <!-- Error -->

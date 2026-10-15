@@ -16,6 +16,7 @@ export default {
         waitingListPosition: 'Puesto {position} en la lista de espera',
         retry: 'Reintentar',
         reload: 'Recargar la página',
+        verificationRequired: 'Para ver tus inscripciones, verifica tu email.',
         errors: {
             loadFailed: 'No se han podido cargar tus inscripciones.',
             sessionExpired: 'Tu sesión ha caducado. Recarga la página para volver a iniciar sesión.',

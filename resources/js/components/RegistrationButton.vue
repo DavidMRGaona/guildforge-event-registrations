@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, Teleport, Transition } from 'vue';
+import { ref, computed, onMounted, useId } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { usePage } from '@inertiajs/vue3';
+import { Link, usePage } from '@inertiajs/vue3';
 import { csrfHeaders, isCsrfFailure } from '@/utils/csrf';
+import { useVerificationGate } from '@/composables/useVerificationGate';
 import type {
     RegistrationConfig,
     UserRegistration,
@@ -57,6 +58,9 @@ const isRegistrationPeriodPassed = computed(() => {
 });
 
 const { t } = useI18n();
+const gate = useVerificationGate();
+// Unique per instance: the reason the button is disabled while the email is not verified
+const verificationNoticeId = useId();
 
 const config = ref<RegistrationConfig | null>(props.initialConfig ?? null);
 const registration = ref<UserRegistration | null>(props.initialRegistration ?? null);
@@ -72,8 +76,18 @@ const isAuthenticated = computed(() => {
     return auth?.user !== null && auth?.user !== undefined;
 });
 
+// Set when the server says the account must verify its email although the page did not
+// (the state changed after the page loaded, e.g. in another tab)
+const verificationRequiredByServer = ref(false);
+
+// While the account must verify its email the server refuses the registration routes, so
+// the registration is not read and register or cancel cannot be sent
+const mustVerifyEmail = computed(() => gate.blocked.value || verificationRequiredByServer.value);
+
 // Initialize registration loading based on auth state and initial props
-const registrationLoading = ref(isAuthenticated.value && !props.initialRegistration);
+const registrationLoading = ref(
+    isAuthenticated.value && !props.initialRegistration && !gate.blocked.value,
+);
 
 const hasActiveRegistration = computed(
     () => !!registration.value && !isFinalState(registration.value.state),
@@ -152,8 +166,8 @@ const buttonText = computed(() => {
     return t('eventRegistrations.register');
 });
 
-const buttonDisabled = computed(() => {
-    if (loading.value) return true;
+// Disabled for reasons other than the email verification
+const isUnavailable = computed(() => {
     if (!config.value) return true;
     // If registration period has passed, button is disabled but visible
     if (isRegistrationPeriodPassed.value) return true;
@@ -162,6 +176,24 @@ const buttonDisabled = computed(() => {
     if (config.value.is_full && !config.value.waiting_list_enabled) return true;
     if (registration.value && !canCancel.value) return true;
     return false;
+});
+
+// Why the button is disabled while the account must verify its email; null when the button
+// would be disabled anyway (closed, full, members only) or the account need not verify
+const verificationReason = computed<string | null>(() => {
+    if (!mustVerifyEmail.value || isUnavailable.value) return null;
+    return canCancel.value ? gate.reason('cancelRegistration') : gate.reason('register');
+});
+
+const buttonDisabled = computed(
+    () => loading.value || isUnavailable.value || verificationReason.value !== null,
+);
+
+const describedBy = computed<string | undefined>(() => {
+    const ids: string[] = [];
+    if (showMembersOnlyNotice.value) ids.push(membersOnlyNoticeId.value);
+    if (verificationReason.value !== null) ids.push(verificationNoticeId);
+    return ids.length > 0 ? ids.join(' ') : undefined;
 });
 
 async function fetchStatus(): Promise<void> {
@@ -180,12 +212,20 @@ async function fetchStatus(): Promise<void> {
 
 async function fetchRegistration(): Promise<void> {
     if (!isAuthenticated.value || !resolvedEventId.value) return;
+    if (gate.blocked.value) return;
 
     registrationLoading.value = true;
     try {
         const response = await fetch(`/eventos/${resolvedEventId.value}/inscripcion`, {
             credentials: 'include',
         });
+
+        // Followed the redirect to the verification notice: show the reason, not an error
+        if (gate.isVerificationRequired(response)) {
+            verificationRequiredByServer.value = true;
+            return;
+        }
+
         const data = await response.json();
         registration.value = data.data;
     } catch (e) {
@@ -196,6 +236,8 @@ async function fetchRegistration(): Promise<void> {
 }
 
 async function handleRegister(formData: RegistrationFormData): Promise<void> {
+    if (mustVerifyEmail.value) return;
+
     loading.value = true;
     error.value = null;
 
@@ -210,6 +252,11 @@ async function handleRegister(formData: RegistrationFormData): Promise<void> {
             credentials: 'include',
             body: JSON.stringify(formData),
         });
+
+        if (gate.isVerificationRequired(response)) {
+            gate.goToNotice();
+            return;
+        }
 
         if (isCsrfFailure(response)) {
             error.value = t('eventRegistrations.errors.sessionExpired');
@@ -226,7 +273,7 @@ async function handleRegister(formData: RegistrationFormData): Promise<void> {
         registration.value = data.data;
         showForm.value = false;
         await fetchStatus();
-    } catch (e) {
+    } catch {
         error.value = t('eventRegistrations.errors.registrationClosed');
     } finally {
         loading.value = false;
@@ -239,6 +286,8 @@ function promptCancel(): void {
 
 async function handleCancel(): Promise<void> {
     showCancelConfirm.value = false;
+    if (mustVerifyEmail.value) return;
+
     loading.value = true;
     error.value = null;
 
@@ -251,6 +300,11 @@ async function handleCancel(): Promise<void> {
             },
             credentials: 'include',
         });
+
+        if (gate.isVerificationRequired(response)) {
+            gate.goToNotice();
+            return;
+        }
 
         if (isCsrfFailure(response)) {
             error.value = t('eventRegistrations.errors.sessionExpired');
@@ -266,7 +320,7 @@ async function handleCancel(): Promise<void> {
 
         registration.value = null;
         await fetchStatus();
-    } catch (e) {
+    } catch {
         error.value = t('eventRegistrations.errors.cannotCancel');
     } finally {
         loading.value = false;
@@ -278,6 +332,8 @@ function handleClick(): void {
         window.location.href = '/iniciar-sesion?redirect=' + encodeURIComponent(window.location.pathname);
         return;
     }
+
+    if (mustVerifyEmail.value) return;
 
     if (registration.value && canCancel.value) {
         promptCancel();
@@ -334,12 +390,13 @@ onMounted(async () => {
             v-if="!showForm"
             type="button"
             :disabled="buttonDisabled"
-            :aria-describedby="showMembersOnlyNotice ? membersOnlyNoticeId : undefined"
+            :aria-describedby="describedBy"
             class="w-full rounded-lg px-6 py-3 text-center font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2"
             :class="{
                 'bg-primary text-white hover:bg-primary-700 focus:ring-primary-500':
-                    canRegister || canJoinWaitingList,
-                'bg-error text-white hover:opacity-90 focus:ring-2 focus:ring-primary': canCancel,
+                    (canRegister || canJoinWaitingList) && verificationReason === null,
+                'bg-error text-white hover:opacity-90 focus:ring-2 focus:ring-primary':
+                    canCancel && verificationReason === null,
                 'cursor-not-allowed bg-muted text-base-muted':
                     buttonDisabled,
             }"
@@ -369,6 +426,22 @@ onMounted(async () => {
             </span>
             <span v-else>{{ buttonText }}</span>
         </button>
+
+        <!-- Why the button is disabled while the email is not verified -->
+        <p
+            v-if="verificationReason !== null"
+            :id="verificationNoticeId"
+            class="mt-2 rounded-md bg-warning-light p-3 text-center text-sm text-base-primary"
+        >
+            {{ verificationReason }}
+            <Link
+                :href="gate.noticeUrl"
+                class="font-semibold underline underline-offset-2 hover:no-underline"
+            >
+                {{ gate.linkLabel.value }}
+                <span aria-hidden="true">→</span>
+            </Link>
+        </p>
 
         <!-- Members-only notice -->
         <p
