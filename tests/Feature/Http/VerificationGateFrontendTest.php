@@ -54,6 +54,24 @@ final class VerificationGateFrontendTest extends ModuleTestCase
         $this->assertStringContainsString(':href="gate.noticeUrl"', $source);
     }
 
+    public function test_a_blocked_profile_tab_starts_in_the_verification_state_without_a_spinner(): void
+    {
+        $source = $this->componentSource('UserRegistrations.vue');
+
+        $this->assertMatchesRegularExpression(
+            "/const loadState = ref<LoadState>\\(\\s*gate\\.blocked\\.value \\? 'verification-required' : 'loading',?\\s*\\)/",
+            $source,
+        );
+    }
+
+    public function test_the_profile_tab_announces_the_verification_reached_by_a_request(): void
+    {
+        $source = $this->componentSource('UserRegistrations.vue');
+
+        $this->assertSame(1, preg_match('/<p role="status" class="sr-only">(.*?)<\/p>/s', $source, $liveRegion));
+        $this->assertStringContainsString("t('eventRegistrationsProfile.verificationRequired')", $liveRegion[1]);
+    }
+
     public function test_the_profile_tab_explains_the_verification_in_spanish_and_english(): void
     {
         $translations = [];

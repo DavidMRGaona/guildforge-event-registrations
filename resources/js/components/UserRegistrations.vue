@@ -16,7 +16,11 @@ const { t, locale } = useI18n();
 const gate = useVerificationGate();
 
 const registrations = ref<MyRegistration[]>([]);
-const loadState = ref<LoadState>('loading');
+// A blocked account never requests the list: start in its state, without a spinner first
+const loadState = ref<LoadState>(gate.blocked.value ? 'verification-required' : 'loading');
+// True when a request (load or Retry) ended in the verification state, so the live region
+// announces why the list is missing; reached on mount, it is just read with the page
+const verificationAnnounced = ref(false);
 const retryButton = ref<HTMLButtonElement | null>(null);
 const heading = ref<HTMLElement | null>(null);
 
@@ -41,6 +45,7 @@ async function fetchRegistrations(): Promise<void> {
     }
 
     loadState.value = 'loading';
+    verificationAnnounced.value = false;
 
     try {
         const response = await fetch('/mis-inscripciones', {
@@ -51,6 +56,7 @@ async function fetchRegistrations(): Promise<void> {
         // The state changed after the page loaded (e.g. in another tab)
         if (gate.isVerificationRequired(response)) {
             loadState.value = 'verification-required';
+            verificationAnnounced.value = true;
 
             return;
         }
@@ -156,7 +162,12 @@ onMounted(() => {
 
         <!-- Always mounted, so screen readers announce the text when it changes -->
         <p role="status" class="sr-only">
-            {{ loadState === 'loading' ? t('eventRegistrationsProfile.loading') : '' }}
+            <template v-if="loadState === 'loading'">
+                {{ t('eventRegistrationsProfile.loading') }}
+            </template>
+            <template v-else-if="loadState === 'verification-required' && verificationAnnounced">
+                {{ t('eventRegistrationsProfile.verificationRequired') }}
+            </template>
         </p>
 
         <!-- Loading -->
@@ -188,7 +199,7 @@ onMounted(() => {
             </button>
         </div>
 
-        <!-- Email not verified -->
+        <!-- Email not verified (announced through the status region above, not here) -->
         <div
             v-else-if="loadState === 'verification-required'"
             class="rounded-lg bg-warning-light p-4 text-sm text-base-primary"
