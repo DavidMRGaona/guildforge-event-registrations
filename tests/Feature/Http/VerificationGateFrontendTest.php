@@ -69,7 +69,7 @@ final class VerificationGateFrontendTest extends ModuleTestCase
         $source = $this->componentSource('UserRegistrations.vue');
 
         $this->assertSame(1, preg_match('/<p role="status" class="sr-only">(.*?)<\/p>/s', $source, $liveRegion));
-        $this->assertStringContainsString("t('eventRegistrationsProfile.verificationRequired')", $liveRegion[1]);
+        $this->assertStringContainsString("t('eventRegistrationsProfile.verificationRequired')", $liveRegion[1] ?? '');
     }
 
     public function test_the_profile_tab_explains_the_verification_in_spanish_and_english(): void
