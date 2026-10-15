@@ -25,7 +25,6 @@
       "registrations.export"
     ],
     "routes": [
-      "api",
       "web"
     ],
     "filament": true,

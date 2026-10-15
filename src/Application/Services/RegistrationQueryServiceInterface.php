@@ -7,6 +7,7 @@ namespace Modules\EventRegistrations\Application\Services;
 use Modules\EventRegistrations\Application\DTOs\EventRegistrationConfigDTO;
 use Modules\EventRegistrations\Application\DTOs\EventRegistrationResponseDTO;
 use Modules\EventRegistrations\Application\DTOs\RegistrationListItemDTO;
+use Modules\EventRegistrations\Application\DTOs\UserRegistrationDTO;
 
 interface RegistrationQueryServiceInterface
 {
@@ -42,6 +43,13 @@ interface RegistrationQueryServiceInterface
      * @return array<EventRegistrationResponseDTO>
      */
     public function getUserRegistrations(string $userId): array;
+
+    /**
+     * Get all registrations for a user, newest first, each with its event when published.
+     *
+     * @return array<UserRegistrationDTO>
+     */
+    public function getUserRegistrationsWithEvents(string $userId): array;
 
     /**
      * Get upcoming registrations for a user (events that haven't ended).

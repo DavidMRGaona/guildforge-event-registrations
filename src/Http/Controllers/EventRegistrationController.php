@@ -148,7 +148,7 @@ final class EventRegistrationController extends Controller
     }
 
     /**
-     * Get all registrations for the current user.
+     * Get all registrations for the current user, each with its event when published.
      */
     public function myRegistrations(Request $request): JsonResponse
     {
@@ -160,7 +160,7 @@ final class EventRegistrationController extends Controller
             ], 401);
         }
 
-        $registrations = $this->queryService->getUserRegistrations((string) $user->id);
+        $registrations = $this->queryService->getUserRegistrationsWithEvents((string) $user->id);
 
         return response()->json([
             'data' => array_map(fn ($r) => $r->toArray(), $registrations),

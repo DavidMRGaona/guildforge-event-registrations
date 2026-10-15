@@ -42,11 +42,29 @@ export interface UserRegistration {
     position: number | null;
     form_data: Record<string, string>;
     notes: string | null;
-    admin_notes: string | null;
     confirmed_at: string | null;
     cancelled_at: string | null;
     created_at: string | null;
     updated_at: string | null;
+}
+
+// What GET /mis-inscripciones tells of the event; null when the event is not published
+export interface RegisteredEvent {
+    id: string;
+    title: string;
+    slug: string;
+    start_date: string;
+    end_date: string;
+    location: string | null;
+    url: string;
+}
+
+export interface MyRegistration extends UserRegistration {
+    event: RegisteredEvent | null;
+}
+
+export interface MyRegistrationsResponse {
+    data: MyRegistration[];
 }
 
 export interface RegistrationListItem {
