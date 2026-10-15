@@ -5,7 +5,7 @@ Inscripciones a los eventos de GuildForge: aforo, lista de espera con promoción
 ## Características
 
 - **Inscripción desde la ficha del evento**: el botón se inyecta solo en la página del evento.
-- **Mis inscripciones en el perfil**: una pestaña del perfil lista las inscripciones del usuario, separadas en próximos eventos y eventos pasados, con la fecha, el lugar, el estado y la posición en la lista de espera.
+- **Mis inscripciones en el perfil**: una pestaña del perfil lista las inscripciones del usuario, separadas en próximos eventos, eventos pasados y «Eventos no disponibles» (las de eventos que no están publicados), con la fecha, el lugar, el estado y la posición en la lista de espera.
 - **Aforo y lista de espera**: máximo de participantes y de plazas en espera; cuando un inscrito cancela, la primera persona de la lista pasa a confirmada.
 - **Confirmación manual**: las inscripciones quedan pendientes hasta que alguien las confirma desde el panel.
 - **Fechas**: apertura y cierre de inscripciones y fecha límite para cancelar.
