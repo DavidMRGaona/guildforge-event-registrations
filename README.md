@@ -10,13 +10,14 @@ Inscripciones a los eventos de GuildForge: aforo, lista de espera con promoción
 - **Confirmación manual**: las inscripciones quedan pendientes hasta que alguien las confirma desde el panel.
 - **Fechas**: apertura y cierre de inscripciones y fecha límite para cancelar.
 - **Solo socios**: si se activa en el evento, solo pueden inscribirse (o entrar en la lista de espera) los socios de la asociación, es decir, los usuarios con el rol de socio del core. La ficha del evento no ofrece la inscripción a quien no lo es (el botón muestra "Solo para socios") y el servidor la rechaza igualmente con "Solo los socios pueden inscribirse en este evento" (HTTP 403).
+- **Verificación de email**: si el core exige verificar el email y la cuenta aún no lo ha hecho, la ficha del evento muestra el botón desactivado con el motivo («Para inscribirte, verifica tu email.» o «Para cancelar tu inscripción, verifica tu email.») y un enlace a la página de verificación, y la pestaña «Mis inscripciones» explica que hay que verificar el email para ver las inscripciones. Ver [Verificación de email](#verificación-de-email).
 - **Emails**: inscripción recibida (con la posición si queda en lista de espera), confirmación desde el panel y plaza liberada; aviso opcional a un email del organizador. No se envían emails de eventos ya terminados.
 - **Exportación**: descarga en CSV de las inscripciones de un evento.
 - **Widget del dashboard**: totales de inscripciones confirmadas, en lista de espera y pendientes.
 
 ## Requisitos
 
-- GuildForge core `^3.8` (rol de socio configurable)
+- GuildForge core `^3.10` (rol de socio configurable y estado de verificación de email de la cuenta en la interfaz)
 - PHP >= 8.5, Laravel >= 13, Filament 5
 
 El core rechaza el módulo si no se cumplen (`module.json` → `requires`).
@@ -121,9 +122,19 @@ No se envían emails de eventos ya terminados.
 
 `UserRegistrations` es la pestaña «Mis inscripciones» del perfil (slot `profile-sections`). Pide `GET /mis-inscripciones` al abrirse; si la sesión ha caducado, ofrece recargar la página para volver a iniciar sesión.
 
+### Verificación de email
+
+Con *Requerir verificación de email* activo en el core, el servidor rechaza las rutas que requieren sesión a las cuentas que deben verificar su email (en una petición JSON, un 403 con `error: "email_verification_required"` y la cabecera `X-Email-Verification-Required: 1`; en una visita normal, una redirección a la página de verificación). Las cuentas que no deben verificar (verificadas, creadas antes de que se empezara a exigir o con el ajuste apagado) y los visitantes sin sesión no notan ningún cambio.
+
+Los componentes leen ese estado con `useVerificationGate()` del core (`auth.user.mustVerifyEmail`) para no ofrecer lo que el servidor va a rechazar:
+
+- `RegistrationButton` no pide la inscripción del usuario y muestra el botón desactivado con el motivo visible, asociado al botón por `aria-describedby`, y el enlace «Ver cómo →» a la página de verificación. El motivo depende de lo que haría el botón: inscribirse (o entrar en la lista de espera) o cancelar la inscripción. Si el botón ya estaba desactivado por otro motivo (inscripciones cerradas, evento completo, solo socios), no añade el de la verificación. El estado público del evento (`/estado`) se sigue pidiendo, porque no requiere sesión.
+- Si el servidor rechaza una inscripción o una cancelación por la verificación aunque la página no lo sabía (por ejemplo, porque el estado cambió en otra pestaña), el botón lleva a la página de verificación en vez de mostrar un error. Si es la lectura de la inscripción la que se rechaza, el botón queda desactivado con el motivo.
+- `UserRegistrations` no pide `/mis-inscripciones` y muestra «Para ver tus inscripciones, verifica tu email.» con el enlace a la página de verificación; lo mismo si el servidor responde con el 403 de verificación.
+
 ### Rutas
 
-Son rutas web (sesión y CSRF) que responden JSON; el módulo no registra rutas `/api`. Sin sesión, las que la requieren responden 401 a las peticiones JSON; una visita normal del navegador va a la página de inicio de sesión.
+Son rutas web (sesión y CSRF) que responden JSON; el módulo no registra rutas `/api`. Sin sesión, las que la requieren responden 401 a las peticiones JSON; una visita normal del navegador va a la página de inicio de sesión. A una cuenta que debe verificar su email le responden como se explica en [Verificación de email](#verificación-de-email).
 
 | Método | Ruta | Descripción |
 |--------|------|-------------|

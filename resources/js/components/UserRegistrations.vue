@@ -3,15 +3,17 @@ import { computed, nextTick, onMounted, ref } from 'vue';
 import { Link } from '@inertiajs/vue3';
 import { useI18n } from 'vue-i18n';
 import { VENUE_TIMEZONE } from '@/utils/datetime';
+import { useVerificationGate } from '@/composables/useVerificationGate';
 import type {
     MyRegistration,
     MyRegistrationsResponse,
     RegistrationState,
 } from '../types/registration';
 
-type LoadState = 'loading' | 'ready' | 'error' | 'session-expired';
+type LoadState = 'loading' | 'ready' | 'error' | 'session-expired' | 'verification-required';
 
 const { t, locale } = useI18n();
+const gate = useVerificationGate();
 
 const registrations = ref<MyRegistration[]>([]);
 const loadState = ref<LoadState>('loading');
@@ -31,6 +33,13 @@ function isMyRegistrationsResponse(body: unknown): body is MyRegistrationsRespon
 }
 
 async function fetchRegistrations(): Promise<void> {
+    // The server refuses the list while the account must verify its email: say why instead
+    if (gate.blocked.value) {
+        loadState.value = 'verification-required';
+
+        return;
+    }
+
     loadState.value = 'loading';
 
     try {
@@ -38,6 +47,13 @@ async function fetchRegistrations(): Promise<void> {
             headers: { Accept: 'application/json' },
             credentials: 'same-origin',
         });
+
+        // The state changed after the page loaded (e.g. in another tab)
+        if (gate.isVerificationRequired(response)) {
+            loadState.value = 'verification-required';
+
+            return;
+        }
 
         // 401 without a session, 419 when the session token is no longer valid
         if (response.status === 401 || response.status === 419) {
@@ -170,6 +186,23 @@ onMounted(() => {
             >
                 {{ t('eventRegistrationsProfile.reload') }}
             </button>
+        </div>
+
+        <!-- Email not verified -->
+        <div
+            v-else-if="loadState === 'verification-required'"
+            class="rounded-lg bg-warning-light p-4 text-sm text-base-primary"
+        >
+            <p>
+                {{ t('eventRegistrationsProfile.verificationRequired') }}
+                <Link
+                    :href="gate.noticeUrl"
+                    class="font-semibold underline underline-offset-2 hover:no-underline"
+                >
+                    {{ gate.linkLabel.value }}
+                    <span aria-hidden="true">→</span>
+                </Link>
+            </p>
         </div>
 
         <!-- Error -->
