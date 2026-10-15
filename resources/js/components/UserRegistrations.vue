@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue';
+import { computed, nextTick, onMounted, ref } from 'vue';
 import { Link } from '@inertiajs/vue3';
 import { useI18n } from 'vue-i18n';
 import { VENUE_TIMEZONE } from '@/utils/datetime';
@@ -16,6 +16,7 @@ const { t, locale } = useI18n();
 const registrations = ref<MyRegistration[]>([]);
 const loadState = ref<LoadState>('loading');
 const retryButton = ref<HTMLButtonElement | null>(null);
+const heading = ref<HTMLElement | null>(null);
 
 const STATE_CLASSES: Record<RegistrationState, string> = {
     confirmed: 'bg-success-light text-success',
@@ -59,11 +60,16 @@ async function fetchRegistrations(): Promise<void> {
     }
 }
 
+// The Retry button unmounts while loading: put focus back on it if the retry fails
+// again, or on the section heading once the result is shown
 async function retry(): Promise<void> {
     await fetchRegistrations();
+    await nextTick();
 
     if (loadState.value === 'error') {
         retryButton.value?.focus();
+    } else {
+        heading.value?.focus();
     }
 }
 
@@ -84,17 +90,23 @@ const upcoming = computed<MyRegistration[]>(() => {
 });
 
 const past = computed<MyRegistration[]>(() => {
-    const upcomingIds = new Set(upcoming.value.map((registration) => registration.id));
+    const now = Date.now();
 
     return registrations.value
-        .filter((registration) => !upcomingIds.has(registration.id))
+        .filter((registration) => registration.event !== null && new Date(registration.event.end_date).getTime() < now)
         .sort((a, b) => startTime(b) - startTime(a));
 });
+
+// Registrations whose event is not published: they cannot be dated, so they are neither upcoming nor past
+const unavailable = computed<MyRegistration[]>(() =>
+    registrations.value.filter((registration) => registration.event === null),
+);
 
 const groups = computed(() =>
     [
         { id: 'upcoming', title: t('eventRegistrationsProfile.upcoming'), items: upcoming.value },
         { id: 'past', title: t('eventRegistrationsProfile.past'), items: past.value },
+        { id: 'unavailable', title: t('eventRegistrationsProfile.unavailable'), items: unavailable.value },
     ].filter((group) => group.items.length > 0),
 );
 
@@ -116,20 +128,26 @@ onMounted(() => {
 </script>
 
 <template>
-    <section
-        class="space-y-6"
-        aria-labelledby="event-registrations-profile-title"
-        :aria-busy="loadState === 'loading'"
-    >
-        <h2 id="event-registrations-profile-title" class="text-lg font-semibold text-base-primary">
+    <section class="space-y-6" aria-labelledby="event-registrations-profile-title">
+        <h2
+            id="event-registrations-profile-title"
+            ref="heading"
+            tabindex="-1"
+            class="text-lg font-semibold text-base-primary focus:outline-none"
+        >
             {{ t('eventRegistrationsProfile.title') }}
         </h2>
+
+        <!-- Always mounted, so screen readers announce the text when it changes -->
+        <p role="status" class="sr-only">
+            {{ loadState === 'loading' ? t('eventRegistrationsProfile.loading') : '' }}
+        </p>
 
         <!-- Loading -->
         <div
             v-if="loadState === 'loading'"
-            role="status"
             class="flex items-center justify-center gap-3 py-12 text-base-muted"
+            aria-hidden="true"
         >
             <svg class="h-6 w-6 animate-spin text-primary" fill="none" viewBox="0 0 24 24" aria-hidden="true">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
@@ -226,7 +244,7 @@ onMounted(() => {
                                 <Link
                                     v-if="registration.event"
                                     :href="registration.event.url"
-                                    class="rounded-sm hover:text-primary hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-500"
+                                    class="rounded-sm hover:text-primary-600 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-500"
                                 >
                                     {{ registration.event.title }}
                                 </Link>
