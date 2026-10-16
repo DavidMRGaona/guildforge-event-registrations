@@ -28,6 +28,7 @@ final class EventRegistrationConfig
         private ?string $notificationEmail = null,
         private readonly ?DateTimeImmutable $createdAt = null,
         private readonly ?DateTimeImmutable $updatedAt = null,
+        private readonly ?DateTimeImmutable $eventStartsAt = null,
     ) {}
 
     public function eventId(): string
@@ -111,6 +112,26 @@ final class EventRegistrationConfig
     public function updatedAt(): ?DateTimeImmutable
     {
         return $this->updatedAt;
+    }
+
+    /**
+     * Start of the event, read from the core event; not persisted with the config. Null when
+     * the event does not exist.
+     */
+    public function eventStartsAt(): ?DateTimeImmutable
+    {
+        return $this->eventStartsAt;
+    }
+
+    /**
+     * Whether the event has started (from its start time on). An event whose start is unknown
+     * counts as started, so nothing is accepted for it.
+     */
+    public function hasEventStarted(?DateTimeImmutable $now = null): bool
+    {
+        $now ??= new DateTimeImmutable;
+
+        return $this->eventStartsAt === null || $now >= $this->eventStartsAt;
     }
 
     /**

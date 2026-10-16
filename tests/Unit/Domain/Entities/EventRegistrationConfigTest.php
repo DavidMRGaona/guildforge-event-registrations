@@ -22,6 +22,10 @@ final class EventRegistrationConfigTest extends TestCase
             registrationClosesAt: $overrides['registrationClosesAt'] ?? null,
             cancellationDeadline: $overrides['cancellationDeadline'] ?? null,
             requiresConfirmation: $overrides['requiresConfirmation'] ?? false,
+            // A future start unless the test says otherwise (null included)
+            eventStartsAt: array_key_exists('eventStartsAt', $overrides)
+                ? $overrides['eventStartsAt']
+                : new DateTimeImmutable('+1 week'),
         );
     }
 
@@ -175,5 +179,41 @@ final class EventRegistrationConfigTest extends TestCase
         $config->setCustomFields($fields);
 
         $this->assertEquals($fields, $config->customFields());
+    }
+
+    public function test_the_event_has_not_started_just_before_its_start(): void
+    {
+        $config = $this->createConfig(['eventStartsAt' => new DateTimeImmutable('2030-04-12 10:00:00')]);
+
+        $this->assertFalse($config->hasEventStarted(new DateTimeImmutable('2030-04-12 09:59:59')));
+    }
+
+    public function test_the_event_has_started_at_its_exact_start(): void
+    {
+        $config = $this->createConfig(['eventStartsAt' => new DateTimeImmutable('2030-04-12 10:00:00')]);
+
+        $this->assertTrue($config->hasEventStarted(new DateTimeImmutable('2030-04-12 10:00:00')));
+    }
+
+    public function test_the_event_has_started_after_its_start(): void
+    {
+        $config = $this->createConfig(['eventStartsAt' => new DateTimeImmutable('2030-04-12 10:00:00')]);
+
+        $this->assertTrue($config->hasEventStarted(new DateTimeImmutable('2030-04-12 10:00:01')));
+    }
+
+    public function test_an_event_whose_start_is_unknown_counts_as_started(): void
+    {
+        $config = new EventRegistrationConfig(eventId: 'event-123');
+
+        $this->assertNull($config->eventStartsAt());
+        $this->assertTrue($config->hasEventStarted(new DateTimeImmutable('2000-01-01 00:00:00')));
+    }
+
+    public function test_it_exposes_the_event_start(): void
+    {
+        $startsAt = new DateTimeImmutable('2030-04-12 10:00:00');
+
+        $this->assertSame($startsAt, $this->createConfig(['eventStartsAt' => $startsAt])->eventStartsAt());
     }
 }
