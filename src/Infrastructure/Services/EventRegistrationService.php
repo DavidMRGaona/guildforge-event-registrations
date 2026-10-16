@@ -215,6 +215,9 @@ final readonly class EventRegistrationService implements EventRegistrationServic
         $registration->reject();
         $this->registrationRepository->save($registration);
 
+        // A rejected confirmed registration frees a spot for the waiting list
+        $this->waitingListService->fillFreeSpots($registration->eventId());
+
         return EventRegistrationResponseDTO::fromEntity($registration);
     }
 
@@ -227,6 +230,9 @@ final readonly class EventRegistrationService implements EventRegistrationServic
         $position = $this->registrationRepository->getNextWaitingListPosition($registration->eventId());
         $registration->moveToWaitingList($position);
         $this->registrationRepository->save($registration);
+
+        // The freed spot goes to whoever was already waiting; the moved registration stays on the list
+        $this->waitingListService->fillFreeSpots($registration->eventId(), $registration->id()->value);
 
         return EventRegistrationResponseDTO::fromEntity($registration);
     }

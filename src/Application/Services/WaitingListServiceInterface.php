@@ -23,10 +23,19 @@ interface WaitingListServiceInterface
     ): EventRegistrationResponseDTO;
 
     /**
-     * Promote the next user from waiting list to confirmed.
+     * Promote the next user from waiting list to confirmed, skipping $excludeRegistrationId.
      * Called when a participant cancels and a spot becomes available.
      */
-    public function promoteNext(string $eventId): ?EventRegistrationResponseDTO;
+    public function promoteNext(string $eventId, ?string $excludeRegistrationId = null): ?EventRegistrationResponseDTO;
+
+    /**
+     * Promote from the waiting list until the free confirmed spots are filled, before the event
+     * starts only. Called whenever a confirmed spot may have been freed, by a user or by the staff.
+     * $excludeRegistrationId is never promoted (a registration the staff has just moved there).
+     *
+     * @return int How many registrations were promoted
+     */
+    public function fillFreeSpots(string $eventId, ?string $excludeRegistrationId = null): int;
 
     /**
      * Get a user's position in the waiting list.

@@ -22,6 +22,8 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Modules\EventRegistrations\Application\Services\EventRegistrationServiceInterface;
+use Modules\EventRegistrations\Application\Services\WaitingListServiceInterface;
+use Modules\EventRegistrations\Domain\Repositories\EventRegistrationRepositoryInterface;
 use Modules\EventRegistrations\Domain\Enums\RegistrationState;
 use Modules\EventRegistrations\Infrastructure\Persistence\Eloquent\Models\EventRegistrationConfigModel;
 use Modules\EventRegistrations\Infrastructure\Persistence\Eloquent\Models\EventRegistrationModel;
@@ -273,8 +275,11 @@ final class RegistrationsRelationManager extends RelationManager
                             ->success()
                             ->send();
                     }),
-                EditAction::make(),
-                DeleteAction::make(),
+                // Editing the state or deleting a confirmed registration may free a spot
+                EditAction::make()
+                    ->after(fn (EventRegistrationModel $record) => $this->fillFreeSpotsAfterChange((string) $record->event_id, $record)),
+                DeleteAction::make()
+                    ->after(fn (EventRegistrationModel $record) => $this->fillFreeSpotsAfterChange((string) $record->event_id, $record)),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
@@ -365,9 +370,31 @@ final class RegistrationsRelationManager extends RelationManager
                             $livewire->dispatch('$refresh');
                         }),
                     DeleteBulkAction::make()
-                        ->label(__('common.delete')),
+                        ->label(__('common.delete'))
+                        ->after(fn (RelationManager $livewire) => $this->fillFreeSpotsAfterChange((string) $livewire->getOwnerRecord()->getKey())),
                 ]),
             ])
             ->defaultSort('created_at', 'desc');
+    }
+
+    /**
+     * Fill the spots an Eloquent panel action may have freed (edit, delete, bulk delete).
+     * A record just edited to the waiting list stays on it, at the end if it had no position,
+     * and is never the one promoted.
+     */
+    private function fillFreeSpotsAfterChange(string $eventId, ?EventRegistrationModel $record = null): void
+    {
+        $excludeId = null;
+
+        if ($record !== null && $record->exists && $record->state === RegistrationState::WaitingList) {
+            if ($record->position === null) {
+                $record->position = resolve(EventRegistrationRepositoryInterface::class)->getNextWaitingListPosition($eventId);
+                $record->save();
+            }
+
+            $excludeId = (string) $record->id;
+        }
+
+        resolve(WaitingListServiceInterface::class)->fillFreeSpots($eventId, $excludeId);
     }
 }

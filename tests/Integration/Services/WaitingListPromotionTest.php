@@ -272,6 +272,66 @@ final class WaitingListPromotionTest extends ModuleTestCase
         $this->assertSame(RegistrationState::WaitingList, $stillWaiting->state());
     }
 
+    public function test_fill_free_spots_promotes_as_many_as_there_are_free_spots(): void
+    {
+        $eventId = EventModel::factory()->create()->id;
+        $this->configRepository->save(new EventRegistrationConfig(eventId: $eventId, maxParticipants: 3, waitingListEnabled: true));
+        $this->registrationRepository->save($this->createRegistration($eventId, 'user-1', RegistrationState::Confirmed));
+        foreach (['user-2', 'user-3', 'user-4'] as $position => $user) {
+            $this->registrationRepository->save($this->createRegistration($eventId, $user, RegistrationState::WaitingList, $position + 1));
+        }
+
+        $this->assertSame(2, $this->waitingListService->fillFreeSpots($eventId));
+
+        $this->assertSame(3, $this->registrationRepository->countConfirmedByEvent($eventId));
+        $last = $this->registrationRepository->findByUserAndEvent($this->users['user-4'], $eventId);
+        $this->assertSame(RegistrationState::WaitingList, $last?->state());
+        $this->assertSame(1, $last?->position());
+    }
+
+    public function test_fill_free_spots_stops_when_nobody_is_left_waiting(): void
+    {
+        $eventId = EventModel::factory()->create()->id;
+        $this->configRepository->save(new EventRegistrationConfig(eventId: $eventId, maxParticipants: null, waitingListEnabled: true));
+        $this->registrationRepository->save($this->createRegistration($eventId, 'user-1', RegistrationState::WaitingList, 1));
+        $this->registrationRepository->save($this->createRegistration($eventId, 'user-2', RegistrationState::WaitingList, 2));
+
+        $this->assertSame(2, $this->waitingListService->fillFreeSpots($eventId));
+        $this->assertSame(0, $this->registrationRepository->countWaitingListByEvent($eventId));
+    }
+
+    public function test_fill_free_spots_promotes_nobody_once_the_event_has_started(): void
+    {
+        $eventId = $this->startedEventId();
+        $this->configRepository->save(new EventRegistrationConfig(eventId: $eventId, maxParticipants: 2, waitingListEnabled: true));
+        $this->registrationRepository->save($this->createRegistration($eventId, 'user-1', RegistrationState::WaitingList, 1));
+
+        $this->assertSame(0, $this->waitingListService->fillFreeSpots($eventId));
+    }
+
+    public function test_fill_free_spots_skips_the_excluded_registration(): void
+    {
+        $eventId = EventModel::factory()->create()->id;
+        $this->configRepository->save(new EventRegistrationConfig(eventId: $eventId, maxParticipants: null, waitingListEnabled: true));
+        $excluded = $this->createRegistration($eventId, 'user-1', RegistrationState::WaitingList, 1);
+        $this->registrationRepository->save($excluded);
+        $this->registrationRepository->save($this->createRegistration($eventId, 'user-2', RegistrationState::WaitingList, 2));
+
+        $this->assertSame(1, $this->waitingListService->fillFreeSpots($eventId, $excluded->id()->value));
+
+        $this->assertSame(RegistrationState::WaitingList, $this->registrationRepository->findByUserAndEvent($this->users['user-1'], $eventId)?->state());
+        $this->assertSame(RegistrationState::Confirmed, $this->registrationRepository->findByUserAndEvent($this->users['user-2'], $eventId)?->state());
+    }
+
+    public function test_fill_free_spots_promotes_nobody_when_the_waiting_list_is_disabled(): void
+    {
+        $eventId = EventModel::factory()->create()->id;
+        $this->configRepository->save(new EventRegistrationConfig(eventId: $eventId, maxParticipants: 2, waitingListEnabled: false));
+        $this->registrationRepository->save($this->createRegistration($eventId, 'user-1', RegistrationState::WaitingList, 1));
+
+        $this->assertSame(0, $this->waitingListService->fillFreeSpots($eventId));
+    }
+
     private function startedEventId(): string
     {
         return EventModel::factory()->create([

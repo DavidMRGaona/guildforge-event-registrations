@@ -65,19 +65,47 @@ final readonly class WaitingListService implements WaitingListServiceInterface
         return EventRegistrationResponseDTO::fromEntity($registration);
     }
 
-    public function promoteNext(string $eventId): ?EventRegistrationResponseDTO
+    public function promoteNext(string $eventId, ?string $excludeRegistrationId = null): ?EventRegistrationResponseDTO
     {
         // Nobody is promoted once the event has started, whoever freed the spot
         if ($this->configRepository->findByEventOrDefault($eventId)->hasEventStarted()) {
             return null;
         }
 
-        return $this->promoteFirstInWaitingList($eventId);
+        return $this->promoteFirstInWaitingList($eventId, $excludeRegistrationId);
     }
 
-    private function promoteFirstInWaitingList(string $eventId): ?EventRegistrationResponseDTO
+    public function fillFreeSpots(string $eventId, ?string $excludeRegistrationId = null): int
     {
-        $registration = $this->registrationRepository->findFirstInWaitingList($eventId);
+        $config = $this->configRepository->findByEventOrDefault($eventId);
+
+        // No waiting list, or the event has started: nobody is promoted
+        if (! $config->isWaitingListEnabled() || $config->hasEventStarted()) {
+            return 0;
+        }
+
+        $maxParticipants = $config->maxParticipants();
+        // Each promotion takes one person off the list: never more rounds than people waiting
+        $rounds = $this->registrationRepository->countWaitingListByEvent($eventId);
+        $promoted = 0;
+
+        while (
+            $promoted < $rounds
+            && ($maxParticipants === null || $this->registrationRepository->countConfirmedByEvent($eventId) < $maxParticipants)
+        ) {
+            if ($this->promoteFirstInWaitingList($eventId, $excludeRegistrationId) === null) {
+                break;
+            }
+
+            $promoted++;
+        }
+
+        return $promoted;
+    }
+
+    private function promoteFirstInWaitingList(string $eventId, ?string $excludeRegistrationId = null): ?EventRegistrationResponseDTO
+    {
+        $registration = $this->registrationRepository->findFirstInWaitingList($eventId, $excludeRegistrationId);
 
         if ($registration === null) {
             return null;

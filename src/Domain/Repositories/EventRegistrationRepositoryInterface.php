@@ -72,9 +72,9 @@ interface EventRegistrationRepositoryInterface
     public function getNextWaitingListPosition(string $eventId): int;
 
     /**
-     * Get the first registration in the waiting list (lowest position).
+     * Get the first registration in the waiting list (lowest position), skipping the given one.
      */
-    public function findFirstInWaitingList(string $eventId): ?EventRegistration;
+    public function findFirstInWaitingList(string $eventId, ?string $excludeRegistrationId = null): ?EventRegistration;
 
     /**
      * Get all registrations in the waiting list ordered by position.
