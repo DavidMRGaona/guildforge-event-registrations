@@ -94,7 +94,7 @@ final class EventRegistrationConfigPage extends Page implements HasForms
                                 TextInput::make('max_waiting_list')
                                     ->label(__('event-registrations::messages.config.max_waiting_list'))
                                     ->numeric()
-                                    ->minValue(1)
+                                    ->minValue(0)
                                     ->nullable()
                                     ->helperText(__('event-registrations::messages.config.max_waiting_list_help')),
                             ])->columns(2),

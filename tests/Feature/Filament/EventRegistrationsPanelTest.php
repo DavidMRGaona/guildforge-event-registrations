@@ -124,11 +124,38 @@ final class EventRegistrationsPanelTest extends ModuleTestCase
         $event = $this->eventStartingAt('2030-04-12 10:00:00');
 
         Livewire::test(EventRegistrationConfigPage::class, ['eventId' => $event->id])
-            ->set('data.max_waiting_list', null)
             ->set('data.registration_opens_at', '2030-04-01 10:00:00')
             ->set("data.{$field}", '2030-04-12 10:00:00')
             ->call('save')
             ->assertHasNoErrors();
+
+        $config = EventRegistrationConfigModel::query()->where('event_id', $event->id)->firstOrFail();
+        $this->assertSame('2030-04-12 10:00:00', $config->{$field}?->format('Y-m-d H:i:s'));
+    }
+
+    public function test_the_config_page_saves_with_its_untouched_defaults(): void
+    {
+        $event = $this->eventStartingAt('2030-04-12 10:00:00');
+
+        Livewire::test(EventRegistrationConfigPage::class, ['eventId' => $event->id])
+            ->call('save')
+            ->assertHasNoErrors();
+
+        $this->assertTrue(EventRegistrationConfigModel::query()->where('event_id', $event->id)->exists());
+    }
+
+    #[DataProvider('datesCappedAtTheEventStart')]
+    public function test_the_config_tab_explains_the_cap_in_english(string $field): void
+    {
+        app()->setLocale('en');
+        $event = $this->eventStartingAt('2030-04-12 10:00:00');
+
+        Livewire::test(RegistrationConfigRelationManager::class, ['ownerRecord' => $event, 'pageClass' => EditEvent::class])
+            ->set('configData.registration_enabled', true)
+            ->set('configData.registration_opens_at', '2030-04-01 10:00:00')
+            ->set("configData.{$field}", '2030-04-12 10:01:00')
+            ->call('save')
+            ->assertSee('Cannot be later than the event start (12/04/2030 10:00)');
     }
 
     /**
