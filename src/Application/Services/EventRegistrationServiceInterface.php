@@ -56,6 +56,15 @@ interface EventRegistrationServiceInterface
     public function reject(string $registrationId): EventRegistrationResponseDTO;
 
     /**
+     * Reject several registrations, then fill the freed spots once, so a waiting person who is
+     * also being rejected is never promoted in between. Registrations already rejected are skipped.
+     *
+     * @param  array<string>  $registrationIds
+     * @return int How many registrations were rejected
+     */
+    public function rejectMany(array $registrationIds): int;
+
+    /**
      * Move a registration to the waiting list (admin action).
      *
      * @throws RegistrationNotFoundException

@@ -337,19 +337,9 @@ final class RegistrationsRelationManager extends RelationManager
                         ->modalSubmitActionLabel(__('event-registrations::messages.actions.reject'))
                         ->action(function (Collection $records, RelationManager $livewire): void {
                             $service = resolve(EventRegistrationServiceInterface::class);
-                            $count = 0;
-
-                            foreach ($records as $record) {
-                                /** @var EventRegistrationModel $registration */
-                                $registration = $record;
-
-                                if ($registration->state === RegistrationState::Rejected) {
-                                    continue;
-                                }
-
-                                $service->reject((string) $registration->id);
-                                $count++;
-                            }
+                            $count = $service->rejectMany(
+                                $records->map(fn ($record): string => (string) $record->getKey())->values()->all()
+                            );
 
                             if ($count === 0) {
                                 Notification::make()

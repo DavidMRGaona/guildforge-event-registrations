@@ -221,6 +221,35 @@ final readonly class EventRegistrationService implements EventRegistrationServic
         return EventRegistrationResponseDTO::fromEntity($registration);
     }
 
+    public function rejectMany(array $registrationIds): int
+    {
+        $eventIds = [];
+        $rejected = 0;
+
+        foreach ($registrationIds as $registrationId) {
+            $registration = $this->registrationRepository->findOrFail(
+                EventRegistrationId::fromString($registrationId)
+            );
+
+            if ($registration->state() === RegistrationState::Rejected) {
+                continue;
+            }
+
+            $registration->reject();
+            $this->registrationRepository->save($registration);
+
+            $eventIds[$registration->eventId()] = true;
+            $rejected++;
+        }
+
+        // Fill only after every selected registration is out, once per event
+        foreach (array_keys($eventIds) as $eventId) {
+            $this->waitingListService->fillFreeSpots((string) $eventId);
+        }
+
+        return $rejected;
+    }
+
     public function moveToWaitingList(string $registrationId): EventRegistrationResponseDTO
     {
         $registration = $this->registrationRepository->findOrFail(
