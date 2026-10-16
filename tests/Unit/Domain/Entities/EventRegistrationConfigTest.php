@@ -216,4 +216,85 @@ final class EventRegistrationConfigTest extends TestCase
 
         $this->assertSame($startsAt, $this->createConfig(['eventStartsAt' => $startsAt])->eventStartsAt());
     }
+
+    public function test_registration_is_open_just_before_the_event_starts(): void
+    {
+        $config = $this->createConfig(['eventStartsAt' => new DateTimeImmutable('2030-04-12 10:00:00')]);
+
+        $this->assertTrue($config->isOpen(new DateTimeImmutable('2030-04-12 09:59:59')));
+    }
+
+    public function test_registration_closes_at_the_exact_start(): void
+    {
+        $config = $this->createConfig(['eventStartsAt' => new DateTimeImmutable('2030-04-12 10:00:00')]);
+
+        $this->assertFalse($config->isOpen(new DateTimeImmutable('2030-04-12 10:00:00')));
+    }
+
+    public function test_registration_stays_closed_after_the_start(): void
+    {
+        $config = $this->createConfig(['eventStartsAt' => new DateTimeImmutable('2030-04-12 10:00:00')]);
+
+        $this->assertFalse($config->isOpen(new DateTimeImmutable('2030-04-12 10:00:01')));
+    }
+
+    public function test_a_close_date_after_the_start_does_not_keep_registration_open(): void
+    {
+        $config = $this->createConfig([
+            'eventStartsAt' => new DateTimeImmutable('2030-04-12 10:00:00'),
+            'registrationClosesAt' => new DateTimeImmutable('2030-04-12 12:00:00'),
+        ]);
+
+        $this->assertTrue($config->isOpen(new DateTimeImmutable('2030-04-12 09:00:00')));
+        $this->assertFalse($config->isOpen(new DateTimeImmutable('2030-04-12 11:00:00')));
+    }
+
+    public function test_registration_is_closed_when_the_event_start_is_unknown(): void
+    {
+        $config = $this->createConfig(['eventStartsAt' => null]);
+
+        $this->assertFalse($config->isOpen(new DateTimeImmutable('2000-01-01 00:00:00')));
+    }
+
+    public function test_cancellation_is_allowed_just_before_the_start_without_a_deadline(): void
+    {
+        $config = $this->createConfig(['eventStartsAt' => new DateTimeImmutable('2030-04-12 10:00:00')]);
+
+        $this->assertTrue($config->canCancelNow(new DateTimeImmutable('2030-04-12 09:59:59')));
+    }
+
+    public function test_cancellation_closes_at_the_exact_start_without_a_deadline(): void
+    {
+        $config = $this->createConfig(['eventStartsAt' => new DateTimeImmutable('2030-04-12 10:00:00')]);
+
+        $this->assertFalse($config->canCancelNow(new DateTimeImmutable('2030-04-12 10:00:00')));
+    }
+
+    public function test_a_deadline_after_the_start_does_not_keep_cancellation_open(): void
+    {
+        $config = $this->createConfig([
+            'eventStartsAt' => new DateTimeImmutable('2030-04-12 10:00:00'),
+            'cancellationDeadline' => new DateTimeImmutable('2030-04-12 12:00:00'),
+        ]);
+
+        $this->assertFalse($config->canCancelNow(new DateTimeImmutable('2030-04-12 11:00:00')));
+    }
+
+    public function test_an_earlier_deadline_still_closes_cancellation_before_the_start(): void
+    {
+        $config = $this->createConfig([
+            'eventStartsAt' => new DateTimeImmutable('2030-04-12 10:00:00'),
+            'cancellationDeadline' => new DateTimeImmutable('2030-04-12 08:00:00'),
+        ]);
+
+        $this->assertTrue($config->canCancelNow(new DateTimeImmutable('2030-04-12 08:00:00')));
+        $this->assertFalse($config->canCancelNow(new DateTimeImmutable('2030-04-12 09:00:00')));
+    }
+
+    public function test_cancellation_is_refused_when_the_event_start_is_unknown(): void
+    {
+        $config = $this->createConfig(['eventStartsAt' => null]);
+
+        $this->assertFalse($config->canCancelNow(new DateTimeImmutable('2000-01-01 00:00:00')));
+    }
 }

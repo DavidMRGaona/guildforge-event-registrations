@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\EventRegistrations\Tests\Integration\Services;
 
+use DateTimeImmutable;
 use Illuminate\Support\Facades\Event;
 use Modules\EventRegistrations\Application\DTOs\RegisterToEventDTO;
 use Modules\EventRegistrations\Application\Services\MembershipCheckerInterface;
@@ -41,7 +42,11 @@ final class RegistrationConfirmedDispatchTest extends TestCase
     {
         $this->configRepository
             ->method('findByEventOrDefault')
-            ->willReturn(new EventRegistrationConfig(eventId: 'event-1', requiresConfirmation: false));
+            ->willReturn(new EventRegistrationConfig(
+                eventId: 'event-1',
+                requiresConfirmation: false,
+                eventStartsAt: new DateTimeImmutable('+1 week'),
+            ));
 
         $this->makeRegistrationService()->register(new RegisterToEventDTO(eventId: 'event-1', userId: 'user-1'));
 

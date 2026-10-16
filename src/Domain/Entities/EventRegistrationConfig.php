@@ -135,13 +135,18 @@ final class EventRegistrationConfig
     }
 
     /**
-     * Check if registration is currently open based on dates and enabled state.
+     * Check if registration is currently open: enabled, within the configured dates and before
+     * the event starts (the start closes it whatever the close date says).
      */
     public function isOpen(?DateTimeImmutable $now = null): bool
     {
         $now ??= new DateTimeImmutable;
 
         if (! $this->registrationEnabled) {
+            return false;
+        }
+
+        if ($this->hasEventStarted($now)) {
             return false;
         }
 
@@ -173,11 +178,16 @@ final class EventRegistrationConfig
     }
 
     /**
-     * Check if cancellation is still allowed.
+     * Check if the user may still cancel: before the deadline, if any, and before the event
+     * starts (without a deadline the start is the cut).
      */
     public function canCancelNow(?DateTimeImmutable $now = null): bool
     {
         $now ??= new DateTimeImmutable;
+
+        if ($this->hasEventStarted($now)) {
+            return false;
+        }
 
         if ($this->cancellationDeadline === null) {
             return true;
