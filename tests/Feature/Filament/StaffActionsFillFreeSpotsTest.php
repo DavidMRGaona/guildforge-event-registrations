@@ -162,7 +162,23 @@ final class StaffActionsFillFreeSpotsTest extends ModuleTestCase
 
         $this->assertSame(RegistrationState::Confirmed, $other->fresh()?->state);
         $this->assertSame(RegistrationState::WaitingList, $edited->fresh()?->state);
-        $this->assertNotNull($edited->fresh()?->position);
+        $this->assertSame(1, $edited->fresh()?->position);
+    }
+
+    public function test_editing_only_the_notes_of_a_waiting_registration_does_not_make_it_jump_the_queue(): void
+    {
+        // Limit raised to 2 with one confirmed: a free spot sits next to the waiting list
+        $event = $this->eventWithSpots(now()->addWeek(), maxParticipants: 2);
+        $this->registration($event, RegistrationState::Confirmed);
+        $first = $this->registration($event, RegistrationState::WaitingList, 1);
+        $second = $this->registration($event, RegistrationState::WaitingList, 2);
+
+        $this->table($event)
+            ->callTableAction('edit', $first, data: ['state' => RegistrationState::WaitingList->value, 'admin_notes' => 'Llamar antes'])
+            ->assertHasNoErrors();
+
+        $this->assertSame(RegistrationState::Confirmed, $first->fresh()?->state);
+        $this->assertSame(RegistrationState::WaitingList, $second->fresh()?->state);
     }
 
     private function runStaffAction(string $action, EventModel $event, EventRegistrationModel $record): void

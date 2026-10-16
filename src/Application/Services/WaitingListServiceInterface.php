@@ -24,7 +24,8 @@ interface WaitingListServiceInterface
 
     /**
      * Promote the next user from waiting list to confirmed, skipping $excludeRegistrationId.
-     * Called when a participant cancels and a spot becomes available.
+     * Promotes one person with no capacity check: callers that react to a freed spot
+     * use fillFreeSpots(), which checks the free spots first.
      */
     public function promoteNext(string $eventId, ?string $excludeRegistrationId = null): ?EventRegistrationResponseDTO;
 

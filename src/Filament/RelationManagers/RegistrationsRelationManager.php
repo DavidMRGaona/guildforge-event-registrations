@@ -379,18 +379,18 @@ final class RegistrationsRelationManager extends RelationManager
 
     /**
      * Fill the spots an Eloquent panel action may have freed (edit, delete, bulk delete).
-     * A record just edited to the waiting list stays on it, at the end if it had no position,
+     * A record just edited INTO the waiting list stays on it, at the end of the line,
      * and is never the one promoted.
      */
     private function fillFreeSpotsAfterChange(string $eventId, ?EventRegistrationModel $record = null): void
     {
         $excludeId = null;
 
-        if ($record !== null && $record->exists && $record->state === RegistrationState::WaitingList) {
-            if ($record->position === null) {
-                $record->position = resolve(EventRegistrationRepositoryInterface::class)->getNextWaitingListPosition($eventId);
-                $record->save();
-            }
+        // Only a change INTO the waiting list goes to the end of the line; any other edit of a
+        // waiting row (e.g. its notes) leaves it in its place in the queue
+        if ($record !== null && $record->exists && $record->wasChanged('state') && $record->state === RegistrationState::WaitingList) {
+            $record->position = resolve(EventRegistrationRepositoryInterface::class)->getNextWaitingListPosition($eventId);
+            $record->save();
 
             $excludeId = (string) $record->id;
         }
