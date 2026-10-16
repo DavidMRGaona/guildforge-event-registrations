@@ -206,8 +206,9 @@ async function fetchStatus(): Promise<void> {
 
     try {
         const response = await fetch(`/eventos/${resolvedEventId.value}/inscripcion/estado`);
-        const data = await response.json();
-        config.value = data.data;
+        // An error answer (404, 429, 500) carries no config: keep it null so the button hides
+        const data = response.ok ? await response.json() : null;
+        config.value = data?.data ?? null;
     } catch (e) {
         console.error('Failed to fetch registration status:', e);
     } finally {
@@ -231,8 +232,8 @@ async function fetchRegistration(): Promise<void> {
             return;
         }
 
-        const data = await response.json();
-        registration.value = data.data;
+        const data = response.ok ? await response.json() : null;
+        registration.value = data?.data ?? null;
     } catch (e) {
         console.error('Failed to fetch user registration:', e);
     } finally {
@@ -320,6 +321,8 @@ async function handleCancel(): Promise<void> {
 
         if (!response.ok) {
             error.value = data.message;
+            // The cancellation window may have closed while the page was open
+            await fetchStatus();
             return;
         }
 

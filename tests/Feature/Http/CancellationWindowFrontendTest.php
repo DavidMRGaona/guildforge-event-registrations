@@ -64,6 +64,24 @@ final class CancellationWindowFrontendTest extends ModuleTestCase
         }
     }
 
+    public function test_an_error_answer_never_replaces_the_config_or_the_registration_with_undefined(): void
+    {
+        $source = $this->componentSource();
+
+        $this->assertStringContainsString('const data = response.ok ? await response.json() : null;', $source);
+        $this->assertStringContainsString('config.value = data?.data ?? null;', $source);
+        $this->assertStringContainsString('registration.value = data?.data ?? null;', $source);
+        $this->assertStringNotContainsString('config.value = data.data;', $source);
+    }
+
+    public function test_a_refused_cancellation_reloads_the_status_so_the_button_can_hide(): void
+    {
+        $this->assertMatchesRegularExpression(
+            '/if \(!response\.ok\) \{\s*error\.value = data\.message;[^}]*await fetchStatus\(\);\s*return;\s*\}/s',
+            $this->componentSource(),
+        );
+    }
+
     private function componentSource(): string
     {
         $source = file_get_contents(self::MODULE_ROOT . '/resources/js/components/RegistrationButton.vue');
