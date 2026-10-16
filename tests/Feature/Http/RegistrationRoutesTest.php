@@ -119,6 +119,21 @@ final class RegistrationRoutesTest extends ModuleTestCase
             ->assertExactJson(['data' => null]);
     }
 
+    public function test_a_user_cancelling_from_the_waiting_list_moves_the_others_up(): void
+    {
+        $this->createRegistration(UserModel::factory()->create(), RegistrationState::Confirmed);
+        $leaving = UserModel::factory()->create();
+        $this->createRegistration($leaving, RegistrationState::WaitingList)->update(['position' => 1]);
+        $behind = $this->createRegistration(UserModel::factory()->create(), RegistrationState::WaitingList);
+        $behind->update(['position' => 2]);
+
+        $this->actingAs($leaving)
+            ->deleteJson($this->url('/eventos/{event}/inscripcion'))
+            ->assertOk();
+
+        $this->assertSame(1, $behind->fresh()?->position);
+    }
+
     public function test_show_returns_the_users_registration(): void
     {
         $user = UserModel::factory()->create();

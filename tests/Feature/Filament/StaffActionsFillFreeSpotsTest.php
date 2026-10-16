@@ -8,10 +8,12 @@ use App\Filament\Resources\EventResource\Pages\EditEvent;
 use App\Infrastructure\Persistence\Eloquent\Models\EventModel;
 use App\Infrastructure\Persistence\Eloquent\Models\UserModel;
 use Carbon\CarbonInterface;
+use Illuminate\Support\Facades\Event as EventFacade;
 use Illuminate\Support\Facades\Notification;
 use Livewire\Features\SupportTesting\Testable;
 use Livewire\Livewire;
 use Modules\EventRegistrations\Domain\Enums\RegistrationState;
+use Modules\EventRegistrations\Domain\Events\WaitingListPromoted;
 use Modules\EventRegistrations\Filament\RelationManagers\RegistrationsRelationManager;
 use Modules\EventRegistrations\Infrastructure\Persistence\Eloquent\Models\EventRegistrationConfigModel;
 use Modules\EventRegistrations\Infrastructure\Persistence\Eloquent\Models\EventRegistrationModel;
@@ -179,6 +181,71 @@ final class StaffActionsFillFreeSpotsTest extends ModuleTestCase
 
         $this->assertSame(RegistrationState::Confirmed, $first->fresh()?->state);
         $this->assertSame(RegistrationState::WaitingList, $second->fresh()?->state);
+    }
+
+    /**
+     * @return array<string, array{bool}>
+     */
+    public static function selectionOrders(): array
+    {
+        return ['confirmed listed first' => [true], 'waiting listed first' => [false]];
+    }
+
+    #[DataProvider('selectionOrders')]
+    public function test_bulk_rejecting_a_confirmed_and_a_waiting_registration_never_promotes_the_rejected_one(bool $confirmedFirst): void
+    {
+        EventFacade::fake([WaitingListPromoted::class]);
+
+        $event = $this->eventWithSpots(now()->addWeek());
+        $confirmed = $this->registration($event, RegistrationState::Confirmed);
+        $firstWaiting = $this->registration($event, RegistrationState::WaitingList, 1);
+        $secondWaiting = $this->registration($event, RegistrationState::WaitingList, 2);
+
+        $confirmed->forceFill(['created_at' => now()->subHours($confirmedFirst ? 1 : 3)])->save();
+        $firstWaiting->forceFill(['created_at' => now()->subHours(2)])->save();
+
+        $this->table($event)
+            ->callTableBulkAction('reject_selected', [$confirmed, $firstWaiting])
+            ->assertHasNoErrors();
+
+        $this->assertSame(RegistrationState::Rejected, $confirmed->fresh()?->state);
+        $this->assertSame(RegistrationState::Rejected, $firstWaiting->fresh()?->state);
+        $this->assertSame(RegistrationState::Confirmed, $secondWaiting->fresh()?->state);
+        EventFacade::assertDispatchedTimes(WaitingListPromoted::class, 1);
+        EventFacade::assertDispatched(
+            WaitingListPromoted::class,
+            fn (WaitingListPromoted $e): bool => $e->registrationId === (string) $secondWaiting->id,
+        );
+    }
+
+    #[DataProvider('actionsThatLeaveTheWaitingListWithoutAPromotion')]
+    public function test_the_waiting_list_is_renumbered_when_someone_leaves_it_without_a_promotion(string $action): void
+    {
+        // The only spot stays taken, so nobody is promoted
+        $event = $this->eventWithSpots(now()->addWeek());
+        $this->registration($event, RegistrationState::Confirmed);
+        $first = $this->registration($event, RegistrationState::WaitingList, 1);
+        $second = $this->registration($event, RegistrationState::WaitingList, 2);
+        $third = $this->registration($event, RegistrationState::WaitingList, 3);
+
+        $this->runStaffAction($action, $event, $first);
+
+        $this->assertSame(1, $second->fresh()?->position);
+        $this->assertSame(2, $third->fresh()?->position);
+    }
+
+    /**
+     * @return array<string, array{string}>
+     */
+    public static function actionsThatLeaveTheWaitingListWithoutAPromotion(): array
+    {
+        return [
+            'reject' => ['reject'],
+            'reject selected' => ['reject_selected'],
+            'delete' => ['delete'],
+            'delete selected' => ['delete_selected'],
+            'edit the state to pending' => ['edit'],
+        ];
     }
 
     private function runStaffAction(string $action, EventModel $event, EventRegistrationModel $record): void

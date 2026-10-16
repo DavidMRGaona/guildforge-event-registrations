@@ -25,7 +25,8 @@ interface WaitingListServiceInterface
     /**
      * Promote the next user from waiting list to confirmed, skipping $excludeRegistrationId.
      * Promotes one person with no capacity check: callers that react to a freed spot
-     * use fillFreeSpots(), which checks the free spots first.
+     * use fillFreeSpots(), the capacity-aware entry point, which checks the free spots first.
+     * Promotes nobody (returns null) once the event has started.
      */
     public function promoteNext(string $eventId, ?string $excludeRegistrationId = null): ?EventRegistrationResponseDTO;
 
@@ -33,6 +34,7 @@ interface WaitingListServiceInterface
      * Promote from the waiting list until the free confirmed spots are filled, before the event
      * starts only. Called whenever a confirmed spot may have been freed, by a user or by the staff.
      * $excludeRegistrationId is never promoted (a registration the staff has just moved there).
+     * It always renumbers the waiting list afterwards, even when nobody was promoted.
      *
      * @return int How many registrations were promoted
      */

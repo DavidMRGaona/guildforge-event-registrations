@@ -16,6 +16,13 @@ final readonly class PromoteFromWaitingListOnCancellation
 
     public function handle(UserUnregisteredFromEvent $event): void
     {
+        // Someone leaving the waiting list frees no spot, but the people behind move up
+        if ($event->previousState === RegistrationState::WaitingList) {
+            $this->waitingListService->recalculatePositions($event->eventId);
+
+            return;
+        }
+
         // Only a cancelled confirmed registration frees a spot
         if ($event->previousState !== RegistrationState::Confirmed) {
             return;

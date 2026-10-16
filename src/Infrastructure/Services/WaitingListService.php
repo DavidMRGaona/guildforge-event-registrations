@@ -77,6 +77,16 @@ final readonly class WaitingListService implements WaitingListServiceInterface
 
     public function fillFreeSpots(string $eventId, ?string $excludeRegistrationId = null): int
     {
+        $promoted = $this->promoteWhileThereAreFreeSpots($eventId, $excludeRegistrationId);
+
+        // Someone may have left the list with no promotion (rejected, deleted, moved): close the gap
+        $this->recalculatePositions($eventId);
+
+        return $promoted;
+    }
+
+    private function promoteWhileThereAreFreeSpots(string $eventId, ?string $excludeRegistrationId): int
+    {
         $config = $this->configRepository->findByEventOrDefault($eventId);
 
         // No waiting list, or the event has started: nobody is promoted
