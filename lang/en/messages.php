@@ -103,8 +103,6 @@ return [
         'requires_payment' => 'Requires payment',
         'requires_payment_help' => 'User must pay to confirm registration',
         'members_only' => 'Members only',
-        'event_started' => 'The event has already started',
-        'cannot_cancel_started' => 'You cannot cancel your registration: the event has already started',
         'members_only_help' => 'Only association members can register: users holding the association member role chosen in Site Settings → Authentication.',
         'messages' => 'Messages',
         'confirmation_message' => 'Confirmation message',
@@ -134,6 +132,8 @@ return [
         'cannot_cancel' => 'Cannot cancel registration',
         'unauthenticated' => 'You must log in',
         'members_only' => 'Only association members can register for this event',
+        'event_started' => 'The event has already started',
+        'cannot_cancel_started' => 'You cannot cancel your registration: the event has already started',
         'event_not_found' => 'Event not found',
     ],
 

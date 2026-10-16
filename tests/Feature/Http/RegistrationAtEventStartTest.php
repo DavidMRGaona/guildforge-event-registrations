@@ -46,7 +46,7 @@ final class RegistrationAtEventStartTest extends ModuleTestCase
         $this->actingAs(UserModel::factory()->create())
             ->postJson("/eventos/{$event->id}/inscripcion")
             ->assertUnprocessable()
-            ->assertJsonPath('message', __('event-registrations::messages.errors.event_started'));
+            ->assertJsonPath('message', 'El evento ya ha comenzado');
 
         $this->assertSame(0, EventRegistrationModel::query()->count());
     }
@@ -58,7 +58,7 @@ final class RegistrationAtEventStartTest extends ModuleTestCase
         $this->actingAs(UserModel::factory()->create())
             ->postJson("/eventos/{$event->id}/inscripcion")
             ->assertUnprocessable()
-            ->assertJsonPath('message', __('event-registrations::messages.errors.event_started'));
+            ->assertJsonPath('message', 'El evento ya ha comenzado');
     }
 
     public function test_registering_again_after_cancelling_is_refused_once_the_event_has_started(): void
@@ -70,7 +70,7 @@ final class RegistrationAtEventStartTest extends ModuleTestCase
         $this->actingAs($user)
             ->postJson("/eventos/{$event->id}/inscripcion")
             ->assertUnprocessable()
-            ->assertJsonPath('message', __('event-registrations::messages.errors.event_started'));
+            ->assertJsonPath('message', 'El evento ya ha comenzado');
 
         $this->assertSame(RegistrationState::Cancelled, $registration->fresh()?->state);
     }
@@ -84,7 +84,7 @@ final class RegistrationAtEventStartTest extends ModuleTestCase
         $this->actingAs($user)
             ->deleteJson("/eventos/{$event->id}/inscripcion")
             ->assertUnprocessable()
-            ->assertJsonPath('message', __('event-registrations::messages.errors.cannot_cancel_started'));
+            ->assertJsonPath('message', 'No puedes cancelar la inscripción: el evento ya ha comenzado');
 
         $this->assertSame(RegistrationState::Confirmed, $registration->fresh()?->state);
     }
@@ -98,7 +98,7 @@ final class RegistrationAtEventStartTest extends ModuleTestCase
         $this->actingAs($user)
             ->deleteJson("/eventos/{$event->id}/inscripcion")
             ->assertUnprocessable()
-            ->assertJsonPath('message', __('event-registrations::messages.errors.cannot_cancel_started'));
+            ->assertJsonPath('message', 'No puedes cancelar la inscripción: el evento ya ha comenzado');
 
         $this->assertSame(RegistrationState::WaitingList, $registration->fresh()?->state);
         $this->assertSame(1, $registration->fresh()?->position);
@@ -126,7 +126,17 @@ final class RegistrationAtEventStartTest extends ModuleTestCase
         $this->actingAs($user)
             ->deleteJson("/eventos/{$event->id}/inscripcion")
             ->assertUnprocessable()
-            ->assertJsonPath('message', __('event-registrations::messages.errors.cannot_cancel'));
+            ->assertJsonPath('message', 'No se puede cancelar la inscripción');
+    }
+
+    public function test_both_locales_define_the_event_started_messages_under_errors(): void
+    {
+        foreach (['es', 'en'] as $locale) {
+            $messages = require dirname(__DIR__, 3)."/lang/{$locale}/messages.php";
+
+            $this->assertIsString($messages['errors']['event_started'] ?? null, $locale);
+            $this->assertIsString($messages['errors']['cannot_cancel_started'] ?? null, $locale);
+        }
     }
 
     /**
