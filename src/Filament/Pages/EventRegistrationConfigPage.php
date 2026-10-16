@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Modules\EventRegistrations\Filament\Pages;
 
+use App\Infrastructure\Persistence\Eloquent\Models\EventModel;
+use Carbon\CarbonInterface;
 use Filament\Schemas\Schema;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Fieldset;
@@ -19,12 +21,14 @@ use Filament\Pages\Page;
 use Modules\EventRegistrations\Application\DTOs\UpdateRegistrationConfigDTO;
 use Modules\EventRegistrations\Application\Services\EventRegistrationServiceInterface;
 use Modules\EventRegistrations\Domain\Repositories\EventRegistrationConfigRepositoryInterface;
+use Modules\EventRegistrations\Filament\Concerns\CapsDatesAtEventStart;
 
 /**
  * @property \Filament\Schemas\Schema $form
  */
 final class EventRegistrationConfigPage extends Page implements HasForms
 {
+    use CapsDatesAtEventStart;
     use InteractsWithForms;
 
     protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-cog-6-tooth';
@@ -67,6 +71,8 @@ final class EventRegistrationConfigPage extends Page implements HasForms
 
     public function form(Schema $schema): Schema
     {
+        $eventStartsAt = $this->eventStartsAt();
+
         return $schema
             ->components([
                 Section::make(__('event-registrations::messages.config.general'))
@@ -101,17 +107,23 @@ final class EventRegistrationConfigPage extends Page implements HasForms
                             ->native(false)
                             ->displayFormat('d/m/Y H:i')
                             ->nullable(),
-                        DateTimePicker::make('registration_closes_at')
-                            ->label(__('event-registrations::messages.config.registration_closes_at'))
-                            ->native(false)
-                            ->displayFormat('d/m/Y H:i')
-                            ->after('registration_opens_at')
-                            ->nullable(),
-                        DateTimePicker::make('cancellation_deadline')
-                            ->label(__('event-registrations::messages.config.cancellation_deadline'))
-                            ->native(false)
-                            ->displayFormat('d/m/Y H:i')
-                            ->nullable(),
+                        $this->capAtEventStart(
+                            DateTimePicker::make('registration_closes_at')
+                                ->label(__('event-registrations::messages.config.registration_closes_at'))
+                                ->native(false)
+                                ->displayFormat('d/m/Y H:i')
+                                ->after('registration_opens_at')
+                                ->nullable(),
+                            $eventStartsAt,
+                        ),
+                        $this->capAtEventStart(
+                            DateTimePicker::make('cancellation_deadline')
+                                ->label(__('event-registrations::messages.config.cancellation_deadline'))
+                                ->native(false)
+                                ->displayFormat('d/m/Y H:i')
+                                ->nullable(),
+                            $eventStartsAt,
+                        ),
                     ])->columns(3),
 
                 Section::make(__('event-registrations::messages.config.options'))
@@ -136,6 +148,18 @@ final class EventRegistrationConfigPage extends Page implements HasForms
                     ])->collapsed(),
             ])
             ->statePath('data');
+    }
+
+    /**
+     * Start of the configured event, or null when it does not exist.
+     */
+    private function eventStartsAt(): ?CarbonInterface
+    {
+        if ($this->eventId === null) {
+            return null;
+        }
+
+        return EventModel::query()->find($this->eventId, ['id', 'start_date'])?->start_date;
     }
 
     /**

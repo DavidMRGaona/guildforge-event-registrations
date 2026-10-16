@@ -18,12 +18,15 @@ use Illuminate\Database\Eloquent\Model;
 use Modules\EventRegistrations\Application\DTOs\UpdateRegistrationConfigDTO;
 use Modules\EventRegistrations\Application\Services\EventRegistrationServiceInterface;
 use Modules\EventRegistrations\Domain\Repositories\EventRegistrationConfigRepositoryInterface;
+use Modules\EventRegistrations\Filament\Concerns\CapsDatesAtEventStart;
 
 /**
  * @property \Filament\Schemas\Schema $configForm
  */
 final class RegistrationConfigRelationManager extends RelationManager
 {
+    use CapsDatesAtEventStart;
+
     /**
      * Key of the tab on the event edit page, used in its `?relation=` query string.
      */
@@ -86,6 +89,9 @@ final class RegistrationConfigRelationManager extends RelationManager
      */
     protected function getFormSchema(): array
     {
+        $owner = $this->getOwnerRecord();
+        $eventStartsAt = $owner instanceof EventModel ? $owner->start_date : null;
+
         return [
             Section::make(__('event-registrations::messages.config.general'))
                 ->schema([
@@ -124,17 +130,23 @@ final class RegistrationConfigRelationManager extends RelationManager
                         ->native(false)
                         ->displayFormat('d/m/Y H:i')
                         ->nullable(),
-                    DateTimePicker::make('registration_closes_at')
-                        ->label(__('event-registrations::messages.config.registration_closes_at'))
-                        ->native(false)
-                        ->displayFormat('d/m/Y H:i')
-                        ->after('registration_opens_at')
-                        ->nullable(),
-                    DateTimePicker::make('cancellation_deadline')
-                        ->label(__('event-registrations::messages.config.cancellation_deadline'))
-                        ->native(false)
-                        ->displayFormat('d/m/Y H:i')
-                        ->nullable(),
+                    $this->capAtEventStart(
+                        DateTimePicker::make('registration_closes_at')
+                            ->label(__('event-registrations::messages.config.registration_closes_at'))
+                            ->native(false)
+                            ->displayFormat('d/m/Y H:i')
+                            ->after('registration_opens_at')
+                            ->nullable(),
+                        $eventStartsAt,
+                    ),
+                    $this->capAtEventStart(
+                        DateTimePicker::make('cancellation_deadline')
+                            ->label(__('event-registrations::messages.config.cancellation_deadline'))
+                            ->native(false)
+                            ->displayFormat('d/m/Y H:i')
+                            ->nullable(),
+                        $eventStartsAt,
+                    ),
                 ])
                 ->columns(3)
                 ->visible(fn (Get $get): bool => (bool) $get('registration_enabled')),

@@ -62,8 +62,8 @@ La acción **Exportar** de la pestaña **Inscripciones** descarga `inscripciones
 | Lista de espera habilitada | Admite lista de espera cuando el evento está completo |
 | Máximo en lista de espera | Límite de la lista de espera (vacío o 0 = sin límite) |
 | Apertura de inscripciones | Desde cuándo se aceptan inscripciones |
-| Cierre de inscripciones | Hasta cuándo se aceptan inscripciones |
-| Fecha límite de cancelación | Hasta cuándo puede cancelar el usuario |
+| Cierre de inscripciones | Hasta cuándo se aceptan inscripciones; no puede ser posterior al inicio del evento, que las cierra siempre |
+| Fecha límite de cancelación | Hasta cuándo puede cancelar el usuario; no puede ser posterior al inicio del evento, y sin fecha se puede cancelar hasta el inicio |
 | Requiere confirmación manual | Las inscripciones quedan pendientes hasta que se confirman |
 | Solo socios | Solo pueden inscribirse los socios (rol de socio del core) |
 | Email de notificación | Recibe un aviso con cada inscripción nueva |

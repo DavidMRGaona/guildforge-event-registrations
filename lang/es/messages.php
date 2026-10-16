@@ -97,6 +97,7 @@ return [
         'registration_opens_at' => 'Apertura de inscripciones',
         'registration_closes_at' => 'Cierre de inscripciones',
         'cancellation_deadline' => 'Fecha límite de cancelación',
+        'not_after_event_start' => 'No puede ser posterior al inicio del evento (:date)',
         'options' => 'Opciones',
         'requires_confirmation' => 'Requiere confirmación manual',
         'requires_confirmation_help' => 'Las inscripciones quedan pendientes hasta que un administrador las confirme',

@@ -97,6 +97,7 @@ return [
         'registration_opens_at' => 'Registration opens',
         'registration_closes_at' => 'Registration closes',
         'cancellation_deadline' => 'Cancellation deadline',
+        'not_after_event_start' => 'Cannot be later than the event start (:date)',
         'options' => 'Options',
         'requires_confirmation' => 'Requires manual confirmation',
         'requires_confirmation_help' => 'Registrations remain pending until an admin confirms them',
