@@ -10,6 +10,7 @@ use Modules\EventRegistrations\Application\DTOs\RegisterToEventDTO;
 use Modules\EventRegistrations\Application\DTOs\UpdateRegistrationConfigDTO;
 use Modules\EventRegistrations\Application\Services\EventRegistrationServiceInterface;
 use Modules\EventRegistrations\Application\Services\MembershipCheckerInterface;
+use Modules\EventRegistrations\Application\Services\PublishedEventCheckerInterface;
 use Modules\EventRegistrations\Application\Services\WaitingListServiceInterface;
 use Modules\EventRegistrations\Domain\Entities\EventRegistration;
 use Modules\EventRegistrations\Domain\Entities\EventRegistrationConfig;
@@ -30,11 +31,14 @@ use Modules\EventRegistrations\Domain\ValueObjects\EventRegistrationId;
 
 final readonly class EventRegistrationService implements EventRegistrationServiceInterface
 {
+    use EnsuresPublishedEvent;
+
     public function __construct(
         private EventRegistrationRepositoryInterface $registrationRepository,
         private EventRegistrationConfigRepositoryInterface $configRepository,
         private WaitingListServiceInterface $waitingListService,
         private MembershipCheckerInterface $membershipChecker,
+        private PublishedEventCheckerInterface $publishedEvents,
     ) {}
 
     public function meetsMembersOnly(string $eventId, ?string $userId): bool
@@ -44,6 +48,8 @@ final readonly class EventRegistrationService implements EventRegistrationServic
 
     public function register(RegisterToEventDTO $dto): EventRegistrationResponseDTO
     {
+        $this->ensurePublished($dto->eventId);
+
         // Check if user is already registered
         $existing = $this->registrationRepository->findByUserAndEvent($dto->userId, $dto->eventId);
         if ($existing !== null && ! $existing->state()->isFinal()) {
@@ -140,6 +146,8 @@ final readonly class EventRegistrationService implements EventRegistrationServic
 
     public function cancel(string $eventId, string $userId): void
     {
+        $this->ensurePublished($eventId);
+
         $registration = $this->registrationRepository->findByUserAndEvent($userId, $eventId);
 
         if ($registration === null) {
@@ -233,6 +241,8 @@ final readonly class EventRegistrationService implements EventRegistrationServic
 
     public function getUserRegistration(string $eventId, string $userId): ?EventRegistrationResponseDTO
     {
+        $this->ensurePublished($eventId);
+
         $registration = $this->registrationRepository->findByUserAndEvent($userId, $eventId);
 
         return $registration !== null

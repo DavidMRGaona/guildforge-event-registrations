@@ -18,6 +18,7 @@ use Inertia\Inertia;
 use Livewire\Livewire;
 use Modules\EventRegistrations\Application\Services\EventRegistrationServiceInterface;
 use Modules\EventRegistrations\Application\Services\MembershipCheckerInterface;
+use Modules\EventRegistrations\Application\Services\PublishedEventCheckerInterface;
 use Modules\EventRegistrations\Application\Services\RegistrationNotificationServiceInterface;
 use Modules\EventRegistrations\Application\Services\RegistrationQueryServiceInterface;
 use Modules\EventRegistrations\Application\Services\WaitingListServiceInterface;
@@ -37,6 +38,7 @@ use Modules\EventRegistrations\Infrastructure\Persistence\Eloquent\Models\EventR
 use Modules\EventRegistrations\Infrastructure\Persistence\Eloquent\Repositories\EloquentEventRegistrationConfigRepository;
 use Modules\EventRegistrations\Infrastructure\Persistence\Eloquent\Repositories\EloquentEventRegistrationRepository;
 use Modules\EventRegistrations\Infrastructure\Services\AssociationMembershipChecker;
+use Modules\EventRegistrations\Infrastructure\Services\EloquentPublishedEventChecker;
 use Modules\EventRegistrations\Infrastructure\Services\EventRegistrationService;
 use Modules\EventRegistrations\Infrastructure\Services\RegistrationNotificationService;
 use Modules\EventRegistrations\Infrastructure\Services\RegistrationQueryService;
@@ -97,6 +99,11 @@ final class EventRegistrationsServiceProvider extends ModuleServiceProvider
         $this->app->bind(
             MembershipCheckerInterface::class,
             AssociationMembershipChecker::class
+        );
+
+        $this->app->bind(
+            PublishedEventCheckerInterface::class,
+            EloquentPublishedEventChecker::class
         );
     }
 

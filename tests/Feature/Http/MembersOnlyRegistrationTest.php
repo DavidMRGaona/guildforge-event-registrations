@@ -29,7 +29,7 @@ final class MembersOnlyRegistrationTest extends ModuleTestCase
 
         Notification::fake();
 
-        $this->event = EventModel::factory()->create();
+        $this->event = EventModel::factory()->published()->create();
         EventRegistrationConfigModel::create([
             'event_id' => $this->event->id,
             'registration_enabled' => true,
@@ -85,7 +85,7 @@ final class MembersOnlyRegistrationTest extends ModuleTestCase
 
     public function test_an_event_open_to_everyone_accepts_a_user_with_only_the_member_role(): void
     {
-        $event = EventModel::factory()->create();
+        $event = EventModel::factory()->published()->create();
         EventRegistrationConfigModel::create([
             'event_id' => $event->id,
             'registration_enabled' => true,

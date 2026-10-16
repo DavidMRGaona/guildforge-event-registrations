@@ -11,6 +11,7 @@ use Modules\EventRegistrations\Application\DTOs\EventRegistrationResponseDTO;
 use Modules\EventRegistrations\Application\DTOs\RegisteredEventDTO;
 use Modules\EventRegistrations\Application\DTOs\RegistrationListItemDTO;
 use Modules\EventRegistrations\Application\DTOs\UserRegistrationDTO;
+use Modules\EventRegistrations\Application\Services\PublishedEventCheckerInterface;
 use Modules\EventRegistrations\Application\Services\RegistrationQueryServiceInterface;
 use Modules\EventRegistrations\Domain\Enums\RegistrationState;
 use Modules\EventRegistrations\Domain\Repositories\EventRegistrationConfigRepositoryInterface;
@@ -18,13 +19,18 @@ use Modules\EventRegistrations\Domain\Repositories\EventRegistrationRepositoryIn
 
 final readonly class RegistrationQueryService implements RegistrationQueryServiceInterface
 {
+    use EnsuresPublishedEvent;
+
     public function __construct(
         private EventRegistrationRepositoryInterface $registrationRepository,
         private EventRegistrationConfigRepositoryInterface $configRepository,
+        private PublishedEventCheckerInterface $publishedEvents,
     ) {}
 
     public function getEventStatus(string $eventId): EventRegistrationConfigDTO
     {
+        $this->ensurePublished($eventId);
+
         $config = $this->configRepository->findByEventOrDefault($eventId);
         $currentParticipants = $this->registrationRepository->countConfirmedByEvent($eventId);
         $currentWaitingList = $this->registrationRepository->countWaitingListByEvent($eventId);

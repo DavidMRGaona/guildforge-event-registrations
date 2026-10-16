@@ -8,6 +8,7 @@ use DateTimeImmutable;
 use Illuminate\Support\Facades\Event;
 use Modules\EventRegistrations\Application\DTOs\RegisterToEventDTO;
 use Modules\EventRegistrations\Application\Services\MembershipCheckerInterface;
+use Modules\EventRegistrations\Application\Services\PublishedEventCheckerInterface;
 use Modules\EventRegistrations\Application\Services\WaitingListServiceInterface;
 use Modules\EventRegistrations\Domain\Entities\EventRegistrationConfig;
 use Modules\EventRegistrations\Domain\Exceptions\MembersOnlyException;
@@ -150,6 +151,15 @@ final class MembersOnlyRegistrationTest extends TestCase
             $this->configRepository,
             $this->waitingListService,
             $checker,
+            $this->publishedEvents(),
         );
+    }
+
+    private function publishedEvents(): PublishedEventCheckerInterface
+    {
+        $checker = $this->createStub(PublishedEventCheckerInterface::class);
+        $checker->method('isPublished')->willReturn(true);
+
+        return $checker;
     }
 }

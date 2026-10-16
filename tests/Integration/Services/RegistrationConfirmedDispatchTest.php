@@ -8,6 +8,7 @@ use DateTimeImmutable;
 use Illuminate\Support\Facades\Event;
 use Modules\EventRegistrations\Application\DTOs\RegisterToEventDTO;
 use Modules\EventRegistrations\Application\Services\MembershipCheckerInterface;
+use Modules\EventRegistrations\Application\Services\PublishedEventCheckerInterface;
 use Modules\EventRegistrations\Application\Services\WaitingListServiceInterface;
 use Modules\EventRegistrations\Domain\Entities\EventRegistration;
 use Modules\EventRegistrations\Domain\Entities\EventRegistrationConfig;
@@ -102,6 +103,15 @@ final class RegistrationConfirmedDispatchTest extends TestCase
             $this->configRepository,
             $this->createStub(WaitingListServiceInterface::class),
             $this->createStub(MembershipCheckerInterface::class),
+            $this->publishedEvents(),
         );
+    }
+
+    private function publishedEvents(): PublishedEventCheckerInterface
+    {
+        $checker = $this->createStub(PublishedEventCheckerInterface::class);
+        $checker->method('isPublished')->willReturn(true);
+
+        return $checker;
     }
 }

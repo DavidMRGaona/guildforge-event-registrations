@@ -32,7 +32,7 @@ final class RegistrationRoutesTest extends ModuleTestCase
 
         Notification::fake();
 
-        $this->event = EventModel::factory()->create(['start_date' => now()->addWeek()]);
+        $this->event = EventModel::factory()->published()->create(['start_date' => now()->addWeek()]);
         EventRegistrationConfigModel::create([
             'event_id' => $this->event->id,
             'registration_enabled' => true,

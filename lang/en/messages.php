@@ -132,6 +132,7 @@ return [
         'cannot_cancel' => 'Cannot cancel registration',
         'unauthenticated' => 'You must log in',
         'members_only' => 'Only association members can register for this event',
+        'event_not_found' => 'Event not found',
     ],
 
     // Success

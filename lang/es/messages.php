@@ -132,6 +132,7 @@ return [
         'cannot_cancel' => 'No se puede cancelar la inscripción',
         'unauthenticated' => 'Debes iniciar sesión',
         'members_only' => 'Solo los socios pueden inscribirse en este evento',
+        'event_not_found' => 'Evento no encontrado',
     ],
 
     // Success
