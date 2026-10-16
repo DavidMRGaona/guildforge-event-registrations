@@ -138,7 +138,7 @@ Son rutas web (sesión y CSRF) que responden JSON; el módulo no registra rutas 
 
 | Método | Ruta | Descripción |
 |--------|------|-------------|
-| `GET` | `/eventos/{eventId}/inscripcion/estado` | Estado público de las inscripciones del evento; `meets_members_only` indica si el visitante actual cumple el requisito de solo socios (siempre `true` si el evento está abierto a todos, `false` sin sesión en un evento solo para socios) |
+| `GET` | `/eventos/{eventId}/inscripcion/estado` | Estado público de las inscripciones del evento; `is_open` indica si se admiten inscripciones ahora y `can_cancel` si se admiten cancelaciones ahora (las dos pasan a `false` al empezar el evento); `meets_members_only` indica si el visitante actual cumple el requisito de solo socios (siempre `true` si el evento está abierto a todos, `false` sin sesión en un evento solo para socios) |
 | `GET` | `/eventos/{eventId}/inscripcion` | Inscripción del usuario (requiere sesión) |
 | `POST` | `/eventos/{eventId}/inscripcion` | Inscribirse (requiere sesión; `notes`, `form_data`) |
 | `DELETE` | `/eventos/{eventId}/inscripcion` | Cancelar la inscripción (requiere sesión) |
