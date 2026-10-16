@@ -60,10 +60,11 @@ final class EventRegistrationController extends Controller
     {
         $user = $request->user();
 
+        // The route requires auth: this only narrows the type, as in the other actions
         if ($user === null) {
             return response()->json([
-                'data' => null,
-            ]);
+                'message' => __('event-registrations::messages.errors.unauthenticated'),
+            ], 401);
         }
 
         try {

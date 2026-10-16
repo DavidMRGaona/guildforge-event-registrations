@@ -146,7 +146,7 @@ Son rutas web (sesión y CSRF) que responden JSON; el módulo no registra rutas 
 | `DELETE` | `/eventos/{eventId}/inscripcion` | Cancelar la inscripción (requiere sesión) |
 | `GET` | `/mis-inscripciones` | Inscripciones del usuario, de la más reciente a la más antigua (requiere sesión) |
 
-Las cuatro rutas `/eventos/{eventId}/inscripcion…` responden 404 con «Evento no encontrado» si el evento no existe o no está publicado, también a quien ya tenía una inscripción en él. Las acciones del panel no tienen esa restricción.
+Las cuatro rutas `/eventos/{eventId}/inscripcion…` responden 404 con «Evento no encontrado» si el evento no existe o no está publicado, también a quien ya tenía una inscripción en él (las tres que exigen sesión responden antes 401 a un visitante sin sesión). Las acciones del panel no tienen esa restricción.
 
 Las inscripciones que recibe el usuario nunca incluyen las notas internas del panel (`admin_notes`). Cada elemento de `/mis-inscripciones` lleva además `event` con `id`, `title`, `slug`, `start_date`, `end_date`, `location` y `url` (la ficha del evento), o `null` si el evento no está publicado.
 
