@@ -13,6 +13,7 @@ use Modules\EventRegistrations\Domain\Enums\RegistrationState;
 use Modules\EventRegistrations\Domain\Events\RegistrationConfirmed;
 use Modules\EventRegistrations\Domain\Events\UserRegisteredToEvent;
 use Modules\EventRegistrations\Domain\Events\WaitingListPromoted;
+use Modules\EventRegistrations\Domain\Repositories\EventRegistrationConfigRepositoryInterface;
 use Modules\EventRegistrations\Domain\Repositories\EventRegistrationRepositoryInterface;
 use Modules\EventRegistrations\Domain\ValueObjects\EventRegistrationId;
 
@@ -20,6 +21,7 @@ final readonly class WaitingListService implements WaitingListServiceInterface
 {
     public function __construct(
         private EventRegistrationRepositoryInterface $registrationRepository,
+        private EventRegistrationConfigRepositoryInterface $configRepository,
     ) {}
 
     /**
@@ -64,6 +66,16 @@ final readonly class WaitingListService implements WaitingListServiceInterface
     }
 
     public function promoteNext(string $eventId): ?EventRegistrationResponseDTO
+    {
+        // Nobody is promoted once the event has started, whoever freed the spot
+        if ($this->configRepository->findByEventOrDefault($eventId)->hasEventStarted()) {
+            return null;
+        }
+
+        return $this->promoteFirstInWaitingList($eventId);
+    }
+
+    private function promoteFirstInWaitingList(string $eventId): ?EventRegistrationResponseDTO
     {
         $registration = $this->registrationRepository->findFirstInWaitingList($eventId);
 

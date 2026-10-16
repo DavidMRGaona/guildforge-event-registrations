@@ -218,6 +218,68 @@ final class WaitingListPromotionTest extends ModuleTestCase
         $this->assertEquals(RegistrationState::WaitingList, $user3->state());
     }
 
+    public function test_does_not_promote_when_a_spot_is_freed_after_the_event_started(): void
+    {
+        $eventId = $this->startedEventId();
+
+        $this->configRepository->save(new EventRegistrationConfig(
+            eventId: $eventId,
+            maxParticipants: 2,
+            waitingListEnabled: true,
+        ));
+
+        $confirmed1 = $this->createRegistration($eventId, 'user-1', RegistrationState::Confirmed);
+        $confirmed2 = $this->createRegistration($eventId, 'user-2', RegistrationState::Confirmed);
+        $waiting = $this->createRegistration($eventId, 'user-3', RegistrationState::WaitingList, 1);
+        $this->registrationRepository->save($confirmed1);
+        $this->registrationRepository->save($confirmed2);
+        $this->registrationRepository->save($waiting);
+
+        $confirmed1->cancel();
+        $this->registrationRepository->save($confirmed1);
+
+        $this->app->make(PromoteFromWaitingListOnCancellation::class)->handle(UserUnregisteredFromEvent::create(
+            registrationId: $confirmed1->id()->value,
+            eventId: $eventId,
+            userId: $this->users['user-1'],
+            previousState: RegistrationState::Confirmed,
+        ));
+
+        $stillWaiting = $this->registrationRepository->findByUserAndEvent($this->users['user-3'], $eventId);
+        $this->assertNotNull($stillWaiting);
+        $this->assertSame(RegistrationState::WaitingList, $stillWaiting->state());
+        $this->assertSame(1, $stillWaiting->position());
+    }
+
+    public function test_promote_next_promotes_nobody_once_the_event_has_started(): void
+    {
+        // Whoever frees the spot, a user or the staff, nobody joins after the start
+        $eventId = $this->startedEventId();
+
+        $this->configRepository->save(new EventRegistrationConfig(
+            eventId: $eventId,
+            maxParticipants: 1,
+            waitingListEnabled: true,
+        ));
+
+        $waiting = $this->createRegistration($eventId, 'user-2', RegistrationState::WaitingList, 1);
+        $this->registrationRepository->save($waiting);
+
+        $this->assertNull($this->waitingListService->promoteNext($eventId));
+
+        $stillWaiting = $this->registrationRepository->findByUserAndEvent($this->users['user-2'], $eventId);
+        $this->assertNotNull($stillWaiting);
+        $this->assertSame(RegistrationState::WaitingList, $stillWaiting->state());
+    }
+
+    private function startedEventId(): string
+    {
+        return EventModel::factory()->create([
+            'start_date' => now()->subMinute(),
+            'end_date' => now()->addHours(3),
+        ])->id;
+    }
+
     private function createRegistration(
         string $eventId,
         string $userId,

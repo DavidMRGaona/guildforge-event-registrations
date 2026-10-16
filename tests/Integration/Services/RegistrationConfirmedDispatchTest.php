@@ -88,7 +88,11 @@ final class RegistrationConfirmedDispatchTest extends TestCase
 
         $this->registrationRepository->method('findFirstInWaitingList')->willReturn($registration);
 
-        (new WaitingListService($this->registrationRepository))->promoteNext('event-1');
+        $this->configRepository
+            ->method('findByEventOrDefault')
+            ->willReturn(new EventRegistrationConfig(eventId: 'event-1', eventStartsAt: new DateTimeImmutable('+1 week')));
+
+        (new WaitingListService($this->registrationRepository, $this->configRepository))->promoteNext('event-1');
 
         Event::assertDispatched(
             RegistrationConfirmed::class,
