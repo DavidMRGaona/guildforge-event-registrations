@@ -103,6 +103,8 @@ return [
         'requires_payment' => 'Requiere pago',
         'requires_payment_help' => 'El usuario debe realizar el pago para confirmar la inscripción',
         'members_only' => 'Solo socios',
+        'event_started' => 'El evento ya ha comenzado',
+        'cannot_cancel_started' => 'No puedes cancelar la inscripción: el evento ya ha comenzado',
         'members_only_help' => 'Solo pueden inscribirse los socios: los usuarios con el rol de socio elegido en Configuración del sitio → Autenticación.',
         'messages' => 'Mensajes',
         'confirmation_message' => 'Mensaje de confirmación',

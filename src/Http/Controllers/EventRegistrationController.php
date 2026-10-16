@@ -104,7 +104,9 @@ final class EventRegistrationController extends Controller
             ], 201);
         } catch (RegistrationClosedException $e) {
             return response()->json([
-                'message' => __('event-registrations::messages.errors.registration_closed'),
+                'message' => $e->isEventStarted()
+                    ? __('event-registrations::messages.errors.event_started')
+                    : __('event-registrations::messages.errors.registration_closed'),
                 'error' => $e->getMessage(),
             ], 422);
         } catch (EventFullException $e) {
@@ -153,7 +155,9 @@ final class EventRegistrationController extends Controller
             ], 404);
         } catch (CannotCancelRegistrationException $e) {
             return response()->json([
-                'message' => __('event-registrations::messages.errors.cannot_cancel'),
+                'message' => $e->isEventStarted()
+                    ? __('event-registrations::messages.errors.cannot_cancel_started')
+                    : __('event-registrations::messages.errors.cannot_cancel'),
                 'error' => $e->getMessage(),
             ], 422);
         } catch (EventNotFoundException) {

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\EventRegistrations\Infrastructure\Services;
 
+use DateTimeImmutable;
 use Illuminate\Support\Facades\Event;
 use Modules\EventRegistrations\Application\DTOs\EventRegistrationResponseDTO;
 use Modules\EventRegistrations\Application\DTOs\RegisterToEventDTO;
@@ -58,12 +59,17 @@ final readonly class EventRegistrationService implements EventRegistrationServic
 
         // Get config and validate registration is open
         $config = $this->configRepository->findByEventOrDefault($dto->eventId);
+        $now = new DateTimeImmutable;
 
-        if (! $config->isOpen()) {
+        if (! $config->isOpen($now)) {
+            // The start of the event closes registration whatever the configured dates say
+            if ($config->hasEventStarted($now)) {
+                throw RegistrationClosedException::eventStarted($dto->eventId);
+            }
             if (! $config->isRegistrationEnabled()) {
                 throw RegistrationClosedException::disabled($dto->eventId);
             }
-            if ($config->registrationOpensAt() !== null && new \DateTimeImmutable < $config->registrationOpensAt()) {
+            if ($config->registrationOpensAt() !== null && $now < $config->registrationOpensAt()) {
                 throw RegistrationClosedException::notYetOpen($dto->eventId);
             }
             throw RegistrationClosedException::alreadyClosed($dto->eventId);
@@ -156,7 +162,14 @@ final readonly class EventRegistrationService implements EventRegistrationServic
 
         // Check if cancellation deadline has passed
         $config = $this->configRepository->findByEventOrDefault($eventId);
-        if (! $config->canCancelNow()) {
+        $now = new DateTimeImmutable;
+
+        // Users cannot leave once the event has started, whatever the deadline says
+        if ($config->hasEventStarted($now)) {
+            throw CannotCancelRegistrationException::eventStarted($eventId);
+        }
+
+        if (! $config->canCancelNow($now)) {
             throw CannotCancelRegistrationException::deadlinePassed($eventId);
         }
 

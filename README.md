@@ -148,7 +148,9 @@ Las cuatro rutas `/eventos/{eventId}/inscripcion…` responden 404 con «Evento 
 
 Las inscripciones que recibe el usuario nunca incluyen las notas internas del panel (`admin_notes`). Cada elemento de `/mis-inscripciones` lleva además `event` con `id`, `title`, `slug`, `start_date`, `end_date`, `location` y `url` (la ficha del evento), o `null` si el evento no está publicado.
 
-`POST` responde 201 si crea la inscripción, 403 si el evento es solo para socios y el usuario no lo es, y 422 si las inscripciones están cerradas, el evento está completo o el usuario ya está inscrito.
+`POST` responde 201 si crea la inscripción, 403 si el evento es solo para socios y el usuario no lo es, y 422 si las inscripciones están cerradas (con «El evento ya ha comenzado» cuando la causa es el inicio del evento), el evento está completo o el usuario ya está inscrito.
+
+`DELETE` responde 200 si cancela la inscripción (también la plaza en lista de espera), 404 si el usuario no está inscrito y 422 si ha pasado la fecha límite de cancelación o el evento ya ha comenzado.
 
 ```javascript
 const response = await fetch(`/eventos/${eventId}/inscripcion`, {

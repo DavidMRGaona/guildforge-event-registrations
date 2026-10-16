@@ -8,7 +8,7 @@ use DomainException;
 
 final class CannotCancelRegistrationException extends DomainException
 {
-    private function __construct(string $message)
+    private function __construct(string $message, private readonly bool $eventStarted = false)
     {
         parent::__construct($message);
     }
@@ -26,5 +26,18 @@ final class CannotCancelRegistrationException extends DomainException
     public static function registrationRejected(string $id): self
     {
         return new self("Registration {$id} has been rejected and cannot be cancelled.");
+    }
+
+    public static function eventStarted(string $eventId): self
+    {
+        return new self("Registrations for event {$eventId} cannot be cancelled once it has started.", eventStarted: true);
+    }
+
+    /**
+     * Whether the cancellation was refused because the event has started (or its start is unknown).
+     */
+    public function isEventStarted(): bool
+    {
+        return $this->eventStarted;
     }
 }
