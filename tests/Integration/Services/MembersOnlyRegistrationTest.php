@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace Modules\EventRegistrations\Tests\Integration\Services;
 
+use DateTimeImmutable;
 use Illuminate\Support\Facades\Event;
 use Modules\EventRegistrations\Application\DTOs\RegisterToEventDTO;
 use Modules\EventRegistrations\Application\Services\MembershipCheckerInterface;
+use Modules\EventRegistrations\Application\Services\PublishedEventCheckerInterface;
 use Modules\EventRegistrations\Application\Services\WaitingListServiceInterface;
 use Modules\EventRegistrations\Domain\Entities\EventRegistrationConfig;
 use Modules\EventRegistrations\Domain\Exceptions\MembersOnlyException;
@@ -38,7 +40,7 @@ final class MembersOnlyRegistrationTest extends TestCase
 
     public function test_a_non_member_cannot_register_to_a_members_only_event(): void
     {
-        $this->givenConfig(new EventRegistrationConfig(eventId: 'event-1', membersOnly: true));
+        $this->givenConfig(new EventRegistrationConfig(eventId: 'event-1', eventStartsAt: new DateTimeImmutable('+1 week'), membersOnly: true));
         $this->registrationRepository->expects($this->never())->method('save');
 
         $this->expectException(MembersOnlyException::class);
@@ -51,6 +53,7 @@ final class MembersOnlyRegistrationTest extends TestCase
     {
         $this->givenConfig(new EventRegistrationConfig(
             eventId: 'event-1',
+            eventStartsAt: new DateTimeImmutable('+1 week'),
             maxParticipants: 1,
             waitingListEnabled: true,
             membersOnly: true,
@@ -69,7 +72,7 @@ final class MembersOnlyRegistrationTest extends TestCase
 
     public function test_a_member_can_register_to_a_members_only_event(): void
     {
-        $this->givenConfig(new EventRegistrationConfig(eventId: 'event-1', membersOnly: true));
+        $this->givenConfig(new EventRegistrationConfig(eventId: 'event-1', eventStartsAt: new DateTimeImmutable('+1 week'), membersOnly: true));
         $this->registrationRepository->expects($this->once())->method('save');
 
         $response = $this->makeService($this->checker(isMember: true))
@@ -80,7 +83,7 @@ final class MembersOnlyRegistrationTest extends TestCase
 
     public function test_membership_is_not_checked_when_the_event_is_open_to_everyone(): void
     {
-        $this->givenConfig(new EventRegistrationConfig(eventId: 'event-1', membersOnly: false));
+        $this->givenConfig(new EventRegistrationConfig(eventId: 'event-1', eventStartsAt: new DateTimeImmutable('+1 week'), membersOnly: false));
         $this->registrationRepository->expects($this->once())->method('save');
 
         $checker = $this->createMock(MembershipCheckerInterface::class);
@@ -91,7 +94,7 @@ final class MembersOnlyRegistrationTest extends TestCase
 
     public function test_a_member_meets_the_members_only_requirement(): void
     {
-        $this->givenConfig(new EventRegistrationConfig(eventId: 'event-1', membersOnly: true));
+        $this->givenConfig(new EventRegistrationConfig(eventId: 'event-1', eventStartsAt: new DateTimeImmutable('+1 week'), membersOnly: true));
         $this->registrationRepository->expects($this->never())->method('save');
 
         $this->assertTrue($this->makeService($this->checker(isMember: true))->meetsMembersOnly('event-1', 'user-1'));
@@ -99,7 +102,7 @@ final class MembersOnlyRegistrationTest extends TestCase
 
     public function test_a_non_member_does_not_meet_the_members_only_requirement(): void
     {
-        $this->givenConfig(new EventRegistrationConfig(eventId: 'event-1', membersOnly: true));
+        $this->givenConfig(new EventRegistrationConfig(eventId: 'event-1', eventStartsAt: new DateTimeImmutable('+1 week'), membersOnly: true));
         $this->registrationRepository->expects($this->never())->method('save');
 
         $this->assertFalse($this->makeService($this->checker(isMember: false))->meetsMembersOnly('event-1', 'user-1'));
@@ -107,7 +110,7 @@ final class MembersOnlyRegistrationTest extends TestCase
 
     public function test_a_guest_does_not_meet_the_members_only_requirement(): void
     {
-        $this->givenConfig(new EventRegistrationConfig(eventId: 'event-1', membersOnly: true));
+        $this->givenConfig(new EventRegistrationConfig(eventId: 'event-1', eventStartsAt: new DateTimeImmutable('+1 week'), membersOnly: true));
         $this->registrationRepository->expects($this->never())->method('save');
         $checker = $this->createMock(MembershipCheckerInterface::class);
         $checker->expects($this->never())->method('isMember');
@@ -117,7 +120,7 @@ final class MembersOnlyRegistrationTest extends TestCase
 
     public function test_everyone_meets_the_requirement_of_an_event_open_to_everyone(): void
     {
-        $this->givenConfig(new EventRegistrationConfig(eventId: 'event-1', membersOnly: false));
+        $this->givenConfig(new EventRegistrationConfig(eventId: 'event-1', eventStartsAt: new DateTimeImmutable('+1 week'), membersOnly: false));
         $this->registrationRepository->expects($this->never())->method('save');
         $checker = $this->createMock(MembershipCheckerInterface::class);
         $checker->expects($this->never())->method('isMember');
@@ -148,6 +151,15 @@ final class MembersOnlyRegistrationTest extends TestCase
             $this->configRepository,
             $this->waitingListService,
             $checker,
+            $this->publishedEvents(),
         );
+    }
+
+    private function publishedEvents(): PublishedEventCheckerInterface
+    {
+        $checker = $this->createStub(PublishedEventCheckerInterface::class);
+        $checker->method('isPublished')->willReturn(true);
+
+        return $checker;
     }
 }

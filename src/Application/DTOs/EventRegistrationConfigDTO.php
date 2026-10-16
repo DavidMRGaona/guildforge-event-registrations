@@ -32,6 +32,7 @@ final readonly class EventRegistrationConfigDTO
         public int $availableSpots,
         public bool $isOpen,
         public bool $isFull,
+        public bool $canCancel,
     ) {}
 
     public static function fromEntity(
@@ -65,6 +66,7 @@ final readonly class EventRegistrationConfigDTO
             availableSpots: $availableSpots === PHP_INT_MAX ? -1 : $availableSpots,
             isOpen: $config->isOpen(),
             isFull: $isFull,
+            canCancel: $config->canCancelNow(),
         );
     }
 
@@ -92,6 +94,7 @@ final readonly class EventRegistrationConfigDTO
             'available_spots' => $this->availableSpots,
             'is_open' => $this->isOpen,
             'is_full' => $this->isFull,
+            'can_cancel' => $this->canCancel,
         ];
     }
 }

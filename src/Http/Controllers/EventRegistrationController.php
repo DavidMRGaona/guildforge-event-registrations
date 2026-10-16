@@ -13,6 +13,7 @@ use Modules\EventRegistrations\Application\Services\RegistrationQueryServiceInte
 use Modules\EventRegistrations\Domain\Exceptions\AlreadyRegisteredException;
 use Modules\EventRegistrations\Domain\Exceptions\CannotCancelRegistrationException;
 use Modules\EventRegistrations\Domain\Exceptions\EventFullException;
+use Modules\EventRegistrations\Domain\Exceptions\EventNotFoundException;
 use Modules\EventRegistrations\Domain\Exceptions\MembersOnlyException;
 use Modules\EventRegistrations\Domain\Exceptions\RegistrationClosedException;
 use Modules\EventRegistrations\Domain\Exceptions\RegistrationNotFoundException;
@@ -33,7 +34,12 @@ final class EventRegistrationController extends Controller
      */
     public function status(Request $request, string $eventId): JsonResponse
     {
-        $status = $this->queryService->getEventStatus($eventId);
+        try {
+            $status = $this->queryService->getEventStatus($eventId);
+        } catch (EventNotFoundException) {
+            return $this->eventNotFound();
+        }
+
         $user = $request->user();
 
         return response()->json([
@@ -54,13 +60,18 @@ final class EventRegistrationController extends Controller
     {
         $user = $request->user();
 
+        // The route requires auth: this only narrows the type, as in the other actions
         if ($user === null) {
             return response()->json([
-                'data' => null,
-            ]);
+                'message' => __('event-registrations::messages.errors.unauthenticated'),
+            ], 401);
         }
 
-        $registration = $this->registrationService->getUserRegistration($eventId, (string) $user->id);
+        try {
+            $registration = $this->registrationService->getUserRegistration($eventId, (string) $user->id);
+        } catch (EventNotFoundException) {
+            return $this->eventNotFound();
+        }
 
         return response()->json([
             'data' => $registration?->toArray(),
@@ -94,7 +105,9 @@ final class EventRegistrationController extends Controller
             ], 201);
         } catch (RegistrationClosedException $e) {
             return response()->json([
-                'message' => __('event-registrations::messages.errors.registration_closed'),
+                'message' => $e->isEventStarted()
+                    ? __('event-registrations::messages.errors.event_started')
+                    : __('event-registrations::messages.errors.registration_closed'),
                 'error' => $e->getMessage(),
             ], 422);
         } catch (EventFullException $e) {
@@ -112,6 +125,8 @@ final class EventRegistrationController extends Controller
                 'message' => __('event-registrations::messages.errors.members_only'),
                 'error' => $e->getMessage(),
             ], 403);
+        } catch (EventNotFoundException) {
+            return $this->eventNotFound();
         }
     }
 
@@ -141,9 +156,13 @@ final class EventRegistrationController extends Controller
             ], 404);
         } catch (CannotCancelRegistrationException $e) {
             return response()->json([
-                'message' => __('event-registrations::messages.errors.cannot_cancel'),
+                'message' => $e->isEventStarted()
+                    ? __('event-registrations::messages.errors.cannot_cancel_started')
+                    : __('event-registrations::messages.errors.cannot_cancel'),
                 'error' => $e->getMessage(),
             ], 422);
+        } catch (EventNotFoundException) {
+            return $this->eventNotFound();
         }
     }
 
@@ -165,5 +184,12 @@ final class EventRegistrationController extends Controller
         return response()->json([
             'data' => array_map(fn ($r) => $r->toArray(), $registrations),
         ]);
+    }
+
+    private function eventNotFound(): JsonResponse
+    {
+        return response()->json([
+            'message' => __('event-registrations::messages.errors.event_not_found'),
+        ], 404);
     }
 }

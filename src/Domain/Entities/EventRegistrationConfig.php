@@ -28,6 +28,7 @@ final class EventRegistrationConfig
         private ?string $notificationEmail = null,
         private readonly ?DateTimeImmutable $createdAt = null,
         private readonly ?DateTimeImmutable $updatedAt = null,
+        private readonly ?DateTimeImmutable $eventStartsAt = null,
     ) {}
 
     public function eventId(): string
@@ -114,13 +115,38 @@ final class EventRegistrationConfig
     }
 
     /**
-     * Check if registration is currently open based on dates and enabled state.
+     * Start of the event, read from the core event; not persisted with the config. Null when
+     * the event does not exist.
+     */
+    public function eventStartsAt(): ?DateTimeImmutable
+    {
+        return $this->eventStartsAt;
+    }
+
+    /**
+     * Whether the event has started (from its start time on). An event whose start is unknown
+     * counts as started, so nothing is accepted for it.
+     */
+    public function hasEventStarted(?DateTimeImmutable $now = null): bool
+    {
+        $now ??= new DateTimeImmutable;
+
+        return $this->eventStartsAt === null || $now >= $this->eventStartsAt;
+    }
+
+    /**
+     * Check if registration is currently open: enabled, within the configured dates and before
+     * the event starts (the start closes it whatever the close date says).
      */
     public function isOpen(?DateTimeImmutable $now = null): bool
     {
         $now ??= new DateTimeImmutable;
 
         if (! $this->registrationEnabled) {
+            return false;
+        }
+
+        if ($this->hasEventStarted($now)) {
             return false;
         }
 
@@ -152,11 +178,16 @@ final class EventRegistrationConfig
     }
 
     /**
-     * Check if cancellation is still allowed.
+     * Check if the user may still cancel: before the deadline, if any, and before the event
+     * starts (without a deadline the start is the cut).
      */
     public function canCancelNow(?DateTimeImmutable $now = null): bool
     {
         $now ??= new DateTimeImmutable;
+
+        if ($this->hasEventStarted($now)) {
+            return false;
+        }
 
         if ($this->cancellationDeadline === null) {
             return true;

@@ -133,11 +133,15 @@ final readonly class EloquentEventRegistrationRepository implements EventRegistr
         return ($maxPosition ?? 0) + 1;
     }
 
-    public function findFirstInWaitingList(string $eventId): ?EventRegistration
+    public function findFirstInWaitingList(string $eventId, ?string $excludeRegistrationId = null): ?EventRegistration
     {
         $model = EventRegistrationModel::query()
             ->where('event_id', $eventId)
             ->where('state', RegistrationState::WaitingList->value)
+            ->when(
+                $excludeRegistrationId !== null,
+                fn ($query) => $query->where('id', '!=', $excludeRegistrationId),
+            )
             ->orderBy('position')
             ->first();
 

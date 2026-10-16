@@ -9,7 +9,7 @@ import type {
     UserRegistration,
     RegistrationFormData,
 } from '../types/registration';
-import { isActiveState, isWaitingState, isFinalState } from '../types/registration';
+import { isFinalState } from '../types/registration';
 import RegistrationStatus from './RegistrationStatus.vue';
 import RegistrationForm from './RegistrationForm.vue';
 
@@ -131,21 +131,23 @@ const canJoinWaitingList = computed(() => {
     return true;
 });
 
-const canCancel = computed(() => {
-    if (!registration.value) return false;
-    return !isFinalState(registration.value.state);
-});
+// The server decides the cancellation window: the deadline and the start of the event
+const canCancel = computed(
+    () => hasActiveRegistration.value && config.value?.can_cancel === true,
+);
+
+// An active registration that can no longer be cancelled: the main button is not rendered and
+// RegistrationStatus alone tells the user their state
+const isCancellationClosed = computed(
+    () => hasActiveRegistration.value && !canCancel.value,
+);
 
 const buttonText = computed(() => {
     if (!config.value) return '';
 
-    if (registration.value) {
-        if (isActiveState(registration.value.state)) {
-            return t('eventRegistrations.cancelRegistration');
-        }
-        if (isWaitingState(registration.value.state)) {
-            return t('eventRegistrations.cancelRegistration');
-        }
+    // Only rendered for an active registration while it can be cancelled (see isCancellationClosed)
+    if (hasActiveRegistration.value) {
+        return t('eventRegistrations.cancelRegistration');
     }
 
     if (!config.value.is_open) {
@@ -169,12 +171,15 @@ const buttonText = computed(() => {
 // Disabled for reasons other than the email verification
 const isUnavailable = computed(() => {
     if (!config.value) return true;
+    // An active registration can only be cancelled: the cancellation window decides, not the registration one
+    if (hasActiveRegistration.value) return !canCancel.value;
     // If registration period has passed, button is disabled but visible
     if (isRegistrationPeriodPassed.value) return true;
     if (!config.value.is_open) return true;
     if (isBlockedByMembersOnly.value) return true;
     if (config.value.is_full && !config.value.waiting_list_enabled) return true;
-    if (registration.value && !canCancel.value) return true;
+    // A cancelled or rejected registration keeps the button disabled, as before
+    if (registration.value) return true;
     return false;
 });
 
@@ -201,8 +206,9 @@ async function fetchStatus(): Promise<void> {
 
     try {
         const response = await fetch(`/eventos/${resolvedEventId.value}/inscripcion/estado`);
-        const data = await response.json();
-        config.value = data.data;
+        // An error answer (404, 429, 500) carries no config: keep it null so the button hides
+        const data = response.ok ? await response.json() : null;
+        config.value = data?.data ?? null;
     } catch (e) {
         console.error('Failed to fetch registration status:', e);
     } finally {
@@ -226,8 +232,8 @@ async function fetchRegistration(): Promise<void> {
             return;
         }
 
-        const data = await response.json();
-        registration.value = data.data;
+        const data = response.ok ? await response.json() : null;
+        registration.value = data?.data ?? null;
     } catch (e) {
         console.error('Failed to fetch user registration:', e);
     } finally {
@@ -315,6 +321,8 @@ async function handleCancel(): Promise<void> {
 
         if (!response.ok) {
             error.value = data.message;
+            // The cancellation window may have closed while the page was open
+            await fetchStatus();
             return;
         }
 
@@ -335,8 +343,9 @@ function handleClick(): void {
 
     if (mustVerifyEmail.value) return;
 
-    if (registration.value && canCancel.value) {
-        promptCancel();
+    // An active registration is never registered again; it is cancelled only inside the window
+    if (hasActiveRegistration.value) {
+        if (canCancel.value) promptCancel();
         return;
     }
 
@@ -387,7 +396,7 @@ onMounted(async () => {
 
         <!-- Main action button -->
         <button
-            v-if="!showForm"
+            v-if="!showForm && !isCancellationClosed"
             type="button"
             :disabled="buttonDisabled"
             :aria-describedby="describedBy"

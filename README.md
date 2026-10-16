@@ -6,9 +6,9 @@ Inscripciones a los eventos de GuildForge: aforo, lista de espera con promoción
 
 - **Inscripción desde la ficha del evento**: el botón se inyecta solo en la página del evento.
 - **Mis inscripciones en el perfil**: una pestaña del perfil lista las inscripciones del usuario, separadas en próximos eventos, eventos pasados y «Eventos no disponibles» (las de eventos que no están publicados), con la fecha, el lugar, el estado y la posición en la lista de espera.
-- **Aforo y lista de espera**: máximo de participantes y de plazas en espera; cuando un inscrito cancela, la primera persona de la lista pasa a confirmada.
+- **Aforo y lista de espera**: máximo de participantes y de plazas en espera. Cuando se libera una plaza confirmada (el inscrito cancela, o desde el panel se rechaza, se pasa a lista de espera, se cambia de estado o se elimina), las primeras personas de la lista pasan a confirmadas hasta llenar las plazas libres. Quien se pasa a lista de espera desde el panel va al final y no recupera la plaza en ese momento, aunque nadie más espere. Desde el inicio del evento no se promociona a nadie.
 - **Confirmación manual**: las inscripciones quedan pendientes hasta que alguien las confirma desde el panel.
-- **Fechas**: apertura y cierre de inscripciones y fecha límite para cancelar.
+- **Fechas**: apertura y cierre de inscripciones y fecha límite para cancelar. El inicio del evento cierra inscripciones, cancelaciones y lista de espera aunque las fechas configuradas sean posteriores, y desde ese momento nadie pasa de la lista de espera a confirmado. Las acciones del panel (confirmar, rechazar, mover a lista de espera, editar, eliminar) no tienen ese límite.
 - **Solo socios**: si se activa en el evento, solo pueden inscribirse (o entrar en la lista de espera) los socios de la asociación, es decir, los usuarios con el rol de socio del core. La ficha del evento no ofrece la inscripción a quien no lo es (el botón muestra "Solo para socios") y el servidor la rechaza igualmente con "Solo los socios pueden inscribirse en este evento" (HTTP 403).
 - **Verificación de email**: si el core exige verificar el email y la cuenta aún no lo ha hecho, la ficha del evento muestra el botón desactivado con el motivo («Para inscribirte, verifica tu email.» o «Para cancelar tu inscripción, verifica tu email.») y un enlace a la página de verificación, y la pestaña «Mis inscripciones» explica que hay que verificar el email para ver las inscripciones. Ver [Verificación de email](#verificación-de-email).
 - **Emails**: inscripción recibida (con la posición si queda en lista de espera), confirmación desde el panel y plaza liberada; aviso opcional a un email del organizador. No se envían emails de eventos ya terminados.
@@ -62,8 +62,8 @@ La acción **Exportar** de la pestaña **Inscripciones** descarga `inscripciones
 | Lista de espera habilitada | Admite lista de espera cuando el evento está completo |
 | Máximo en lista de espera | Límite de la lista de espera (vacío o 0 = sin límite) |
 | Apertura de inscripciones | Desde cuándo se aceptan inscripciones |
-| Cierre de inscripciones | Hasta cuándo se aceptan inscripciones |
-| Fecha límite de cancelación | Hasta cuándo puede cancelar el usuario |
+| Cierre de inscripciones | Hasta cuándo se aceptan inscripciones; no puede ser posterior al inicio del evento, que las cierra siempre |
+| Fecha límite de cancelación | Hasta cuándo puede cancelar el usuario; no puede ser posterior al inicio del evento, y sin fecha se puede cancelar hasta el inicio |
 | Requiere confirmación manual | Las inscripciones quedan pendientes hasta que se confirman |
 | Solo socios | Solo pueden inscribirse los socios (rol de socio del core) |
 | Email de notificación | Recibe un aviso con cada inscripción nueva |
@@ -120,6 +120,8 @@ No se envían emails de eventos ya terminados.
 
 `RegistrationButton` se inyecta en la ficha del evento (slot `event-detail-actions`) e incluye `RegistrationStatus` y `RegistrationForm`. Si la configuración del evento tiene campos personalizados (`custom_fields`), el botón pide esos datos antes de inscribir y los envía como `form_data`; el panel todavía no permite definirlos.
 
+Con una inscripción activa (pendiente, confirmada o en lista de espera), el botón ofrece cancelarla mientras `can_cancel` es `true`, aunque las inscripciones ya estén cerradas; cuando ya no se puede cancelar, el botón no se muestra y `RegistrationStatus` sigue indicando el estado de la inscripción.
+
 `UserRegistrations` es la pestaña «Mis inscripciones» del perfil (slot `profile-sections`). Pide `GET /mis-inscripciones` al abrirse; si la sesión ha caducado, ofrece recargar la página para volver a iniciar sesión.
 
 ### Verificación de email
@@ -138,15 +140,19 @@ Son rutas web (sesión y CSRF) que responden JSON; el módulo no registra rutas 
 
 | Método | Ruta | Descripción |
 |--------|------|-------------|
-| `GET` | `/eventos/{eventId}/inscripcion/estado` | Estado público de las inscripciones del evento; `meets_members_only` indica si el visitante actual cumple el requisito de solo socios (siempre `true` si el evento está abierto a todos, `false` sin sesión en un evento solo para socios) |
+| `GET` | `/eventos/{eventId}/inscripcion/estado` | Estado público de las inscripciones del evento; `is_open` indica si se admiten inscripciones ahora y `can_cancel` si se admiten cancelaciones ahora (las dos pasan a `false` al empezar el evento); `meets_members_only` indica si el visitante actual cumple el requisito de solo socios (siempre `true` si el evento está abierto a todos, `false` sin sesión en un evento solo para socios) |
 | `GET` | `/eventos/{eventId}/inscripcion` | Inscripción del usuario (requiere sesión) |
 | `POST` | `/eventos/{eventId}/inscripcion` | Inscribirse (requiere sesión; `notes`, `form_data`) |
 | `DELETE` | `/eventos/{eventId}/inscripcion` | Cancelar la inscripción (requiere sesión) |
 | `GET` | `/mis-inscripciones` | Inscripciones del usuario, de la más reciente a la más antigua (requiere sesión) |
 
+Las cuatro rutas `/eventos/{eventId}/inscripcion…` responden 404 con «Evento no encontrado» si el evento no existe o no está publicado, también a quien ya tenía una inscripción en él (las tres que exigen sesión responden antes 401 a un visitante sin sesión). Las acciones del panel no tienen esa restricción.
+
 Las inscripciones que recibe el usuario nunca incluyen las notas internas del panel (`admin_notes`). Cada elemento de `/mis-inscripciones` lleva además `event` con `id`, `title`, `slug`, `start_date`, `end_date`, `location` y `url` (la ficha del evento), o `null` si el evento no está publicado.
 
-`POST` responde 201 si crea la inscripción, 403 si el evento es solo para socios y el usuario no lo es, y 422 si las inscripciones están cerradas, el evento está completo o el usuario ya está inscrito.
+`POST` responde 201 si crea la inscripción, 403 si el evento es solo para socios y el usuario no lo es, y 422 si las inscripciones están cerradas (con «El evento ya ha comenzado» cuando la causa es el inicio del evento), el evento está completo o el usuario ya está inscrito.
+
+`DELETE` responde 200 si cancela la inscripción (también la plaza en lista de espera), 404 si el usuario no está inscrito y 422 si ha pasado la fecha límite de cancelación o el evento ya ha comenzado.
 
 ```javascript
 const response = await fetch(`/eventos/${eventId}/inscripcion`, {

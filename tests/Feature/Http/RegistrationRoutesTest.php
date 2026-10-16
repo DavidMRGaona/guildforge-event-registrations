@@ -32,7 +32,7 @@ final class RegistrationRoutesTest extends ModuleTestCase
 
         Notification::fake();
 
-        $this->event = EventModel::factory()->create(['start_date' => now()->addWeek()]);
+        $this->event = EventModel::factory()->published()->create(['start_date' => now()->addWeek()]);
         EventRegistrationConfigModel::create([
             'event_id' => $this->event->id,
             'registration_enabled' => true,
@@ -117,6 +117,21 @@ final class RegistrationRoutesTest extends ModuleTestCase
             ->getJson($this->url('/eventos/{event}/inscripcion'))
             ->assertOk()
             ->assertExactJson(['data' => null]);
+    }
+
+    public function test_a_user_cancelling_from_the_waiting_list_moves_the_others_up(): void
+    {
+        $this->createRegistration(UserModel::factory()->create(), RegistrationState::Confirmed);
+        $leaving = UserModel::factory()->create();
+        $this->createRegistration($leaving, RegistrationState::WaitingList)->update(['position' => 1]);
+        $behind = $this->createRegistration(UserModel::factory()->create(), RegistrationState::WaitingList);
+        $behind->update(['position' => 2]);
+
+        $this->actingAs($leaving)
+            ->deleteJson($this->url('/eventos/{event}/inscripcion'))
+            ->assertOk();
+
+        $this->assertSame(1, $behind->fresh()?->position);
     }
 
     public function test_show_returns_the_users_registration(): void

@@ -97,6 +97,7 @@ return [
         'registration_opens_at' => 'Registration opens',
         'registration_closes_at' => 'Registration closes',
         'cancellation_deadline' => 'Cancellation deadline',
+        'not_after_event_start' => 'Cannot be later than the event start (:date)',
         'options' => 'Options',
         'requires_confirmation' => 'Requires manual confirmation',
         'requires_confirmation_help' => 'Registrations remain pending until an admin confirms them',
@@ -132,6 +133,9 @@ return [
         'cannot_cancel' => 'Cannot cancel registration',
         'unauthenticated' => 'You must log in',
         'members_only' => 'Only association members can register for this event',
+        'event_started' => 'The event has already started',
+        'cannot_cancel_started' => 'You cannot cancel your registration: the event has already started',
+        'event_not_found' => 'Event not found',
     ],
 
     // Success

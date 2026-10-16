@@ -13,6 +13,7 @@ use Modules\EventRegistrations\Domain\Enums\RegistrationState;
 use Modules\EventRegistrations\Domain\Events\RegistrationConfirmed;
 use Modules\EventRegistrations\Domain\Events\UserRegisteredToEvent;
 use Modules\EventRegistrations\Domain\Events\WaitingListPromoted;
+use Modules\EventRegistrations\Domain\Repositories\EventRegistrationConfigRepositoryInterface;
 use Modules\EventRegistrations\Domain\Repositories\EventRegistrationRepositoryInterface;
 use Modules\EventRegistrations\Domain\ValueObjects\EventRegistrationId;
 
@@ -20,6 +21,7 @@ final readonly class WaitingListService implements WaitingListServiceInterface
 {
     public function __construct(
         private EventRegistrationRepositoryInterface $registrationRepository,
+        private EventRegistrationConfigRepositoryInterface $configRepository,
     ) {}
 
     /**
@@ -63,9 +65,57 @@ final readonly class WaitingListService implements WaitingListServiceInterface
         return EventRegistrationResponseDTO::fromEntity($registration);
     }
 
-    public function promoteNext(string $eventId): ?EventRegistrationResponseDTO
+    public function promoteNext(string $eventId, ?string $excludeRegistrationId = null): ?EventRegistrationResponseDTO
     {
-        $registration = $this->registrationRepository->findFirstInWaitingList($eventId);
+        // Nobody is promoted once the event has started, whoever freed the spot
+        if ($this->configRepository->findByEventOrDefault($eventId)->hasEventStarted()) {
+            return null;
+        }
+
+        return $this->promoteFirstInWaitingList($eventId, $excludeRegistrationId);
+    }
+
+    public function fillFreeSpots(string $eventId, ?string $excludeRegistrationId = null): int
+    {
+        $promoted = $this->promoteWhileThereAreFreeSpots($eventId, $excludeRegistrationId);
+
+        // Someone may have left the list with no promotion (rejected, deleted, moved): close the gap
+        $this->recalculatePositions($eventId);
+
+        return $promoted;
+    }
+
+    private function promoteWhileThereAreFreeSpots(string $eventId, ?string $excludeRegistrationId): int
+    {
+        $config = $this->configRepository->findByEventOrDefault($eventId);
+
+        // No waiting list, or the event has started: nobody is promoted
+        if (! $config->isWaitingListEnabled() || $config->hasEventStarted()) {
+            return 0;
+        }
+
+        $maxParticipants = $config->maxParticipants();
+        // Each promotion takes one person off the list: never more rounds than people waiting
+        $rounds = $this->registrationRepository->countWaitingListByEvent($eventId);
+        $promoted = 0;
+
+        while (
+            $promoted < $rounds
+            && ($maxParticipants === null || $this->registrationRepository->countConfirmedByEvent($eventId) < $maxParticipants)
+        ) {
+            if ($this->promoteFirstInWaitingList($eventId, $excludeRegistrationId) === null) {
+                break;
+            }
+
+            $promoted++;
+        }
+
+        return $promoted;
+    }
+
+    private function promoteFirstInWaitingList(string $eventId, ?string $excludeRegistrationId = null): ?EventRegistrationResponseDTO
+    {
+        $registration = $this->registrationRepository->findFirstInWaitingList($eventId, $excludeRegistrationId);
 
         if ($registration === null) {
             return null;

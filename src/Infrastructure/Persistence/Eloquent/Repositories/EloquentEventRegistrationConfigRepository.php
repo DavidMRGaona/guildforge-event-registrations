@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\EventRegistrations\Infrastructure\Persistence\Eloquent\Repositories;
 
+use App\Infrastructure\Persistence\Eloquent\Models\EventModel;
 use DateTimeImmutable;
 use Modules\EventRegistrations\Domain\Entities\EventRegistrationConfig;
 use Modules\EventRegistrations\Domain\Repositories\EventRegistrationConfigRepositoryInterface;
@@ -58,6 +59,7 @@ final readonly class EloquentEventRegistrationConfigRepository implements EventR
             waitingListEnabled: (bool) config('modules.settings.event-registrations.default_waiting_list_enabled', true),
             maxWaitingList: $maxWaitingList !== null ? (int) $maxWaitingList : null,
             requiresConfirmation: (bool) config('modules.settings.event-registrations.default_requires_confirmation', false),
+            eventStartsAt: $this->eventStartsAt($eventId),
         );
     }
 
@@ -103,6 +105,19 @@ final readonly class EloquentEventRegistrationConfigRepository implements EventR
             updatedAt: $model->updated_at !== null
                 ? DateTimeImmutable::createFromMutable($model->updated_at->toDateTime())
                 : null,
+            eventStartsAt: $this->eventStartsAt($model->event_id),
         );
+    }
+
+    /**
+     * Start of the core event, or null when the event does not exist.
+     */
+    private function eventStartsAt(string $eventId): ?DateTimeImmutable
+    {
+        $event = EventModel::query()->find($eventId, ['id', 'start_date']);
+
+        return $event !== null
+            ? DateTimeImmutable::createFromMutable($event->start_date->toDateTime())
+            : null;
     }
 }

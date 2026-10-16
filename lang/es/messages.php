@@ -97,6 +97,7 @@ return [
         'registration_opens_at' => 'Apertura de inscripciones',
         'registration_closes_at' => 'Cierre de inscripciones',
         'cancellation_deadline' => 'Fecha límite de cancelación',
+        'not_after_event_start' => 'No puede ser posterior al inicio del evento (:date)',
         'options' => 'Opciones',
         'requires_confirmation' => 'Requiere confirmación manual',
         'requires_confirmation_help' => 'Las inscripciones quedan pendientes hasta que un administrador las confirme',
@@ -132,6 +133,9 @@ return [
         'cannot_cancel' => 'No se puede cancelar la inscripción',
         'unauthenticated' => 'Debes iniciar sesión',
         'members_only' => 'Solo los socios pueden inscribirse en este evento',
+        'event_started' => 'El evento ya ha comenzado',
+        'cannot_cancel_started' => 'No puedes cancelar la inscripción: el evento ya ha comenzado',
+        'event_not_found' => 'Evento no encontrado',
     ],
 
     // Success
