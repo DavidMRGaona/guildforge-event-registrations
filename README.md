@@ -120,6 +120,8 @@ No se envían emails de eventos ya terminados.
 
 `RegistrationButton` se inyecta en la ficha del evento (slot `event-detail-actions`) e incluye `RegistrationStatus` y `RegistrationForm`. Si la configuración del evento tiene campos personalizados (`custom_fields`), el botón pide esos datos antes de inscribir y los envía como `form_data`; el panel todavía no permite definirlos.
 
+Con una inscripción activa (pendiente, confirmada o en lista de espera), el botón ofrece cancelarla mientras `can_cancel` es `true`, aunque las inscripciones ya estén cerradas; cuando ya no se puede cancelar, el botón no se muestra y `RegistrationStatus` sigue indicando el estado de la inscripción.
+
 `UserRegistrations` es la pestaña «Mis inscripciones» del perfil (slot `profile-sections`). Pide `GET /mis-inscripciones` al abrirse; si la sesión ha caducado, ofrece recargar la página para volver a iniciar sesión.
 
 ### Verificación de email
