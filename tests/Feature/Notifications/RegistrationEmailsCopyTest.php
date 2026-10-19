@@ -31,7 +31,7 @@ final class RegistrationEmailsCopyTest extends ModuleTestCase
         parent::setUp();
 
         app()->setLocale('es');
-        $this->user = UserModel::factory()->create(['name' => 'Ana']);
+        $this->user = UserModel::factory()->create(['name' => 'John']);
         $this->event = EventModel::factory()->published()->create(['title' => 'Jornada de rol', 'start_date' => now()->addWeek()]);
     }
 
@@ -44,7 +44,7 @@ final class RegistrationEmailsCopyTest extends ModuleTestCase
         $this->assertStringContainsString('«Jornada de rol»', $text);
         $this->assertStringContainsString('confirmada', $text);
         $this->assertStringNotContainsString('recibida', $text);
-        $this->assertSame('¡Hola, Ana!', $message->greeting);
+        $this->assertSame('¡Hola, John!', $message->greeting);
         $this->assertNull($message->salutation);
     }
 
