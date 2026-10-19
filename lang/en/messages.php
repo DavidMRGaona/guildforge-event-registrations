@@ -177,7 +177,6 @@ return [
 
         // Waiting list email
         'waiting_list_subject' => 'Waiting list: :event',
-        'waiting_list_body' => 'You have been added to the waiting list for ":event".',
         'your_position' => 'Your position on the waiting list is: **:position**',
         'waiting_list_info' => 'We will notify you if a spot becomes available.',
 
@@ -223,6 +222,7 @@ return [
         'emails' => 'Emails',
         'send_confirmation_email' => 'Send confirmation email',
         'send_promotion_email' => 'Send promotion email',
+        'send_cancellation_email' => 'Send cancellation email',
         'send_registration_email' => 'Send registration email',
     ],
 ];
