@@ -44,6 +44,7 @@ use Modules\EventRegistrations\Infrastructure\Services\RegistrationNotificationS
 use Modules\EventRegistrations\Infrastructure\Services\RegistrationQueryService;
 use Modules\EventRegistrations\Infrastructure\Services\WaitingListService;
 use Modules\EventRegistrations\Listeners\PromoteFromWaitingListOnCancellation;
+use Modules\EventRegistrations\Listeners\SendRegistrationCancelledEmail;
 use Modules\EventRegistrations\Listeners\SendRegistrationConfirmedEmail;
 use Modules\EventRegistrations\Listeners\SendRegistrationRejectedEmail;
 use Modules\EventRegistrations\Listeners\SendUserRegisteredEmail;
@@ -197,6 +198,11 @@ final class EventRegistrationsServiceProvider extends ModuleServiceProvider
         Event::listen(
             UserUnregisteredFromEvent::class,
             PromoteFromWaitingListOnCancellation::class
+        );
+
+        Event::listen(
+            UserUnregisteredFromEvent::class,
+            SendRegistrationCancelledEmail::class
         );
 
         Event::listen(
@@ -393,6 +399,9 @@ final class EventRegistrationsServiceProvider extends ModuleServiceProvider
                         ->default(true),
                     Toggle::make('send_promotion_email')
                         ->label(__('event-registrations::messages.settings.send_promotion_email'))
+                        ->default(true),
+                    Toggle::make('send_cancellation_email')
+                        ->label(__('event-registrations::messages.settings.send_cancellation_email'))
                         ->default(true),
                 ]),
         ];

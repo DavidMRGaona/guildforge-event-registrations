@@ -26,11 +26,6 @@ interface RegistrationNotificationServiceInterface
     public function confirmationAlreadyAnnounced(ConfirmationSource $source): bool;
 
     /**
-     * Send email when user is added to waiting list.
-     */
-    public function sendWaitingListEmail(EventRegistration $registration, int $position): void;
-
-    /**
      * Send email when user is promoted from waiting list.
      */
     public function sendPromotionEmail(EventRegistration $registration): void;

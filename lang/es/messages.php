@@ -223,6 +223,7 @@ return [
         'emails' => 'Emails',
         'send_confirmation_email' => 'Enviar email de confirmación',
         'send_promotion_email' => 'Enviar email de promoción',
+        'send_cancellation_email' => 'Enviar email de cancelación',
         'send_registration_email' => 'Enviar email de inscripción',
     ],
 ];

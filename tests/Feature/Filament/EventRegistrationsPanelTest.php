@@ -293,8 +293,8 @@ final class EventRegistrationsPanelTest extends ModuleTestCase
             ->assertFormFieldExists('send_registration_email')
             ->assertFormFieldExists('send_confirmation_email')
             ->assertFormFieldExists('send_promotion_email')
+            ->assertFormFieldExists('send_cancellation_email')
             ->assertFormFieldDoesNotExist('send_waiting_list_email')
-            ->assertFormFieldDoesNotExist('send_cancellation_email')
             ->assertFormFieldDoesNotExist('send_rejection_email');
     }
 
