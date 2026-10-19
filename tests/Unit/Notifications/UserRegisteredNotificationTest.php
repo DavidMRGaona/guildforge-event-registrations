@@ -64,7 +64,7 @@ final class UserRegisteredNotificationTest extends TestCase
         );
 
         $user = new UserModel;
-        $user->name = 'Ana';
+        $user->name = 'John';
 
         return (new UserRegisteredNotification($event, $registration))->toMail($user)->subject;
     }
