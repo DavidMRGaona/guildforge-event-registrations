@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Modules\EventRegistrations\Console\Commands;
 
-use App\Infrastructure\Persistence\Eloquent\Models\UserModel;
 use Carbon\CarbonImmutable;
 use Illuminate\Console\Command;
 use Modules\EventRegistrations\Domain\Enums\RegistrationState;
@@ -40,22 +39,33 @@ final class SendEventRemindersCommand extends Command
         $registrations = EventRegistrationModel::query()
             ->where('state', RegistrationState::Confirmed->value)
             ->whereNull('reminder_sent_at')
+            // An anonymised account keeps only a placeholder address
+            ->whereHas('user', fn ($user) => $user->whereNull('anonymized_at'))
             ->whereHas('event', fn ($event) => $event
                 ->where('is_published', true)
                 ->where('start_date', '>', $now)
                 ->where('start_date', '<=', $until))
-            ->with('event')
+            ->with(['event', 'user'])
             ->get();
 
         foreach ($registrations as $registration) {
-            $user = UserModel::find($registration->user_id);
+            $user = $registration->user;
 
             if ($user === null || $registration->event === null) {
                 continue;
             }
 
+            // Claimed before sending, so a run started by hand next to the scheduled one never doubles it
+            $claimed = EventRegistrationModel::query()
+                ->whereKey($registration->getKey())
+                ->whereNull('reminder_sent_at')
+                ->update(['reminder_sent_at' => $now]) === 1;
+
+            if (! $claimed) {
+                continue;
+            }
+
             $user->notify(new EventReminderNotification($registration->event));
-            $registration->forceFill(['reminder_sent_at' => $now])->save();
             $sent++;
         }
 

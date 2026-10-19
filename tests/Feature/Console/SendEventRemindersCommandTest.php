@@ -82,6 +82,29 @@ final class SendEventRemindersCommandTest extends ModuleTestCase
         Notification::assertNothingSent();
     }
 
+    public function test_the_reminder_ships_off(): void
+    {
+        $shipped = require dirname(__DIR__, 3).'/config/settings.php';
+
+        $this->assertFalse($shipped['send_reminder_email']);
+        $this->assertSame(24, $shipped['reminder_hours_before']);
+    }
+
+    public function test_anonymised_accounts_and_unpublished_events_are_skipped(): void
+    {
+        $this->enable();
+        $event = $this->event($this->now->addHours(10));
+        [$anonymised, $registration] = $this->registered($event, RegistrationState::Confirmed);
+        $anonymised->forceFill(['anonymized_at' => $this->now->subDay()])->save();
+        $hidden = $this->event($this->now->addHours(10));
+        $hidden->forceFill(['is_published' => false])->save();
+        [$unpublished] = $this->registered($hidden, RegistrationState::Confirmed);
+
+        $this->artisan('event-registrations:send-reminders')->assertSuccessful();
+
+        Notification::assertNothingSent();
+    }
+
     public function test_the_lead_time_is_configurable(): void
     {
         $this->enable(hours: 48);

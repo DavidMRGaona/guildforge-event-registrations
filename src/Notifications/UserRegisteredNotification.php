@@ -64,10 +64,6 @@ final class UserRegisteredNotification extends Notification implements ShouldQue
     }
 
     /**
-     * The registration email is the only one sent on sign-up, so its subject
-     * must reflect the resulting state instead of always saying "received".
-     */
-    /**
      * Like the subject, the opening line matches the resulting state.
      */
     private function bodyKey(): string
@@ -79,6 +75,10 @@ final class UserRegisteredNotification extends Notification implements ShouldQue
         };
     }
 
+    /**
+     * The registration email is the only one sent on sign-up, so its subject
+     * must reflect the resulting state instead of always saying "received".
+     */
     private function subjectKey(): string
     {
         return match ($this->registration->state()) {
