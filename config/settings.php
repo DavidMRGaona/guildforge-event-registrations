@@ -9,4 +9,6 @@ return [
     'send_confirmation_email' => true,
     'send_promotion_email' => true,
     'send_cancellation_email' => true,
+    'send_reminder_email' => false,
+    'reminder_hours_before' => 24,
 ];

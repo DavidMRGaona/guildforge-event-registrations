@@ -43,8 +43,7 @@ final class RegistrationCancelledNotification extends Notification implements Sh
                 'event' => $this->event->title,
             ]))
             ->line(__('event-registrations::messages.emails.cancelled_info'))
-            ->action(__('event-registrations::messages.emails.view_event'), url('/eventos/'.$this->event->slug))
-            ->salutation(__('event-registrations::messages.emails.salutation'));
+            ->action(__('event-registrations::messages.emails.view_event'), url('/eventos/'.$this->event->slug));
     }
 
     /**

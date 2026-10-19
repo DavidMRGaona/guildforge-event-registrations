@@ -89,6 +89,8 @@ Se editan en el panel: **Módulos** → Inscripciones a eventos → **Configurar
 | Enviar email de confirmación | Email de inscripción confirmada (ver [Emails](#emails)) |
 | Enviar email de promoción | Email cuando se libera una plaza y alguien pasa de la lista de espera a confirmado |
 | Enviar email de cancelación | Email cuando el usuario cancela su inscripción o sale de la lista de espera |
+| Enviar recordatorio antes del evento | Recordatorio a las inscripciones confirmadas (desactivado por defecto) |
+| Antelación del recordatorio (horas) | Horas antes del inicio en que sale el recordatorio (24 por defecto) |
 
 Los valores guardados desde el panel se conservan en la base de datos del core, así que sobreviven a las actualizaciones. `config/settings.php` solo trae los valores por defecto de cada versión.
 
@@ -100,6 +102,7 @@ Los valores guardados desde el panel se conservan en la base de datos del core, 
 | Inscripción confirmada | Usuario | Cuando se confirma desde el panel; también en las confirmaciones automáticas (al inscribirse o por promoción) si el email de inscripción o el de promoción está desactivado |
 | Plaza disponible | Usuario | Cuando pasa de la lista de espera a confirmado |
 | Inscripción cancelada | Usuario | Cuando cancela su inscripción o sale de la lista de espera |
+| Recordatorio | Usuario | Una vez, las horas configuradas antes del inicio, si está confirmada y el recordatorio está activado (`event-registrations:send-reminders`, cada hora) |
 | Nueva inscripción | Email de notificación del evento | Con cada inscripción, si el evento tiene ese email configurado |
 
 No se envían emails de eventos ya terminados.

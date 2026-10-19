@@ -42,8 +42,7 @@ final class RegistrationRejectedNotification extends Notification implements Sho
             ->line(__('event-registrations::messages.emails.rejected_body', [
                 'event' => $this->event->title,
             ]))
-            ->action(__('event-registrations::messages.emails.view_events'), url('/eventos'))
-            ->salutation(__('event-registrations::messages.emails.salutation'));
+            ->action(__('event-registrations::messages.emails.view_events'), url('/eventos'));
     }
 
     /**

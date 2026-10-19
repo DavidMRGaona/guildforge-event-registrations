@@ -48,6 +48,7 @@ final class EventRegistrationModel extends Model
         'admin_notes',
         'confirmed_at',
         'cancelled_at',
+        'reminder_sent_at',
     ];
 
     /**
@@ -61,6 +62,7 @@ final class EventRegistrationModel extends Model
             'form_data' => 'array',
             'confirmed_at' => 'datetime',
             'cancelled_at' => 'datetime',
+            'reminder_sent_at' => 'datetime',
         ];
     }
 

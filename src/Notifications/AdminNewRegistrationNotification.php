@@ -69,8 +69,7 @@ final class AdminNewRegistrationNotification extends Notification implements Sho
                 __('event-registrations::messages.emails.admin_view_registrations'),
                 // The panel finds events by slug (EventModel::getRouteKeyName())
                 EventResource::getUrl('edit', ['record' => $this->event, 'relation' => RegistrationsRelationManager::RELATION_KEY]),
-            )
-            ->salutation(__('event-registrations::messages.emails.salutation'));
+            );
     }
 
     /**

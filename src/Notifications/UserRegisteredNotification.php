@@ -40,7 +40,7 @@ final class UserRegisteredNotification extends Notification implements ShouldQue
             ->greeting(__('event-registrations::messages.emails.greeting', [
                 'name' => $notifiable->name,
             ]))
-            ->line(__('event-registrations::messages.emails.registered_body', [
+            ->line(__($this->bodyKey(), [
                 'event' => $this->event->title,
             ]));
 
@@ -52,8 +52,6 @@ final class UserRegisteredNotification extends Notification implements ShouldQue
             $message->line(__('event-registrations::messages.emails.waiting_list_info'));
         } elseif ($this->registration->state() === RegistrationState::Pending) {
             $message->line(__('event-registrations::messages.emails.registered_pending'));
-        } else {
-            $message->line(__('event-registrations::messages.emails.registered_confirmed'));
         }
 
         return $message
@@ -62,14 +60,25 @@ final class UserRegisteredNotification extends Notification implements ShouldQue
             ->when($this->event->location, function (MailMessage $mail): MailMessage {
                 return $mail->line('**'.__('event-registrations::messages.emails.location').':** '.$this->event->location);
             })
-            ->action(__('event-registrations::messages.emails.view_event'), url('/eventos/'.$this->event->slug))
-            ->salutation(__('event-registrations::messages.emails.salutation'));
+            ->action(__('event-registrations::messages.emails.view_event'), url('/eventos/'.$this->event->slug));
     }
 
     /**
      * The registration email is the only one sent on sign-up, so its subject
      * must reflect the resulting state instead of always saying "received".
      */
+    /**
+     * Like the subject, the opening line matches the resulting state.
+     */
+    private function bodyKey(): string
+    {
+        return match ($this->registration->state()) {
+            RegistrationState::Confirmed => 'event-registrations::messages.emails.registered_confirmed_body',
+            RegistrationState::WaitingList => 'event-registrations::messages.emails.registered_waiting_list_body',
+            default => 'event-registrations::messages.emails.registered_body',
+        };
+    }
+
     private function subjectKey(): string
     {
         return match ($this->registration->state()) {
