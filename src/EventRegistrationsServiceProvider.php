@@ -13,9 +13,11 @@ use App\Modules\ModuleServiceProvider;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Widgets\Widget;
+use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Support\Facades\Event;
 use Inertia\Inertia;
 use Livewire\Livewire;
+use Modules\EventRegistrations\Console\Commands\SendEventRemindersCommand;
 use Modules\EventRegistrations\Application\Services\EventRegistrationServiceInterface;
 use Modules\EventRegistrations\Application\Services\MembershipCheckerInterface;
 use Modules\EventRegistrations\Application\Services\PublishedEventCheckerInterface;
@@ -116,7 +118,28 @@ final class EventRegistrationsServiceProvider extends ModuleServiceProvider
         $this->registerLivewireComponents();
         $this->registerFilamentExtensions();
         $this->registerEventListeners();
+        $this->registerCommands();
+        $this->registerSchedule();
         $this->shareInertiaData();
+    }
+
+    private function registerCommands(): void
+    {
+        if ($this->app->runningInConsole()) {
+            $this->commands([
+                SendEventRemindersCommand::class,
+            ]);
+        }
+    }
+
+    private function registerSchedule(): void
+    {
+        $this->callAfterResolving(Schedule::class, function (Schedule $schedule): void {
+            // Does nothing until the reminder is enabled in the module settings
+            $schedule->command('event-registrations:send-reminders')
+                ->hourly()
+                ->withoutOverlapping(10);
+        });
     }
 
     /**
@@ -403,6 +426,17 @@ final class EventRegistrationsServiceProvider extends ModuleServiceProvider
                     Toggle::make('send_cancellation_email')
                         ->label(__('event-registrations::messages.settings.send_cancellation_email'))
                         ->default(true),
+                    Toggle::make('send_reminder_email')
+                        ->label(__('event-registrations::messages.settings.send_reminder_email'))
+                        ->helperText(__('event-registrations::messages.settings.send_reminder_email_help'))
+                        ->default(false),
+                    TextInput::make('reminder_hours_before')
+                        ->label(__('event-registrations::messages.settings.reminder_hours_before'))
+                        ->numeric()
+                        ->integer()
+                        ->minValue(1)
+                        ->maxValue(168)
+                        ->default(24),
                 ]),
         ];
     }

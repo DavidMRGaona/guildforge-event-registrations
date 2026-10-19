@@ -164,7 +164,6 @@ return [
     // Emails
     'emails' => [
         'greeting' => 'Hello :name,',
-        'salutation' => 'Best regards,',
         'event_details' => 'Event details:',
         'date' => 'Date',
         'location' => 'Location',
@@ -194,7 +193,8 @@ return [
         'registered_subject' => 'Registration received: :event',
         'registered_body' => 'Your registration for ":event" has been received.',
         'registered_pending' => 'Your registration is pending confirmation by an administrator.',
-        'registered_confirmed' => 'Your registration has been automatically confirmed.',
+        'registered_confirmed_body' => 'You have registered for ":event" and your seat is confirmed.',
+        'registered_waiting_list_body' => 'You have joined the waiting list for ":event".',
 
         // Rejection email
         'rejected_subject' => 'Registration rejected: :event',
@@ -208,6 +208,11 @@ return [
         'admin_waiting_list_position' => 'Waiting list position: **:position**',
         'admin_requires_confirmation' => 'This registration requires manual confirmation.',
         'admin_view_registrations' => 'View registrations',
+
+        // Reminder email
+        'reminder_subject' => 'Reminder: :event, :date',
+        'reminder_body' => 'This is a reminder of your registration for ":event", which starts on :date.',
+        'reminder_cancel' => 'If you can no longer come, cancel your registration from the event page to free the seat.',
     ],
 
     // Settings
@@ -223,6 +228,9 @@ return [
         'send_confirmation_email' => 'Send confirmation email',
         'send_promotion_email' => 'Send promotion email',
         'send_cancellation_email' => 'Send cancellation email',
+        'send_reminder_email' => 'Send a reminder before the event',
+        'send_reminder_email_help' => 'An email to every confirmed registration the given hours before the start. Off by default.',
+        'reminder_hours_before' => 'Reminder lead time (hours)',
         'send_registration_email' => 'Send registration email',
     ],
 ];

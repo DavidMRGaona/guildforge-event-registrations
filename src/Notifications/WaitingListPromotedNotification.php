@@ -48,8 +48,7 @@ final class WaitingListPromotedNotification extends Notification implements Shou
             ->when($this->event->location, function (MailMessage $message): MailMessage {
                 return $message->line('**'.__('event-registrations::messages.emails.location').':** '.$this->event->location);
             })
-            ->action(__('event-registrations::messages.emails.view_event'), url('/eventos/'.$this->event->slug))
-            ->salutation(__('event-registrations::messages.emails.salutation'));
+            ->action(__('event-registrations::messages.emails.view_event'), url('/eventos/'.$this->event->slug));
     }
 
     /**

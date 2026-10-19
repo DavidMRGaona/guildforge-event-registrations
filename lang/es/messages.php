@@ -163,8 +163,7 @@ return [
 
     // Emails
     'emails' => [
-        'greeting' => 'Hola :name,',
-        'salutation' => 'Saludos',
+        'greeting' => '¡Hola, :name!',
         'event_details' => 'Detalles del evento:',
         'date' => 'Fecha',
         'location' => 'Ubicación',
@@ -173,7 +172,7 @@ return [
 
         // Confirmation email
         'confirmed_subject' => 'Inscripción confirmada: :event',
-        'confirmed_body' => 'Tu inscripción al evento ":event" ha sido confirmada.',
+        'confirmed_body' => 'Tu inscripción al evento «:event» ha sido confirmada.',
 
         // Waiting list email
         'waiting_list_subject' => 'Lista de espera: :event',
@@ -181,33 +180,39 @@ return [
         'waiting_list_info' => 'Te notificaremos si se libera una plaza.',
 
         // Promotion email
-        'promoted_subject' => '¡Plaza disponible!: :event',
-        'promoted_body' => '¡Buenas noticias! Se ha liberado una plaza en el evento ":event".',
+        'promoted_subject' => '¡Plaza disponible en :event!',
+        'promoted_body' => '¡Buenas noticias! Se ha liberado una plaza en el evento «:event».',
         'promoted_info' => 'Tu inscripción ha sido confirmada automáticamente.',
 
         // Cancellation email
         'cancelled_subject' => 'Inscripción cancelada: :event',
-        'cancelled_body' => 'Tu inscripción al evento ":event" ha sido cancelada.',
+        'cancelled_body' => 'Tu inscripción al evento «:event» ha sido cancelada.',
         'cancelled_info' => 'Si deseas volver a inscribirte, puedes hacerlo desde la página del evento.',
 
         // Registration email
         'registered_subject' => 'Inscripción recibida: :event',
-        'registered_body' => 'Tu inscripción al evento ":event" ha sido recibida.',
+        'registered_body' => 'Hemos recibido tu inscripción al evento «:event».',
         'registered_pending' => 'Tu inscripción está pendiente de confirmación por parte de un administrador.',
-        'registered_confirmed' => 'Tu inscripción ha sido confirmada automáticamente.',
+        'registered_confirmed_body' => 'Te has inscrito en el evento «:event» y tu plaza está confirmada.',
+        'registered_waiting_list_body' => 'Te has apuntado a la lista de espera del evento «:event».',
 
         // Rejection email
         'rejected_subject' => 'Inscripción rechazada: :event',
-        'rejected_body' => 'Lamentamos informarte que tu inscripción al evento ":event" ha sido rechazada.',
+        'rejected_body' => 'Lamentamos informarte de que tu inscripción al evento «:event» ha sido rechazada.',
 
         // Admin notification email
-        'admin_greeting' => 'Hola,',
+        'admin_greeting' => '¡Hola!',
         'admin_new_registration_subject' => 'Nueva inscripción: :event',
-        'admin_new_registration_body' => ':user (:email) se ha inscrito al evento ":event".',
+        'admin_new_registration_body' => ':user (:email) se ha inscrito al evento «:event».',
         'admin_registration_state' => 'Estado de la inscripción: **:state**',
         'admin_waiting_list_position' => 'Posición en lista de espera: **:position**',
         'admin_requires_confirmation' => 'Esta inscripción requiere confirmación manual.',
         'admin_view_registrations' => 'Ver inscripciones',
+
+        // Reminder email
+        'reminder_subject' => 'Recordatorio: :event, :date',
+        'reminder_body' => 'Te recordamos tu inscripción en el evento «:event», que empieza el :date.',
+        'reminder_cancel' => 'Si al final no puedes venir, cancela tu inscripción desde la página del evento para dejar la plaza libre.',
     ],
 
     // Settings
@@ -223,6 +228,9 @@ return [
         'send_confirmation_email' => 'Enviar email de confirmación',
         'send_promotion_email' => 'Enviar email de promoción',
         'send_cancellation_email' => 'Enviar email de cancelación',
+        'send_reminder_email' => 'Enviar recordatorio antes del evento',
+        'send_reminder_email_help' => 'Un correo a cada inscripción confirmada las horas indicadas antes del inicio. Desactivado por defecto.',
+        'reminder_hours_before' => 'Antelación del recordatorio (horas)',
         'send_registration_email' => 'Enviar email de inscripción',
     ],
 ];
