@@ -177,7 +177,6 @@ return [
 
         // Waiting list email
         'waiting_list_subject' => 'Lista de espera: :event',
-        'waiting_list_body' => 'Te has añadido a la lista de espera del evento ":event".',
         'your_position' => 'Tu posición en la lista de espera es: **:position**',
         'waiting_list_info' => 'Te notificaremos si se libera una plaza.',
 

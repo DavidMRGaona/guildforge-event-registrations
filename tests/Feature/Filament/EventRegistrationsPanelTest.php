@@ -304,7 +304,6 @@ final class EventRegistrationsPanelTest extends ModuleTestCase
             'default_registration_enabled' => true,
             'send_promotion_email' => false,
             'send_waiting_list_email' => true,
-            'send_cancellation_email' => true,
             'send_rejection_email' => true,
         ]);
 

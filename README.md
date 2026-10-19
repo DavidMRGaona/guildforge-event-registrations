@@ -11,7 +11,7 @@ Inscripciones a los eventos de GuildForge: aforo, lista de espera con promoción
 - **Fechas**: apertura y cierre de inscripciones y fecha límite para cancelar. El inicio del evento cierra inscripciones, cancelaciones y lista de espera aunque las fechas configuradas sean posteriores, y desde ese momento nadie pasa de la lista de espera a confirmado. Las acciones del panel (confirmar, rechazar, mover a lista de espera, editar, eliminar) no tienen ese límite.
 - **Solo socios**: si se activa en el evento, solo pueden inscribirse (o entrar en la lista de espera) los socios de la asociación, es decir, los usuarios con el rol de socio del core. La ficha del evento no ofrece la inscripción a quien no lo es (el botón muestra "Solo para socios") y el servidor la rechaza igualmente con "Solo los socios pueden inscribirse en este evento" (HTTP 403).
 - **Verificación de email**: si el core exige verificar el email y la cuenta aún no lo ha hecho, la ficha del evento muestra el botón desactivado con el motivo («Para inscribirte, verifica tu email.» o «Para cancelar tu inscripción, verifica tu email.») y un enlace a la página de verificación, y la pestaña «Mis inscripciones» explica que hay que verificar el email para ver las inscripciones. Ver [Verificación de email](#verificación-de-email).
-- **Emails**: inscripción recibida (con la posición si queda en lista de espera), confirmación desde el panel y plaza liberada; aviso opcional a un email del organizador. No se envían emails de eventos ya terminados.
+- **Emails**: inscripción recibida (con la posición si queda en lista de espera), confirmación desde el panel, plaza liberada y cancelación; aviso opcional a un email del organizador. No se envían emails de eventos ya terminados.
 - **Exportación**: descarga en CSV de las inscripciones de un evento.
 - **Widget del dashboard**: totales de inscripciones confirmadas, en lista de espera y pendientes.
 
@@ -88,6 +88,7 @@ Se editan en el panel: **Módulos** → Inscripciones a eventos → **Configurar
 | Enviar email de inscripción | Email al inscribirse (confirmada, pendiente o en lista de espera) |
 | Enviar email de confirmación | Email de inscripción confirmada (ver [Emails](#emails)) |
 | Enviar email de promoción | Email cuando se libera una plaza y alguien pasa de la lista de espera a confirmado |
+| Enviar email de cancelación | Email cuando el usuario cancela su inscripción o sale de la lista de espera |
 
 Los valores guardados desde el panel se conservan en la base de datos del core, así que sobreviven a las actualizaciones. `config/settings.php` solo trae los valores por defecto de cada versión.
 
@@ -98,6 +99,7 @@ Los valores guardados desde el panel se conservan en la base de datos del core, 
 | Inscripción recibida | Usuario | Al inscribirse; el asunto y el texto dicen si queda confirmada, pendiente o en lista de espera (con su posición) |
 | Inscripción confirmada | Usuario | Cuando se confirma desde el panel; también en las confirmaciones automáticas (al inscribirse o por promoción) si el email de inscripción o el de promoción está desactivado |
 | Plaza disponible | Usuario | Cuando pasa de la lista de espera a confirmado |
+| Inscripción cancelada | Usuario | Cuando cancela su inscripción o sale de la lista de espera |
 | Nueva inscripción | Email de notificación del evento | Con cada inscripción, si el evento tiene ese email configurado |
 
 No se envían emails de eventos ya terminados.
