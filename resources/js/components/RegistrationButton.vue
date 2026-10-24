@@ -111,6 +111,13 @@ const showMembersOnlyNotice = computed(
         !hasActiveRegistration.value,
 );
 
+// Without a limit the count only shows once someone has registered
+const showCapacity = computed(
+    () =>
+        !!config.value &&
+        (config.value.max_participants !== null || config.value.current_participants > 0),
+);
+
 const membersOnlyNoticeId = computed(() => `members-only-notice-${resolvedEventId.value}`);
 
 const canRegister = computed(() => {
@@ -461,13 +468,18 @@ onMounted(async () => {
             {{ $t('eventRegistrationsEligibility.membersOnlyNotice') }}
         </p>
 
-        <!-- Capacity info: confirmed count always, out of the limit when there is one -->
+        <!-- Capacity info: out of the limit when there is one -->
         <div
-            v-if="config"
+            v-if="config && showCapacity"
             class="mt-2 text-center text-sm text-base-muted"
         >
-            {{ config.current_participants }}<template v-if="config.max_participants !== null"> / {{ config.max_participants }}</template>
-            {{ $t('eventRegistrations.stats.confirmed').toLowerCase() }}
+            <template v-if="config.max_participants !== null">
+                {{ config.current_participants }} / {{ config.max_participants }}
+                {{ $t('eventRegistrations.stats.confirmed').toLowerCase() }}
+            </template>
+            <template v-else>
+                {{ t('eventRegistrationsCapacity.confirmed', config.current_participants) }}
+            </template>
             <template v-if="config.waiting_list_enabled && config.current_waiting_list > 0">
                 · {{ config.current_waiting_list }}
                 {{ $t('eventRegistrations.states.waitingList').toLowerCase() }}
