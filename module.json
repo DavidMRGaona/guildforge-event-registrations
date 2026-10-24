@@ -1,7 +1,7 @@
 {
   "name": "event-registrations",
   "displayName": "Inscripciones a eventos",
-  "version": "2.7.1",
+  "version": "2.7.2",
   "repository": "DavidMRGaona/guildforge-event-registrations",
   "namespace": "Modules\\EventRegistrations",
   "provider": "EventRegistrationsServiceProvider",
