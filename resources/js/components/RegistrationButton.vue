@@ -461,12 +461,12 @@ onMounted(async () => {
             {{ $t('eventRegistrationsEligibility.membersOnlyNotice') }}
         </p>
 
-        <!-- Capacity info -->
+        <!-- Capacity info: confirmed count always, out of the limit when there is one -->
         <div
-            v-if="config && config.max_participants"
+            v-if="config"
             class="mt-2 text-center text-sm text-base-muted"
         >
-            {{ config.current_participants }} / {{ config.max_participants }}
+            {{ config.current_participants }}<template v-if="config.max_participants !== null"> / {{ config.max_participants }}</template>
             {{ $t('eventRegistrations.stats.confirmed').toLowerCase() }}
             <template v-if="config.waiting_list_enabled && config.current_waiting_list > 0">
                 · {{ config.current_waiting_list }}
