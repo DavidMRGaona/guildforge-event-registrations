@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { Calendar } from '@lucide/vue';
+import LoadingSpinner from '@/components/ui/LoadingSpinner.vue';
 import { computed, nextTick, onMounted, ref } from 'vue';
 import { Link } from '@inertiajs/vue3';
 import { useI18n } from 'vue-i18n';
@@ -176,10 +178,7 @@ onMounted(() => {
             class="flex items-center justify-center gap-3 py-12 text-base-muted"
             aria-hidden="true"
         >
-            <svg class="h-6 w-6 animate-spin text-primary" fill="none" viewBox="0 0 24 24" aria-hidden="true">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-            </svg>
+            <LoadingSpinner size="md" color="text-primary" />
             <span>{{ t('eventRegistrationsProfile.loading') }}</span>
         </div>
 
@@ -238,20 +237,7 @@ onMounted(() => {
             v-else-if="registrations.length === 0"
             class="rounded-lg border border-dashed border-default bg-muted p-8 text-center"
         >
-            <svg
-                class="mx-auto h-12 w-12 text-base-muted"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                aria-hidden="true"
-            >
-                <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                />
-            </svg>
+            <Calendar class="mx-auto h-12 w-12 text-base-muted" aria-hidden="true" />
             <p class="mt-4 text-sm text-base-secondary">
                 {{ t('eventRegistrationsProfile.empty') }}
             </p>
