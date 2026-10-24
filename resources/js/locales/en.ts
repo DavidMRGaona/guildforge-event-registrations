@@ -3,6 +3,9 @@ export default {
         membersOnly: 'Members only',
         membersOnlyNotice: 'Only members of the association can register.',
     },
+    eventRegistrationsCapacity: {
+        confirmed: '{count} confirmed | {count} confirmed',
+    },
     eventRegistrationsProfile: {
         tabLabel: 'My registrations',
         title: 'My registrations',

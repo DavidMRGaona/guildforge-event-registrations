@@ -3,6 +3,9 @@ export default {
         membersOnly: 'Solo para socios',
         membersOnlyNotice: 'Solo pueden inscribirse los socios de la asociación.',
     },
+    eventRegistrationsCapacity: {
+        confirmed: '{count} confirmado | {count} confirmados',
+    },
     eventRegistrationsProfile: {
         tabLabel: 'Mis inscripciones',
         title: 'Mis inscripciones',
