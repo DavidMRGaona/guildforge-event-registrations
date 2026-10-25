@@ -20,11 +20,11 @@ final class VerificationGateFrontendTest extends ModuleTestCase
 
     protected bool $autoEnableModule = true;
 
-    private const string MODULE_ROOT = __DIR__ . '/../../..';
+    private const string MODULE_ROOT = __DIR__.'/../../..';
 
     public function test_the_module_requires_the_core_that_shares_the_verification_state(): void
     {
-        $manifest = json_decode((string) file_get_contents(self::MODULE_ROOT . '/module.json'), true);
+        $manifest = json_decode((string) file_get_contents(self::MODULE_ROOT.'/module.json'), true);
 
         $this->assertIsArray($manifest);
         $this->assertSame('^3.10', $manifest['requires']['core'] ?? null);
@@ -94,7 +94,7 @@ final class VerificationGateFrontendTest extends ModuleTestCase
 
     private function componentSource(string $name): string
     {
-        $source = file_get_contents(self::MODULE_ROOT . '/resources/js/components/' . $name);
+        $source = file_get_contents(self::MODULE_ROOT.'/resources/js/components/'.$name);
         $this->assertIsString($source);
 
         return $source;

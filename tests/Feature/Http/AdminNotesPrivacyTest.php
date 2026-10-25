@@ -11,6 +11,7 @@ use Illuminate\Testing\TestResponse;
 use Modules\EventRegistrations\Domain\Enums\RegistrationState;
 use Modules\EventRegistrations\Infrastructure\Persistence\Eloquent\Models\EventRegistrationConfigModel;
 use Modules\EventRegistrations\Infrastructure\Persistence\Eloquent\Models\EventRegistrationModel;
+use Symfony\Component\HttpFoundation\Response;
 use Tests\Support\Modules\ModuleTestCase;
 
 /**
@@ -99,7 +100,7 @@ final class AdminNotesPrivacyTest extends ModuleTestCase
     }
 
     /**
-     * @param  TestResponse<\Symfony\Component\HttpFoundation\Response>  $response
+     * @param  TestResponse<Response>  $response
      */
     private function assertNotLeaked(TestResponse $response): void
     {

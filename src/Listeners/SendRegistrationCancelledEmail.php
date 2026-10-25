@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\EventRegistrations\Listeners;
 
 use Modules\EventRegistrations\Application\Services\RegistrationNotificationServiceInterface;
+use Modules\EventRegistrations\Domain\Entities\EventRegistration;
 use Modules\EventRegistrations\Domain\Events\UserUnregisteredFromEvent;
 use Modules\EventRegistrations\Domain\Repositories\EventRegistrationRepositoryInterface;
 use Modules\EventRegistrations\Domain\ValueObjects\EventRegistrationId;
@@ -25,7 +26,7 @@ final readonly class SendRegistrationCancelledEmail
             EventRegistrationId::fromString($event->registrationId)
         );
 
-        if ($registration === null) {
+        if (! $registration instanceof EventRegistration) {
             return;
         }
 

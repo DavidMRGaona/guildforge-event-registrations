@@ -6,15 +6,16 @@ namespace Modules\EventRegistrations\Listeners;
 
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Modules\EventRegistrations\Application\Services\RegistrationNotificationServiceInterface;
+use Modules\EventRegistrations\Domain\Entities\EventRegistration;
 use Modules\EventRegistrations\Domain\Events\RegistrationRejected;
 use Modules\EventRegistrations\Domain\Repositories\EventRegistrationRepositoryInterface;
 use Modules\EventRegistrations\Domain\ValueObjects\EventRegistrationId;
 
-final class SendRegistrationRejectedEmail implements ShouldQueue
+final readonly class SendRegistrationRejectedEmail implements ShouldQueue
 {
     public function __construct(
-        private readonly EventRegistrationRepositoryInterface $registrationRepository,
-        private readonly RegistrationNotificationServiceInterface $notificationService,
+        private EventRegistrationRepositoryInterface $registrationRepository,
+        private RegistrationNotificationServiceInterface $notificationService,
     ) {}
 
     public function handle(RegistrationRejected $event): void
@@ -23,7 +24,7 @@ final class SendRegistrationRejectedEmail implements ShouldQueue
             EventRegistrationId::fromString($event->registrationId)
         );
 
-        if ($registration === null) {
+        if (! $registration instanceof EventRegistration) {
             return;
         }
 

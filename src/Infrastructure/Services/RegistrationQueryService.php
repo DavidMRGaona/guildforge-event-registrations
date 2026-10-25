@@ -110,7 +110,7 @@ final readonly class RegistrationQueryService implements RegistrationQueryServic
         $registrations = $this->registrationRepository->findByUser($userId);
 
         return array_map(
-            fn ($registration) => EventRegistrationResponseDTO::fromEntity($registration),
+            EventRegistrationResponseDTO::fromEntity(...),
             $registrations
         );
     }
@@ -170,7 +170,7 @@ final readonly class RegistrationQueryService implements RegistrationQueryServic
 
         return array_filter(
             array_map(
-                fn ($registration) => EventRegistrationResponseDTO::fromEntity($registration),
+                EventRegistrationResponseDTO::fromEntity(...),
                 $registrations
             ),
             fn ($dto) => ! $dto->state->isFinal()

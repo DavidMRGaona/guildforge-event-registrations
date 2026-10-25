@@ -17,7 +17,7 @@ final class CancellationWindowFrontendTest extends ModuleTestCase
 
     protected bool $autoEnableModule = true;
 
-    private const string MODULE_ROOT = __DIR__ . '/../../..';
+    private const string MODULE_ROOT = __DIR__.'/../../..';
 
     public function test_the_registration_button_cancels_within_the_server_cancellation_window(): void
     {
@@ -58,7 +58,7 @@ final class CancellationWindowFrontendTest extends ModuleTestCase
         $this->assertStringNotContainsString('cancellationClosed', $this->componentSource());
 
         foreach (['es', 'en'] as $locale) {
-            $translations = file_get_contents(self::MODULE_ROOT . "/resources/js/locales/{$locale}.ts");
+            $translations = file_get_contents(self::MODULE_ROOT."/resources/js/locales/{$locale}.ts");
             $this->assertIsString($translations);
             $this->assertStringNotContainsString('cancellationClosed', $translations);
         }
@@ -84,7 +84,7 @@ final class CancellationWindowFrontendTest extends ModuleTestCase
 
     private function componentSource(): string
     {
-        $source = file_get_contents(self::MODULE_ROOT . '/resources/js/components/RegistrationButton.vue');
+        $source = file_get_contents(self::MODULE_ROOT.'/resources/js/components/RegistrationButton.vue');
         $this->assertIsString($source);
 
         return $source;

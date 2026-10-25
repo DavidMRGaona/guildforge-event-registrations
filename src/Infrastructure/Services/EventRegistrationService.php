@@ -54,7 +54,7 @@ final readonly class EventRegistrationService implements EventRegistrationServic
 
         // Check if user is already registered
         $existing = $this->registrationRepository->findByUserAndEvent($dto->userId, $dto->eventId);
-        if ($existing !== null && ! $existing->state()->isFinal()) {
+        if ($existing instanceof EventRegistration && ! $existing->state()->isFinal()) {
             throw AlreadyRegisteredException::userAlreadyRegistered($dto->eventId, $dto->userId);
         }
 
@@ -70,7 +70,7 @@ final readonly class EventRegistrationService implements EventRegistrationServic
             if (! $config->isRegistrationEnabled()) {
                 throw RegistrationClosedException::disabled($dto->eventId);
             }
-            if ($config->registrationOpensAt() !== null && $now < $config->registrationOpensAt()) {
+            if ($config->registrationOpensAt() instanceof \DateTimeImmutable && $now < $config->registrationOpensAt()) {
                 throw RegistrationClosedException::notYetOpen($dto->eventId);
             }
             throw RegistrationClosedException::alreadyClosed($dto->eventId);
@@ -83,12 +83,11 @@ final readonly class EventRegistrationService implements EventRegistrationServic
 
         // Check capacity
         $currentConfirmed = $this->registrationRepository->countConfirmedByEvent($dto->eventId);
-        $maxParticipants = $config->maxParticipants();
 
         // Determine initial state
         $state = $this->determineInitialState($config, $currentConfirmed);
 
-        if ($state === null) {
+        if (! $state instanceof RegistrationState) {
             // Both main list and waiting list are full
             throw EventFullException::noSpotsAvailable($dto->eventId);
         }
@@ -109,7 +108,7 @@ final readonly class EventRegistrationService implements EventRegistrationServic
         }
 
         // Reactivate existing cancelled/rejected registration or create new one
-        if ($existing !== null && $existing->state()->isFinal()) {
+        if ($existing instanceof EventRegistration && $existing->state()->isFinal()) {
             $registration = $existing;
             $registration->reactivate($state, $dto->formData, $dto->notes);
         } else {
@@ -157,7 +156,7 @@ final readonly class EventRegistrationService implements EventRegistrationServic
 
         $registration = $this->registrationRepository->findByUserAndEvent($userId, $eventId);
 
-        if ($registration === null) {
+        if (! $registration instanceof EventRegistration) {
             throw RegistrationNotFoundException::forUserAndEvent($userId, $eventId);
         }
 
@@ -294,7 +293,7 @@ final readonly class EventRegistrationService implements EventRegistrationServic
 
         $registration = $this->registrationRepository->findByUserAndEvent($userId, $eventId);
 
-        return $registration !== null
+        return $registration instanceof EventRegistration
             ? EventRegistrationResponseDTO::fromEntity($registration)
             : null;
     }
@@ -305,7 +304,7 @@ final readonly class EventRegistrationService implements EventRegistrationServic
             EventRegistrationId::fromString($registrationId)
         );
 
-        return $registration !== null
+        return $registration instanceof EventRegistration
             ? EventRegistrationResponseDTO::fromEntity($registration)
             : null;
     }

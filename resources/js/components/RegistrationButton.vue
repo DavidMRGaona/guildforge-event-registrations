@@ -88,11 +88,11 @@ const mustVerifyEmail = computed(() => gate.blocked.value || verificationRequire
 
 // Initialize registration loading based on auth state and initial props
 const registrationLoading = ref(
-    isAuthenticated.value && !props.initialRegistration && !gate.blocked.value,
+    isAuthenticated.value && !props.initialRegistration && !gate.blocked.value
 );
 
 const hasActiveRegistration = computed(
-    () => !!registration.value && !isFinalState(registration.value.state),
+    () => !!registration.value && !isFinalState(registration.value.state)
 );
 
 // Signed-in users who are not association members cannot register to a members-only event;
@@ -110,14 +110,14 @@ const showMembersOnlyNotice = computed(
         !!config.value &&
         config.value.members_only &&
         config.value.is_open &&
-        !hasActiveRegistration.value,
+        !hasActiveRegistration.value
 );
 
 // Without a limit the count only shows once someone has registered
 const showCapacity = computed(
     () =>
         !!config.value &&
-        (config.value.max_participants !== null || config.value.current_participants > 0),
+        (config.value.max_participants !== null || config.value.current_participants > 0)
 );
 
 const membersOnlyNoticeId = computed(() => `members-only-notice-${resolvedEventId.value}`);
@@ -141,15 +141,11 @@ const canJoinWaitingList = computed(() => {
 });
 
 // The server decides the cancellation window: the deadline and the start of the event
-const canCancel = computed(
-    () => hasActiveRegistration.value && config.value?.can_cancel === true,
-);
+const canCancel = computed(() => hasActiveRegistration.value && config.value?.can_cancel === true);
 
 // An active registration that can no longer be cancelled: the main button is not rendered and
 // RegistrationStatus alone tells the user their state
-const isCancellationClosed = computed(
-    () => hasActiveRegistration.value && !canCancel.value,
-);
+const isCancellationClosed = computed(() => hasActiveRegistration.value && !canCancel.value);
 
 const buttonText = computed(() => {
     if (!config.value) return '';
@@ -200,7 +196,7 @@ const verificationReason = computed<string | null>(() => {
 });
 
 const buttonDisabled = computed(
-    () => loading.value || isUnavailable.value || verificationReason.value !== null,
+    () => loading.value || isUnavailable.value || verificationReason.value !== null
 );
 
 const describedBy = computed<string | undefined>(() => {
@@ -261,7 +257,7 @@ async function handleRegister(formData: RegistrationFormData): Promise<void> {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Accept': 'application/json',
+                Accept: 'application/json',
                 ...csrfHeaders(),
             },
             credentials: 'include',
@@ -310,7 +306,7 @@ async function handleCancel(): Promise<void> {
         const response = await fetch(`/eventos/${resolvedEventId.value}/inscripcion`, {
             method: 'DELETE',
             headers: {
-                'Accept': 'application/json',
+                Accept: 'application/json',
                 ...csrfHeaders(),
             },
             credentials: 'include',
@@ -346,7 +342,8 @@ async function handleCancel(): Promise<void> {
 
 function handleClick(): void {
     if (!isAuthenticated.value) {
-        window.location.href = '/iniciar-sesion?redirect=' + encodeURIComponent(window.location.pathname);
+        window.location.href =
+            '/iniciar-sesion?redirect=' + encodeURIComponent(window.location.pathname);
         return;
     }
 
@@ -387,10 +384,7 @@ onMounted(async () => {
         />
 
         <!-- Error message -->
-        <div
-            v-if="error"
-            class="mb-4 rounded-lg bg-error-light p-4 text-sm text-error"
-        >
+        <div v-if="error" class="mb-4 rounded-lg bg-error-light p-4 text-sm text-error">
             {{ error }}
         </div>
 
@@ -415,8 +409,7 @@ onMounted(async () => {
                     (canRegister || canJoinWaitingList) && verificationReason === null,
                 'bg-error text-white hover:opacity-90 focus:ring-2 focus:ring-primary':
                     canCancel && verificationReason === null,
-                'cursor-not-allowed bg-muted text-base-muted':
-                    buttonDisabled,
+                'cursor-not-allowed bg-muted text-base-muted': buttonDisabled,
             }"
             @click="handleClick"
         >
@@ -453,10 +446,7 @@ onMounted(async () => {
         </p>
 
         <!-- Capacity info: out of the limit when there is one -->
-        <div
-            v-if="config && showCapacity"
-            class="mt-2 text-center text-sm text-base-muted"
-        >
+        <div v-if="config && showCapacity" class="mt-2 text-center text-sm text-base-muted">
             <template v-if="config.max_participants !== null">
                 {{ config.current_participants }} / {{ config.max_participants }}
                 {{ $t('eventRegistrations.stats.confirmed').toLowerCase() }}
@@ -498,7 +488,9 @@ onMounted(async () => {
                             class="w-full max-w-md rounded-xl bg-surface p-6 shadow-2xl"
                         >
                             <!-- Icon -->
-                            <div class="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-error-light">
+                            <div
+                                class="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-error-light"
+                            >
                                 <TriangleAlert class="h-6 w-6 text-error" aria-hidden="true" />
                             </div>
 

@@ -43,7 +43,7 @@ final readonly class EloquentEventRegistrationRepository implements EventRegistr
     {
         $registration = $this->find($id);
 
-        if ($registration === null) {
+        if (! $registration instanceof EventRegistration) {
             throw RegistrationNotFoundException::withId($id->value);
         }
 

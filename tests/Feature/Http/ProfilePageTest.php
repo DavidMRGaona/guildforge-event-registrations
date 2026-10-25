@@ -69,7 +69,7 @@ final class ProfilePageTest extends ModuleTestCase
                 'labelKey' => 'eventRegistrationsProfile.tabLabel',
             ],
         ]], $this->registrationsOf('event-registrations', $slots['profile-sections'] ?? []));
-        $this->assertFileExists(__DIR__ . '/../../../resources/js/components/UserRegistrations.vue');
+        $this->assertFileExists(__DIR__.'/../../../resources/js/components/UserRegistrations.vue');
     }
 
     public function test_the_registrations_tab_has_its_label_in_spanish_and_english(): void

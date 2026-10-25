@@ -57,9 +57,7 @@ final class UserRegisteredNotification extends Notification implements ShouldQue
         return $message
             ->line(__('event-registrations::messages.emails.event_details'))
             ->line('**'.__('event-registrations::messages.emails.date').':** '.$this->event->start_date->format('d/m/Y H:i'))
-            ->when($this->event->location, function (MailMessage $mail): MailMessage {
-                return $mail->line('**'.__('event-registrations::messages.emails.location').':** '.$this->event->location);
-            })
+            ->when($this->event->location, fn (MailMessage $mail): MailMessage => $mail->line('**'.__('event-registrations::messages.emails.location').':** '.$this->event->location))
             ->action(__('event-registrations::messages.emails.view_event'), url('/eventos/'.$this->event->slug));
     }
 

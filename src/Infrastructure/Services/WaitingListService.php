@@ -38,7 +38,7 @@ final readonly class WaitingListService implements WaitingListServiceInterface
         $position = $this->registrationRepository->getNextWaitingListPosition($eventId);
 
         // Reactivate existing cancelled/rejected registration or create new one
-        if ($existingRegistration !== null && $existingRegistration->state()->isFinal()) {
+        if ($existingRegistration instanceof EventRegistration && $existingRegistration->state()->isFinal()) {
             $registration = $existingRegistration;
             $registration->reactivate(RegistrationState::WaitingList, $formData);
             $registration->updatePosition($position);
@@ -105,7 +105,7 @@ final readonly class WaitingListService implements WaitingListServiceInterface
             $promoted < $rounds
             && ($maxParticipants === null || $this->registrationRepository->countConfirmedByEvent($eventId) < $maxParticipants)
         ) {
-            if ($this->promoteFirstInWaitingList($eventId, $excludeRegistrationId) === null) {
+            if (! $this->promoteFirstInWaitingList($eventId, $excludeRegistrationId) instanceof EventRegistrationResponseDTO) {
                 break;
             }
 
@@ -119,7 +119,7 @@ final readonly class WaitingListService implements WaitingListServiceInterface
     {
         $registration = $this->registrationRepository->findFirstInWaitingList($eventId, $excludeRegistrationId);
 
-        if ($registration === null) {
+        if (! $registration instanceof EventRegistration) {
             return null;
         }
 
@@ -154,7 +154,7 @@ final readonly class WaitingListService implements WaitingListServiceInterface
     {
         $registration = $this->registrationRepository->findByUserAndEvent($userId, $eventId);
 
-        if ($registration === null || $registration->state() !== RegistrationState::WaitingList) {
+        if (! $registration instanceof EventRegistration || $registration->state() !== RegistrationState::WaitingList) {
             return null;
         }
 
@@ -169,7 +169,7 @@ final readonly class WaitingListService implements WaitingListServiceInterface
         $registrations = $this->registrationRepository->findWaitingListOrdered($eventId);
 
         return array_map(
-            fn ($registration) => EventRegistrationResponseDTO::fromEntity($registration),
+            EventRegistrationResponseDTO::fromEntity(...),
             $registrations
         );
     }

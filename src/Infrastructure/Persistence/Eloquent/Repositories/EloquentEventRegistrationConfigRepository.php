@@ -44,7 +44,7 @@ final readonly class EloquentEventRegistrationConfigRepository implements EventR
     {
         $config = $this->findByEvent($eventId);
 
-        if ($config !== null) {
+        if ($config instanceof EventRegistrationConfig) {
             return $config;
         }
 
