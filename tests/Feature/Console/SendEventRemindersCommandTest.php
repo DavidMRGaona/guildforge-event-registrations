@@ -35,7 +35,7 @@ final class SendEventRemindersCommandTest extends ModuleTestCase
 
         app()->setLocale('es');
         Notification::fake();
-        $this->now = CarbonImmutable::parse('2026-11-02 10:00:00');
+        $this->now = CarbonImmutable::parse('2026-11-02 10:00:00', 'Europe/Madrid');
         $this->travelTo($this->now);
         $this->app->make(Kernel::class)->registerCommand($this->app->make(SendEventRemindersCommand::class));
     }

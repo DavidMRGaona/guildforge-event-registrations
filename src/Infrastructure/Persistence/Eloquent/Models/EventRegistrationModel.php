@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\EventRegistrations\Infrastructure\Persistence\Eloquent\Models;
 
+use App\Infrastructure\Persistence\Eloquent\Concerns\StoresInstantsInStorageTimezone;
 use App\Infrastructure\Persistence\Eloquent\Models\EventModel;
 use App\Infrastructure\Persistence\Eloquent\Models\UserModel;
 use Carbon\Carbon;
@@ -32,6 +33,7 @@ use Modules\EventRegistrations\Domain\Enums\RegistrationState;
 final class EventRegistrationModel extends Model
 {
     use HasUuids;
+    use StoresInstantsInStorageTimezone;
 
     protected $table = 'event_registrations_registrations';
 

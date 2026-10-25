@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\EventRegistrations\Notifications;
 
+use App\Application\Services\TimezoneServiceInterface;
 use App\Infrastructure\Persistence\Eloquent\Models\EventModel;
 use App\Infrastructure\Persistence\Eloquent\Models\UserModel;
 use Illuminate\Bus\Queueable;
@@ -56,7 +57,7 @@ final class UserRegisteredNotification extends Notification implements ShouldQue
 
         return $message
             ->line(__('event-registrations::messages.emails.event_details'))
-            ->line('**'.__('event-registrations::messages.emails.date').':** '.$this->event->start_date->format('d/m/Y H:i'))
+            ->line('**'.__('event-registrations::messages.emails.date').':** '.app(TimezoneServiceInterface::class)->format($this->event->start_date))
             ->when($this->event->location, fn (MailMessage $mail): MailMessage => $mail->line('**'.__('event-registrations::messages.emails.location').':** '.$this->event->location))
             ->action(__('event-registrations::messages.emails.view_event'), url('/eventos/'.$this->event->slug));
     }

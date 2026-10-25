@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\EventRegistrations\Filament\Concerns;
 
+use App\Application\Services\TimezoneServiceInterface;
 use Carbon\CarbonInterface;
 use Filament\Forms\Components\DateTimePicker;
 
@@ -19,11 +20,14 @@ trait CapsDatesAtEventStart
             return $picker;
         }
 
+        $timezone = app(TimezoneServiceInterface::class);
+
+        // The picker's state is the wall time the admin sees, so the cap is the start in that zone
         return $picker
-            ->beforeOrEqual($eventStartsAt->format('Y-m-d H:i:s'))
+            ->beforeOrEqual($timezone->toDisplayWallTime($eventStartsAt, 'Y-m-d H:i:s'))
             ->validationMessages([
                 'before_or_equal' => __('event-registrations::messages.config.not_after_event_start', [
-                    'date' => $eventStartsAt->format('d/m/Y H:i'),
+                    'date' => $timezone->format($eventStartsAt),
                 ]),
             ]);
     }

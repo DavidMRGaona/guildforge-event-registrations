@@ -11,9 +11,12 @@ use Illuminate\Support\Str;
 use Modules\EventRegistrations\Domain\Repositories\EventRegistrationConfigRepositoryInterface;
 use Modules\EventRegistrations\Infrastructure\Persistence\Eloquent\Models\EventRegistrationConfigModel;
 use Tests\Support\Modules\ModuleTestCase;
+use Tests\Support\Time\UsesUtcStorage;
 
 final class EloquentEventRegistrationConfigRepositoryTest extends ModuleTestCase
 {
+    use UsesUtcStorage;
+
     protected ?string $moduleName = 'event-registrations';
 
     protected bool $autoEnableModule = true;
@@ -67,17 +70,35 @@ final class EloquentEventRegistrationConfigRepositoryTest extends ModuleTestCase
     }
 
     /**
-     * Known limitation: dates are stored as wall times without offset, so a start inside the hour
-     * repeated in October cannot tell its two passes apart and is read as the second one (CET).
-     * It goes away once the core stores instants in UTC (DavidMRGaona/GuildForge#107).
+     * Known limitation of Madrid storage: dates are stored as wall times without offset, so a start
+     * inside the hour repeated in October cannot tell its two passes apart and is read as the
+     * second one (CET). UTC storage does not have it (see the next test).
      */
-    public function test_a_start_inside_the_repeated_hour_is_read_as_its_second_pass(): void
+    public function test_a_start_inside_the_repeated_hour_is_read_as_its_second_pass_with_madrid_storage(): void
     {
+        if (config('app.timezone') !== 'Europe/Madrid') {
+            $this->markTestSkipped('Only applies while the site stores Madrid wall times.');
+        }
+
         $event = $this->eventStartingAt('2026-10-25 02:10:00');
 
         $config = $this->repository->findByEventOrDefault($event->id);
 
         $this->assertSame('2026-10-25T01:10:00+00:00', $config->eventStartsAt()?->setTimezone(new DateTimeZone('UTC'))->format('c'));
+    }
+
+    public function test_a_start_inside_the_repeated_hour_keeps_its_pass_with_utc_storage(): void
+    {
+        $this->useUtcStorage();
+        // 02:10 CEST, the first pass
+        $event = EventModel::factory()->create([
+            'start_date' => new DateTimeImmutable('2026-10-25T00:10:00Z'),
+            'end_date' => new DateTimeImmutable('2026-10-25T04:00:00Z'),
+        ]);
+
+        $config = $this->repository->findByEventOrDefault($event->id);
+
+        $this->assertSame('2026-10-25T00:10:00+00:00', $config->eventStartsAt()?->setTimezone(new DateTimeZone('UTC'))->format('c'));
     }
 
     private function eventStartingAt(string $startDate): EventModel

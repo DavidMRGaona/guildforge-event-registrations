@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\EventRegistrations\Filament\RelationManagers;
 
+use App\Application\Services\TimezoneServiceInterface;
 use App\Infrastructure\Persistence\Eloquent\Models\EventModel;
 use Filament\Actions\Action;
 use Filament\Actions\BulkAction;
@@ -129,8 +130,9 @@ final class RegistrationsRelationManager extends RelationManager
             ->where('event_id', $event->id)
             ->orderBy('created_at')
             ->get();
+        $timezone = app(TimezoneServiceInterface::class);
 
-        return response()->streamDownload(function () use ($registrations): void {
+        return response()->streamDownload(function () use ($registrations, $timezone): void {
             $output = fopen('php://output', 'wb');
 
             if ($output === false) {
@@ -153,8 +155,8 @@ final class RegistrationsRelationManager extends RelationManager
                     $registration->user->email ?? '',
                     $registration->state->label(),
                     $registration->position,
-                    $registration->confirmed_at?->format('d/m/Y H:i'),
-                    $registration->created_at?->format('d/m/Y H:i'),
+                    $registration->confirmed_at !== null ? $timezone->format($registration->confirmed_at) : null,
+                    $registration->created_at !== null ? $timezone->format($registration->created_at) : null,
                 ]), separator: ';', escape: '');
             }
 

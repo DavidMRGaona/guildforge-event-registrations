@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\EventRegistrations\Infrastructure\Persistence\Eloquent\Models;
 
+use App\Infrastructure\Persistence\Eloquent\Concerns\StoresInstantsInStorageTimezone;
 use App\Infrastructure\Persistence\Eloquent\Models\EventModel;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
@@ -30,6 +31,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 final class EventRegistrationConfigModel extends Model
 {
+    use StoresInstantsInStorageTimezone;
+
     protected $table = 'event_registrations_configs';
 
     protected $primaryKey = 'event_id';

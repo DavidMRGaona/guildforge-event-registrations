@@ -14,10 +14,11 @@ Inscripciones a los eventos de GuildForge: aforo, lista de espera con promoción
 - **Emails**: inscripción recibida (con la posición si queda en lista de espera), confirmación desde el panel, plaza liberada y cancelación; aviso opcional a un email del organizador. No se envían emails de eventos ya terminados.
 - **Exportación**: descarga en CSV de las inscripciones de un evento.
 - **Widget del dashboard**: totales de inscripciones confirmadas, en lista de espera y pendientes.
+- **Zonas horarias**: las fechas se guardan en la zona de almacenamiento del sitio (UTC cuando el sitio lo usa) y todo lo que ve una persona (emails, CSV, panel) se muestra en la zona de visualización del sitio (por defecto Europe/Madrid).
 
 ## Requisitos
 
-- GuildForge core `^3.10` (rol de socio configurable y estado de verificación de email de la cuenta en la interfaz)
+- GuildForge core `^3.22` (almacenamiento de fechas en UTC y zona horaria de visualización)
 - PHP >= 8.5, Laravel >= 13, Filament 5
 
 El core rechaza el módulo si no se cumplen (`module.json` → `requires`).
