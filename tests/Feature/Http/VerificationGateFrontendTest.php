@@ -27,7 +27,9 @@ final class VerificationGateFrontendTest extends ModuleTestCase
         $manifest = json_decode((string) file_get_contents(self::MODULE_ROOT.'/module.json'), true);
 
         $this->assertIsArray($manifest);
-        $this->assertSame('^3.10', $manifest['requires']['core'] ?? null);
+        // At least 3.10, which shares the verification state; later bumps keep the guarantee
+        $this->assertMatchesRegularExpression('/^\^3\.(\d+)$/', (string) ($manifest['requires']['core'] ?? ''));
+        $this->assertTrue(version_compare(substr((string) $manifest['requires']['core'], 1), '3.10', '>='));
     }
 
     public function test_the_registration_button_is_gated_for_register_and_cancel(): void

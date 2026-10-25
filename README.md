@@ -39,7 +39,12 @@ Con el repositorio clonado en `src/modules/event-registrations`:
 ```bash
 php artisan module:discover
 php artisan module:enable event-registrations
-php artisan module:build event-registrations   # compila los componentes Vue (--force para recompilar)
+```
+
+Los componentes Vue se compilan con las herramientas del core, desde `src/`:
+
+```bash
+docker exec guildforge_node npm run build:module -- event-registrations
 ```
 
 En las releases los assets se compilan en el workflow y van dentro del ZIP.
