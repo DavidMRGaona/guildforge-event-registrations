@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Modules\EventRegistrations\Infrastructure\Services;
 
-use DateTimeImmutable;
 use Illuminate\Support\Facades\Event;
 use Modules\EventRegistrations\Application\DTOs\EventRegistrationResponseDTO;
 use Modules\EventRegistrations\Application\DTOs\RegisterToEventDTO;
@@ -28,6 +27,7 @@ use Modules\EventRegistrations\Domain\Exceptions\RegistrationClosedException;
 use Modules\EventRegistrations\Domain\Exceptions\RegistrationNotFoundException;
 use Modules\EventRegistrations\Domain\Repositories\EventRegistrationConfigRepositoryInterface;
 use Modules\EventRegistrations\Domain\Repositories\EventRegistrationRepositoryInterface;
+use Modules\EventRegistrations\Domain\Services\Clock;
 use Modules\EventRegistrations\Domain\ValueObjects\EventRegistrationId;
 
 final readonly class EventRegistrationService implements EventRegistrationServiceInterface
@@ -40,6 +40,7 @@ final readonly class EventRegistrationService implements EventRegistrationServic
         private WaitingListServiceInterface $waitingListService,
         private MembershipCheckerInterface $membershipChecker,
         private PublishedEventCheckerInterface $publishedEvents,
+        private Clock $clock,
     ) {}
 
     public function meetsMembersOnly(string $eventId, ?string $userId): bool
@@ -59,7 +60,7 @@ final readonly class EventRegistrationService implements EventRegistrationServic
 
         // Get config and validate registration is open
         $config = $this->configRepository->findByEventOrDefault($dto->eventId);
-        $now = new DateTimeImmutable;
+        $now = $this->clock->now();
 
         if (! $config->isOpen($now)) {
             // The start of the event closes registration whatever the configured dates say
@@ -162,7 +163,7 @@ final readonly class EventRegistrationService implements EventRegistrationServic
 
         // Check if cancellation deadline has passed
         $config = $this->configRepository->findByEventOrDefault($eventId);
-        $now = new DateTimeImmutable;
+        $now = $this->clock->now();
 
         // Users cannot leave once the event has started, whatever the deadline says
         if ($config->hasEventStarted($now)) {

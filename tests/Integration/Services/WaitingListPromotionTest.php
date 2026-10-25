@@ -6,6 +6,9 @@ namespace Modules\EventRegistrations\Tests\Integration\Services;
 
 use App\Infrastructure\Persistence\Eloquent\Models\EventModel;
 use App\Infrastructure\Persistence\Eloquent\Models\UserModel;
+use Carbon\CarbonImmutable;
+use DateTimeImmutable;
+use DateTimeZone;
 use Illuminate\Support\Facades\Notification;
 use Modules\EventRegistrations\Domain\Entities\EventRegistration;
 use Modules\EventRegistrations\Domain\Entities\EventRegistrationConfig;
@@ -13,9 +16,11 @@ use Modules\EventRegistrations\Domain\Enums\RegistrationState;
 use Modules\EventRegistrations\Domain\Events\UserUnregisteredFromEvent;
 use Modules\EventRegistrations\Domain\Repositories\EventRegistrationConfigRepositoryInterface;
 use Modules\EventRegistrations\Domain\Repositories\EventRegistrationRepositoryInterface;
+use Modules\EventRegistrations\Domain\Services\Clock;
 use Modules\EventRegistrations\Domain\ValueObjects\EventRegistrationId;
 use Modules\EventRegistrations\Infrastructure\Services\WaitingListService;
 use Modules\EventRegistrations\Listeners\PromoteFromWaitingListOnCancellation;
+use Modules\EventRegistrations\Tests\Support\FixedClock;
 use Tests\Support\Modules\ModuleTestCase;
 
 final class WaitingListPromotionTest extends ModuleTestCase
@@ -38,6 +43,8 @@ final class WaitingListPromotionTest extends ModuleTestCase
         parent::setUp();
 
         Notification::fake();
+        // Away from the nights the clocks change (RegistrationAcrossDaylightSavingTest)
+        $this->travelTo(CarbonImmutable::parse('2026-11-02 10:00:00'));
 
         foreach (['user-1', 'user-2', 'user-3', 'user-4'] as $alias) {
             $this->users[$alias] = UserModel::factory()->create()->id;
@@ -330,6 +337,54 @@ final class WaitingListPromotionTest extends ModuleTestCase
         $this->registrationRepository->save($this->createRegistration($eventId, 'user-1', RegistrationState::WaitingList, 1));
 
         $this->assertSame(0, $this->waitingListService->fillFreeSpots($eventId));
+    }
+
+    public function test_promote_next_promotes_during_the_repeated_hour_before_an_event_after_the_change(): void
+    {
+        $waitingListService = $this->serviceWithClockAt('2026-10-25T00:15:00Z');
+        $eventId = $this->eventIdStartingAt('2026-10-25 03:30');
+        $this->configRepository->save(new EventRegistrationConfig(eventId: $eventId, maxParticipants: 1, waitingListEnabled: true));
+        $this->registrationRepository->save($this->createRegistration($eventId, 'user-1', RegistrationState::WaitingList, 1));
+
+        $this->assertNotNull($waitingListService->promoteNext($eventId));
+    }
+
+    public function test_fill_free_spots_promotes_during_the_repeated_hour_before_an_event_after_the_change(): void
+    {
+        $waitingListService = $this->serviceWithClockAt('2026-10-25T00:15:00Z');
+        $eventId = $this->eventIdStartingAt('2026-10-25 03:30');
+        $this->configRepository->save(new EventRegistrationConfig(eventId: $eventId, maxParticipants: 1, waitingListEnabled: true));
+        $this->registrationRepository->save($this->createRegistration($eventId, 'user-1', RegistrationState::WaitingList, 1));
+
+        $this->assertSame(1, $waitingListService->fillFreeSpots($eventId));
+    }
+
+    public function test_nobody_is_promoted_during_the_repeated_hour_once_an_event_before_the_change_has_started(): void
+    {
+        $waitingListService = $this->serviceWithClockAt('2026-10-25T00:15:00Z');
+        $eventId = $this->eventIdStartingAt('2026-10-25 01:30');
+        $this->configRepository->save(new EventRegistrationConfig(eventId: $eventId, maxParticipants: 1, waitingListEnabled: true));
+        $this->registrationRepository->save($this->createRegistration($eventId, 'user-1', RegistrationState::WaitingList, 1));
+
+        $this->assertNull($waitingListService->promoteNext($eventId));
+        $this->assertSame(0, $waitingListService->fillFreeSpots($eventId));
+    }
+
+    private function serviceWithClockAt(string $instant): WaitingListService
+    {
+        $this->app->instance(Clock::class, FixedClock::at($instant));
+
+        return $this->app->make(WaitingListService::class);
+    }
+
+    private function eventIdStartingAt(string $madridWallTime): string
+    {
+        $startsAt = new DateTimeImmutable($madridWallTime, new DateTimeZone('Europe/Madrid'));
+
+        return EventModel::factory()->create([
+            'start_date' => $startsAt,
+            'end_date' => $startsAt->modify('+4 hours'),
+        ])->id;
     }
 
     private function startedEventId(): string

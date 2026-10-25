@@ -16,6 +16,7 @@ use Modules\EventRegistrations\Application\Services\RegistrationQueryServiceInte
 use Modules\EventRegistrations\Domain\Enums\RegistrationState;
 use Modules\EventRegistrations\Domain\Repositories\EventRegistrationConfigRepositoryInterface;
 use Modules\EventRegistrations\Domain\Repositories\EventRegistrationRepositoryInterface;
+use Modules\EventRegistrations\Domain\Services\Clock;
 
 final readonly class RegistrationQueryService implements RegistrationQueryServiceInterface
 {
@@ -25,6 +26,7 @@ final readonly class RegistrationQueryService implements RegistrationQueryServic
         private EventRegistrationRepositoryInterface $registrationRepository,
         private EventRegistrationConfigRepositoryInterface $configRepository,
         private PublishedEventCheckerInterface $publishedEvents,
+        private Clock $clock,
     ) {}
 
     public function getEventStatus(string $eventId): EventRegistrationConfigDTO
@@ -39,6 +41,7 @@ final readonly class RegistrationQueryService implements RegistrationQueryServic
             $config,
             $currentParticipants,
             $currentWaitingList,
+            $this->clock->now(),
         );
     }
 

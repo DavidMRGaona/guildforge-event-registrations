@@ -212,7 +212,7 @@ src/modules/event-registrations/
 ├── routes/web.php          # Rutas JSON
 ├── src/
 │   ├── Application/        # DTOs e interfaces de servicios
-│   ├── Domain/             # Entidades, enums, eventos, excepciones, repositorios
+│   ├── Domain/             # Entidades, enums, eventos, excepciones, repositorios, reloj (Clock)
 │   ├── Filament/           # Relation managers, páginas y widget del dashboard
 │   ├── Http/               # Controlador y form requests
 │   ├── Infrastructure/     # Persistencia Eloquent y servicios
@@ -222,7 +222,9 @@ src/modules/event-registrations/
 ├── tests/
 │   ├── Feature/
 │   ├── Integration/
-│   └── Unit/
+│   ├── Support/            # Utilidades compartidas (FixedClock)
+│   ├── Unit/
+│   └── bootstrap.php       # Carga el namespace de los tests
 ├── module.json             # Manifiesto del módulo
 └── phpunit.xml             # Configuración de tests
 ```
@@ -237,6 +239,10 @@ vendor/bin/phpunit -c modules/event-registrations/phpunit.xml --testsuite=Unit
 ```
 
 `php artisan test` no ejecuta los tests de los módulos.
+
+Los servicios leen la hora de `Domain\Services\Clock` (`SystemClock` en producción, que sigue a `travelTo()`), nunca de `new DateTimeImmutable`. Los tests que sitúan el inicio o los plazos a minutos de ahora fijan el reloj en una hora neutra. Las dos noches de cambio de hora se prueban en `RegistrationAcrossDaylightSavingTest` con `Tests\Support\FixedClock`, porque el reloj de pruebas de Carbon no puede representar la primera pasada de la hora que se repite en octubre.
+
+Las fechas se guardan como hora peninsular sin desplazamiento, así que una fecha guardada dentro de la hora repetida de octubre (de 02:00 a 02:59) se lee como su segunda pasada (CET). Desaparecerá cuando el core guarde los instantes en UTC (DavidMRGaona/GuildForge#107).
 
 ## Publicar una versión
 

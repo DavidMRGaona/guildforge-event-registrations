@@ -7,6 +7,7 @@ namespace Modules\EventRegistrations\Tests\Feature\Filament;
 use App\Filament\Resources\EventResource\Pages\EditEvent;
 use App\Infrastructure\Persistence\Eloquent\Models\EventModel;
 use App\Infrastructure\Persistence\Eloquent\Models\UserModel;
+use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Facades\Event as EventFacade;
 use Illuminate\Support\Facades\Notification;
@@ -38,6 +39,8 @@ final class StaffActionsFillFreeSpotsTest extends ModuleTestCase
         parent::setUp();
 
         Notification::fake();
+        // Away from the nights the clocks change (RegistrationAcrossDaylightSavingTest)
+        $this->travelTo(CarbonImmutable::parse('2026-11-02 10:00:00'));
         $this->registerOnAdminPanel();
         $this->actingAsPanelAdmin();
     }

@@ -19,6 +19,7 @@ use Modules\EventRegistrations\Domain\Repositories\EventRegistrationConfigReposi
 use Modules\EventRegistrations\Domain\Repositories\EventRegistrationRepositoryInterface;
 use Modules\EventRegistrations\Domain\ValueObjects\EventRegistrationId;
 use Modules\EventRegistrations\Infrastructure\Services\EventRegistrationService;
+use Modules\EventRegistrations\Infrastructure\Services\SystemClock;
 use Modules\EventRegistrations\Infrastructure\Services\WaitingListService;
 use PHPUnit\Framework\MockObject\Stub;
 use Tests\TestCase;
@@ -92,7 +93,7 @@ final class RegistrationConfirmedDispatchTest extends TestCase
             ->method('findByEventOrDefault')
             ->willReturn(new EventRegistrationConfig(eventId: 'event-1', eventStartsAt: new DateTimeImmutable('+1 week')));
 
-        (new WaitingListService($this->registrationRepository, $this->configRepository))->promoteNext('event-1');
+        (new WaitingListService($this->registrationRepository, $this->configRepository, new SystemClock))->promoteNext('event-1');
 
         Event::assertDispatched(
             RegistrationConfirmed::class,
@@ -108,6 +109,7 @@ final class RegistrationConfirmedDispatchTest extends TestCase
             $this->createStub(WaitingListServiceInterface::class),
             $this->createStub(MembershipCheckerInterface::class),
             $this->publishedEvents(),
+            new SystemClock,
         );
     }
 
