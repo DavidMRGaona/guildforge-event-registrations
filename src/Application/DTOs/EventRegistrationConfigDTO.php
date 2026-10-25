@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\EventRegistrations\Application\DTOs;
 
+use App\Application\Services\TimezoneServiceInterface;
 use DateTimeImmutable;
 use Modules\EventRegistrations\Domain\Entities\EventRegistrationConfig;
 
@@ -76,15 +77,17 @@ final readonly class EventRegistrationConfigDTO
      */
     public function toArray(): array
     {
+        $timezone = app(TimezoneServiceInterface::class);
+
         return [
             'event_id' => $this->eventId,
             'registration_enabled' => $this->registrationEnabled,
             'max_participants' => $this->maxParticipants,
             'waiting_list_enabled' => $this->waitingListEnabled,
             'max_waiting_list' => $this->maxWaitingList,
-            'registration_opens_at' => $this->registrationOpensAt?->format('c'),
-            'registration_closes_at' => $this->registrationClosesAt?->format('c'),
-            'cancellation_deadline' => $this->cancellationDeadline?->format('c'),
+            'registration_opens_at' => $timezone->iso($this->registrationOpensAt),
+            'registration_closes_at' => $timezone->iso($this->registrationClosesAt),
+            'cancellation_deadline' => $timezone->iso($this->cancellationDeadline),
             'requires_confirmation' => $this->requiresConfirmation,
             'requires_payment' => $this->requiresPayment,
             'members_only' => $this->membersOnly,

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\EventRegistrations\Tests\Integration\Persistence;
 
+use App\Application\Services\TimezoneServiceInterface;
 use App\Infrastructure\Persistence\Eloquent\Models\EventModel;
 use DateTimeImmutable;
 use DateTimeZone;
@@ -76,7 +77,7 @@ final class EloquentEventRegistrationConfigRepositoryTest extends ModuleTestCase
      */
     public function test_a_start_inside_the_repeated_hour_is_read_as_its_second_pass_with_madrid_storage(): void
     {
-        if (config('app.timezone') !== 'Europe/Madrid') {
+        if (app(TimezoneServiceInterface::class)->storageTimezone()->getName() !== 'Europe/Madrid') {
             $this->markTestSkipped('Only applies while the site stores Madrid wall times.');
         }
 

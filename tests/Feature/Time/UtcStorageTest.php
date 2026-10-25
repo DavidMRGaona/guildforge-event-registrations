@@ -10,8 +10,13 @@ use App\Infrastructure\Persistence\Eloquent\Models\EventModel;
 use App\Infrastructure\Persistence\Eloquent\Models\UserModel;
 use Carbon\Carbon;
 use Carbon\CarbonImmutable;
+use DateTimeImmutable;
 use Illuminate\Support\Facades\DB;
 use Livewire\Livewire;
+use Modules\EventRegistrations\Application\DTOs\EventRegistrationResponseDTO;
+use Modules\EventRegistrations\Application\DTOs\RegistrationListItemDTO;
+use Modules\EventRegistrations\Application\DTOs\UpdateRegistrationConfigDTO;
+use Modules\EventRegistrations\Application\Services\RegistrationQueryServiceInterface;
 use Modules\EventRegistrations\Domain\Entities\EventRegistration;
 use Modules\EventRegistrations\Domain\Enums\RegistrationState;
 use Modules\EventRegistrations\Domain\ValueObjects\EventRegistrationId;
@@ -45,6 +50,8 @@ final class UtcStorageTest extends ModuleTestCase
     /** 12:00 in Madrid (CEST). */
     private const string EVENT_START = '2026-07-01T10:00:00Z';
 
+    private const string MADRID_ISO = '2026-07-01T12:00:00+02:00';
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -53,16 +60,54 @@ final class UtcStorageTest extends ModuleTestCase
         app()->setLocale('es');
     }
 
-    public function test_the_models_store_instants_in_the_storage_timezone(): void
+    public function test_every_model_stores_instants_in_the_storage_timezone(): void
     {
-        $this->assertContains(
-            StoresInstantsInStorageTimezone::class,
-            class_uses_recursive(EventRegistrationModel::class),
+        $files = glob(dirname(__DIR__, 3).'/src/Infrastructure/Persistence/Eloquent/Models/*.php') ?: [];
+        $this->assertNotEmpty($files);
+
+        foreach ($files as $file) {
+            $class = 'Modules\\EventRegistrations\\Infrastructure\\Persistence\\Eloquent\\Models\\'.basename($file, '.php');
+
+            $this->assertContains(StoresInstantsInStorageTimezone::class, class_uses_recursive($class), $class);
+        }
+    }
+
+    public function test_the_serialized_instants_carry_the_display_offset(): void
+    {
+        $instant = new DateTimeImmutable(self::EVENT_START);
+        $event = $this->event();
+        $user = UserModel::factory()->create();
+        $entity = new EventRegistration(
+            id: EventRegistrationId::generate(),
+            eventId: $event->id,
+            userId: $user->id,
+            state: RegistrationState::Confirmed,
+            confirmedAt: $instant,
+            createdAt: $instant,
         );
-        $this->assertContains(
-            StoresInstantsInStorageTimezone::class,
-            class_uses_recursive(EventRegistrationConfigModel::class),
-        );
+
+        $this->assertSame(self::MADRID_ISO, EventRegistrationResponseDTO::fromEntity($entity)->confirmedAt);
+        $this->assertSame(self::MADRID_ISO, RegistrationListItemDTO::fromEntity($entity)->createdAt);
+
+        $dto = new UpdateRegistrationConfigDTO(eventId: $event->id, registrationOpensAt: $instant);
+        $this->assertSame(self::MADRID_ISO, $dto->toArray()['registration_opens_at']);
+
+        EventRegistrationConfigModel::create([
+            'event_id' => $event->id,
+            'registration_enabled' => true,
+            'cancellation_deadline' => CarbonImmutable::parse(self::EVENT_START),
+        ]);
+        $query = app(RegistrationQueryServiceInterface::class);
+        $this->assertSame(self::MADRID_ISO, $query->getEventStatus($event->id)->toArray()['cancellation_deadline']);
+
+        EventRegistrationModel::create([
+            'event_id' => $event->id,
+            'user_id' => $user->id,
+            'state' => RegistrationState::Confirmed,
+        ]);
+        $registered = $query->getUserRegistrationsWithEvents($user->id)[0]->event;
+        $this->assertNotNull($registered);
+        $this->assertSame(self::MADRID_ISO, $registered->startDate);
     }
 
     /**
@@ -191,7 +236,7 @@ final class UtcStorageTest extends ModuleTestCase
 
     private function event(): EventModel
     {
-        return EventModel::factory()->create([
+        return EventModel::factory()->published()->create([
             'start_date' => CarbonImmutable::parse(self::EVENT_START),
             'end_date' => CarbonImmutable::parse('2026-07-01T14:00:00Z'),
         ]);

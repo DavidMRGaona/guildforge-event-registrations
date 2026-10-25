@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\EventRegistrations\Infrastructure\Services;
 
+use App\Application\Services\TimezoneServiceInterface;
 use App\Infrastructure\Persistence\Eloquent\Models\EventModel;
 use App\Infrastructure\Persistence\Eloquent\Models\UserModel;
 use Modules\EventRegistrations\Application\DTOs\EventRegistrationConfigDTO;
@@ -140,7 +141,9 @@ final readonly class RegistrationQueryService implements RegistrationQueryServic
             ->get(['id', 'title', 'slug', 'start_date', 'end_date', 'location'])
             ->keyBy('id');
 
-        return array_map(function ($registration) use ($events): UserRegistrationDTO {
+        $timezone = app(TimezoneServiceInterface::class);
+
+        return array_map(function ($registration) use ($events, $timezone): UserRegistrationDTO {
             /** @var EventModel|null $event */
             $event = $events->get($registration->eventId());
 
@@ -150,8 +153,8 @@ final readonly class RegistrationQueryService implements RegistrationQueryServic
                     id: (string) $event->id,
                     title: $event->title,
                     slug: $event->slug,
-                    startDate: $event->start_date->format('c'),
-                    endDate: $event->end_date->format('c'),
+                    startDate: (string) $timezone->iso($event->start_date),
+                    endDate: (string) $timezone->iso($event->end_date),
                     location: $event->location,
                     url: route('events.show', ['slug' => $event->slug], absolute: false),
                 ),
