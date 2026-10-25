@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Modules\EventRegistrations\Console\Commands;
 
+use App\Application\Services\TimezoneServiceInterface;
 use Carbon\CarbonImmutable;
+use DateInterval;
 use Illuminate\Console\Command;
 use Modules\EventRegistrations\Domain\Enums\RegistrationState;
 use Modules\EventRegistrations\Infrastructure\Persistence\Eloquent\Models\EventRegistrationModel;
@@ -32,8 +34,9 @@ final class SendEventRemindersCommand extends Command
             return self::SUCCESS;
         }
 
-        $now = CarbonImmutable::now();
-        $until = $now->addHours($this->hoursBefore());
+        $timezone = app(TimezoneServiceInterface::class);
+        $now = $timezone->toStorage(CarbonImmutable::now());
+        $until = $now->add(new DateInterval(sprintf('PT%dH', $this->hoursBefore())));
         $sent = 0;
 
         $registrations = EventRegistrationModel::query()

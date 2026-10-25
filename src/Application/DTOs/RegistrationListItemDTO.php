@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\EventRegistrations\Application\DTOs;
 
+use App\Application\Services\TimezoneServiceInterface;
 use Modules\EventRegistrations\Domain\Entities\EventRegistration;
 use Modules\EventRegistrations\Domain\Enums\RegistrationState;
 
@@ -26,6 +27,8 @@ final readonly class RegistrationListItemDTO
         ?string $userName = null,
         ?string $userEmail = null,
     ): self {
+        $timezone = app(TimezoneServiceInterface::class);
+
         return new self(
             id: $registration->id()->value,
             eventId: $registration->eventId(),
@@ -34,8 +37,8 @@ final readonly class RegistrationListItemDTO
             userEmail: $userEmail,
             state: $registration->state(),
             position: $registration->position(),
-            confirmedAt: $registration->confirmedAt()?->format('c'),
-            createdAt: $registration->createdAt()?->format('c'),
+            confirmedAt: $timezone->iso($registration->confirmedAt()),
+            createdAt: $timezone->iso($registration->createdAt()),
         );
     }
 

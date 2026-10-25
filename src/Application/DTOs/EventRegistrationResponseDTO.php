@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\EventRegistrations\Application\DTOs;
 
+use App\Application\Services\TimezoneServiceInterface;
 use Modules\EventRegistrations\Domain\Entities\EventRegistration;
 use Modules\EventRegistrations\Domain\Enums\RegistrationState;
 
@@ -29,6 +30,8 @@ final readonly class EventRegistrationResponseDTO
 
     public static function fromEntity(EventRegistration $registration): self
     {
+        $timezone = app(TimezoneServiceInterface::class);
+
         return new self(
             id: $registration->id()->value,
             eventId: $registration->eventId(),
@@ -38,10 +41,10 @@ final readonly class EventRegistrationResponseDTO
             formData: $registration->formData(),
             notes: $registration->notes(),
             adminNotes: $registration->adminNotes(),
-            confirmedAt: $registration->confirmedAt()?->format('c'),
-            cancelledAt: $registration->cancelledAt()?->format('c'),
-            createdAt: $registration->createdAt()?->format('c'),
-            updatedAt: $registration->updatedAt()?->format('c'),
+            confirmedAt: $timezone->iso($registration->confirmedAt()),
+            cancelledAt: $timezone->iso($registration->cancelledAt()),
+            createdAt: $timezone->iso($registration->createdAt()),
+            updatedAt: $timezone->iso($registration->updatedAt()),
         );
     }
 

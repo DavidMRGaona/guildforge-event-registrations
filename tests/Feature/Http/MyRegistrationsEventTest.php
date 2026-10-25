@@ -35,8 +35,8 @@ final class MyRegistrationsEventTest extends ModuleTestCase
         $event = EventModel::factory()->published()->create([
             'title' => 'Torneo de primavera',
             'slug' => 'torneo-de-primavera',
-            'start_date' => '2030-04-12 10:00:00',
-            'end_date' => '2030-04-12 20:00:00',
+            'start_date' => new \DateTimeImmutable('2030-04-12 10:00:00', new \DateTimeZone('Europe/Madrid')),
+            'end_date' => new \DateTimeImmutable('2030-04-12 20:00:00', new \DateTimeZone('Europe/Madrid')),
             'location' => 'Local de la asociación',
         ]);
         $registration = $this->register($event, RegistrationState::WaitingList, position: 2);
@@ -53,8 +53,8 @@ final class MyRegistrationsEventTest extends ModuleTestCase
                 'id' => $event->id,
                 'title' => 'Torneo de primavera',
                 'slug' => 'torneo-de-primavera',
-                'start_date' => $event->start_date->format('c'),
-                'end_date' => $event->end_date->format('c'),
+                'start_date' => '2030-04-12T10:00:00+02:00',
+                'end_date' => '2030-04-12T20:00:00+02:00',
                 'location' => 'Local de la asociación',
                 'url' => '/eventos/torneo-de-primavera',
             ]);

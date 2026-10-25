@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\EventRegistrations\Notifications;
 
+use App\Application\Services\TimezoneServiceInterface;
 use App\Infrastructure\Persistence\Eloquent\Models\EventModel;
 use App\Infrastructure\Persistence\Eloquent\Models\UserModel;
 use Illuminate\Bus\Queueable;
@@ -30,7 +31,7 @@ final class EventReminderNotification extends Notification implements ShouldQueu
     public function toMail(object $notifiable): MailMessage
     {
         /** @var UserModel $notifiable */
-        $date = $this->event->start_date->format('d/m/Y H:i');
+        $date = app(TimezoneServiceInterface::class)->format($this->event->start_date);
 
         return (new MailMessage)
             ->subject(__('event-registrations::messages.emails.reminder_subject', [

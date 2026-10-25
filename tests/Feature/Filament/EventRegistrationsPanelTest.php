@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace Modules\EventRegistrations\Tests\Feature\Filament;
 
+use App\Application\Services\TimezoneServiceInterface;
 use App\Filament\Pages\ModuleSettingsPage;
 use App\Filament\Resources\EventResource\Pages\EditEvent;
 use App\Infrastructure\Persistence\Eloquent\Models\EventModel;
 use App\Infrastructure\Persistence\Eloquent\Models\UserModel;
+use DateTimeImmutable;
+use DateTimeZone;
 use Livewire\Features\SupportTesting\Testable;
 use Livewire\Livewire;
 use Modules\EventRegistrations\Domain\Enums\RegistrationState;
@@ -102,7 +105,7 @@ final class EventRegistrationsPanelTest extends ModuleTestCase
             ->assertHasNoErrors();
 
         $config = EventRegistrationConfigModel::query()->where('event_id', $event->id)->firstOrFail();
-        $this->assertSame('2030-04-12 10:00:00', $config->{$field}?->format('Y-m-d H:i:s'));
+        $this->assertSame('2030-04-12 10:00:00', $this->wallTime($config->{$field}));
     }
 
     #[DataProvider('datesCappedAtTheEventStart')]
@@ -130,7 +133,7 @@ final class EventRegistrationsPanelTest extends ModuleTestCase
             ->assertHasNoErrors();
 
         $config = EventRegistrationConfigModel::query()->where('event_id', $event->id)->firstOrFail();
-        $this->assertSame('2030-04-12 10:00:00', $config->{$field}?->format('Y-m-d H:i:s'));
+        $this->assertSame('2030-04-12 10:00:00', $this->wallTime($config->{$field}));
     }
 
     public function test_the_config_page_saves_with_its_untouched_defaults(): void
@@ -364,11 +367,19 @@ final class EventRegistrationsPanelTest extends ModuleTestCase
         return base64_decode(is_string($content) ? $content : '');
     }
 
+    private function wallTime(?\DateTimeInterface $instant): ?string
+    {
+        return $instant === null ? null : app(TimezoneServiceInterface::class)->toDisplayWallTime($instant, 'Y-m-d H:i:s');
+    }
+
     private function eventStartingAt(string $startDate): EventModel
     {
+        // The wall time the admin sees, whatever zone the dates are stored in
+        $timezone = new DateTimeZone('Europe/Madrid');
+
         return EventModel::factory()->create([
-            'start_date' => $startDate,
-            'end_date' => '2030-04-12 14:00:00',
+            'start_date' => new DateTimeImmutable($startDate, $timezone),
+            'end_date' => new DateTimeImmutable('2030-04-12 14:00:00', $timezone),
         ]);
     }
 }
