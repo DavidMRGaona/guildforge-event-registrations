@@ -22,7 +22,8 @@ export default {
         verificationRequired: 'Para ver tus inscripciones, verifica tu email.',
         errors: {
             loadFailed: 'No se han podido cargar tus inscripciones.',
-            sessionExpired: 'Tu sesión ha caducado. Recarga la página para volver a iniciar sesión.',
+            sessionExpired:
+                'Tu sesión ha caducado. Recarga la página para volver a iniciar sesión.',
         },
         states: {
             pending: 'Pendiente',

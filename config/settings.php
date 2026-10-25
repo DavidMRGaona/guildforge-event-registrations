@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 return [
     'default_registration_enabled' => false,
     'default_waiting_list_enabled' => true,

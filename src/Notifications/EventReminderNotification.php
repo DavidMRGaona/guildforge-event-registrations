@@ -42,9 +42,7 @@ final class EventReminderNotification extends Notification implements ShouldQueu
                 'event' => $this->event->title,
                 'date' => $date,
             ]))
-            ->when($this->event->location, function (MailMessage $mail): MailMessage {
-                return $mail->line('**'.__('event-registrations::messages.emails.location').':** '.$this->event->location);
-            })
+            ->when($this->event->location, fn (MailMessage $mail): MailMessage => $mail->line('**'.__('event-registrations::messages.emails.location').':** '.$this->event->location))
             ->line(__('event-registrations::messages.emails.reminder_cancel'))
             ->action(__('event-registrations::messages.emails.view_event'), url('/eventos/'.$this->event->slug));
     }

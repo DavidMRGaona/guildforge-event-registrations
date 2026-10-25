@@ -15,7 +15,7 @@ trait CapsDatesAtEventStart
 {
     private function capAtEventStart(DateTimePicker $picker, ?CarbonInterface $eventStartsAt): DateTimePicker
     {
-        if ($eventStartsAt === null) {
+        if (! $eventStartsAt instanceof CarbonInterface) {
             return $picker;
         }
 

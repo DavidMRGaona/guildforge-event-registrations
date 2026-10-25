@@ -131,7 +131,7 @@ final class EventRegistrationConfig
     {
         $now ??= new DateTimeImmutable;
 
-        return $this->eventStartsAt === null || $now >= $this->eventStartsAt;
+        return ! $this->eventStartsAt instanceof DateTimeImmutable || $now >= $this->eventStartsAt;
     }
 
     /**
@@ -150,15 +150,11 @@ final class EventRegistrationConfig
             return false;
         }
 
-        if ($this->registrationOpensAt !== null && $now < $this->registrationOpensAt) {
+        if ($this->registrationOpensAt instanceof DateTimeImmutable && $now < $this->registrationOpensAt) {
             return false;
         }
 
-        if ($this->registrationClosesAt !== null && $now > $this->registrationClosesAt) {
-            return false;
-        }
-
-        return true;
+        return ! $this->registrationClosesAt instanceof DateTimeImmutable || $now <= $this->registrationClosesAt;
     }
 
     /**
@@ -189,7 +185,7 @@ final class EventRegistrationConfig
             return false;
         }
 
-        if ($this->cancellationDeadline === null) {
+        if (! $this->cancellationDeadline instanceof DateTimeImmutable) {
             return true;
         }
 

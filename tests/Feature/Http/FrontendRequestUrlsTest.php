@@ -33,7 +33,7 @@ final class FrontendRequestUrlsTest extends ModuleTestCase
 
     protected bool $autoEnableModule = true;
 
-    private const string JS_ROOT = __DIR__ . '/../../../resources/js';
+    private const string JS_ROOT = __DIR__.'/../../../resources/js';
 
     /**
      * Call patterns and the HTTP method they use; null means "read `method:` from the options".
@@ -72,7 +72,7 @@ final class FrontendRequestUrlsTest extends ModuleTestCase
 
         foreach ($this->frontendRequests() as $request) {
             if (str_ends_with($request['file'], 'components/RegistrationButton.vue')) {
-                $reached[] = $request['method'] . ' ' . $this->matchingRouteName($request['method'], $request['url']);
+                $reached[] = $request['method'].' '.$this->matchingRouteName($request['method'], $request['url']);
             }
         }
 
@@ -93,7 +93,7 @@ final class FrontendRequestUrlsTest extends ModuleTestCase
 
         foreach ($this->frontendRequests() as $request) {
             if (str_ends_with($request['file'], 'components/UserRegistrations.vue')) {
-                $reached[] = $request['method'] . ' ' . $this->matchingRouteName($request['method'], $request['url']);
+                $reached[] = $request['method'].' '.$this->matchingRouteName($request['method'], $request['url']);
             }
         }
 
@@ -182,7 +182,7 @@ final class FrontendRequestUrlsTest extends ModuleTestCase
                 continue;
             }
 
-            $relative = 'resources/js' . substr($file->getPathname(), strlen($root));
+            $relative = 'resources/js'.substr($file->getPathname(), strlen($root));
             $source = file_get_contents($file->getPathname());
             $this->assertIsString($source);
 
@@ -235,6 +235,11 @@ final class FrontendRequestUrlsTest extends ModuleTestCase
         $depth = 0;
         $length = strlen($source);
 
+        // An assigned value may start on the next line (Prettier wraps long assignments)
+        if ($isAssignment) {
+            $offset += strspn($source, " \t\r\n", $offset);
+        }
+
         for ($i = $offset; $i < $length; $i++) {
             $char = $source[$i];
 
@@ -256,7 +261,7 @@ final class FrontendRequestUrlsTest extends ModuleTestCase
             }
         }
 
-        $this->fail('Unterminated call at offset ' . $offset);
+        $this->fail('Unterminated call at offset '.$offset);
     }
 
     private function endOfString(string $source, int $start): int
@@ -272,7 +277,7 @@ final class FrontendRequestUrlsTest extends ModuleTestCase
             }
         }
 
-        $this->fail('Unterminated string at offset ' . $start);
+        $this->fail('Unterminated string at offset '.$start);
     }
 
     /**
@@ -289,7 +294,7 @@ final class FrontendRequestUrlsTest extends ModuleTestCase
         }
 
         if (! str_starts_with($options, '{') || ! str_ends_with($options, '}')) {
-            $this->fail("{$call} must receive its options as an object literal to read the method, got: " . Str::limit($options, 80));
+            $this->fail("{$call} must receive its options as an object literal to read the method, got: ".Str::limit($options, 80));
         }
 
         $method = 'GET';
@@ -298,7 +303,7 @@ final class FrontendRequestUrlsTest extends ModuleTestCase
             $property = trim($property);
 
             if (str_starts_with($property, '...')) {
-                $this->fail("{$call} spreads its options, so the method cannot be read: " . Str::limit($property, 80));
+                $this->fail("{$call} spreads its options, so the method cannot be read: ".Str::limit($property, 80));
             }
 
             if (preg_match('/^[\'"]?method[\'"]?\b/', $property) !== 1) {
@@ -306,7 +311,7 @@ final class FrontendRequestUrlsTest extends ModuleTestCase
             }
 
             if (preg_match('/^[\'"]?method[\'"]?\s*:\s*([\'"`])(\w+)\1$/', $property, $match) !== 1) {
-                $this->fail("{$call} must set its method as a string literal, got: " . Str::limit($property, 80));
+                $this->fail("{$call} must set its method as a string literal, got: ".Str::limit($property, 80));
             }
 
             $method = strtoupper($match[2]);
@@ -357,7 +362,7 @@ final class FrontendRequestUrlsTest extends ModuleTestCase
         $arguments = ltrim($arguments);
 
         if (preg_match('/^([\'"`])((?:\\\\.|(?!\1).)*)\1\s*(\+)?/s', $arguments, $match) !== 1) {
-            $this->fail("{$call} must receive a string literal URL, got: " . Str::limit($arguments, 80));
+            $this->fail("{$call} must receive a string literal URL, got: ".Str::limit($arguments, 80));
         }
 
         $url = $match[2];

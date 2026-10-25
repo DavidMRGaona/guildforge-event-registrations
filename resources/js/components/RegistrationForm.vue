@@ -74,10 +74,7 @@ function handleSubmit(): void {
         <form @submit.prevent="handleSubmit">
             <!-- Custom fields -->
             <div class="space-y-4">
-                <div
-                    v-for="field in customFields"
-                    :key="field.name"
-                >
+                <div v-for="field in customFields" :key="field.name">
                     <label
                         :for="field.name"
                         class="mb-1 block text-sm font-medium text-base-secondary"
@@ -118,20 +115,13 @@ function handleSubmit(): void {
                         :class="{ 'border-error': errors[field.name] }"
                     >
                         <option value="">{{ t('common.select') }}...</option>
-                        <option
-                            v-for="option in field.options"
-                            :key="option"
-                            :value="option"
-                        >
+                        <option v-for="option in field.options" :key="option" :value="option">
                             {{ option }}
                         </option>
                     </select>
 
                     <!-- Checkbox -->
-                    <div
-                        v-else-if="field.type === 'checkbox'"
-                        class="flex items-center"
-                    >
+                    <div v-else-if="field.type === 'checkbox'" class="flex items-center">
                         <input
                             :id="field.name"
                             v-model="formData[field.name]"
@@ -139,29 +129,20 @@ function handleSubmit(): void {
                             :required="field.required"
                             class="h-4 w-4 rounded border-default bg-surface text-accent focus:ring-accent"
                         />
-                        <label
-                            :for="field.name"
-                            class="ml-2 text-sm text-base-secondary"
-                        >
+                        <label :for="field.name" class="ml-2 text-sm text-base-secondary">
                             {{ field.label }}
                         </label>
                     </div>
 
                     <!-- Error message -->
-                    <p
-                        v-if="errors[field.name]"
-                        class="mt-1 text-sm text-error"
-                    >
+                    <p v-if="errors[field.name]" class="mt-1 text-sm text-error">
                         {{ errors[field.name] }}
                     </p>
                 </div>
 
                 <!-- Notes field -->
                 <div>
-                    <label
-                        for="notes"
-                        class="mb-1 block text-sm font-medium text-base-secondary"
-                    >
+                    <label for="notes" class="mb-1 block text-sm font-medium text-base-secondary">
                         {{ t('eventRegistrations.fields.notes') }}
                     </label>
                     <textarea

@@ -18,7 +18,6 @@ function formatDate(iso: string): string {
     return new Date(iso).toLocaleDateString(locale.value, { timeZone: VENUE_TIMEZONE });
 }
 
-
 const stateClasses = computed(() => {
     const color = getStateColor(props.registration.state);
     const baseClasses = 'inline-flex items-center rounded-full px-3 py-1 text-sm font-medium';
@@ -60,12 +59,9 @@ const showPosition = computed(() => {
                 <div
                     class="flex h-10 w-10 items-center justify-center rounded-full"
                     :class="{
-                        'bg-success-light text-success':
-                            statusIcon === 'check-circle',
-                        'bg-info-light text-info':
-                            statusIcon === 'clock',
-                        'bg-surface text-base-muted':
-                            statusIcon === 'x-circle',
+                        'bg-success-light text-success': statusIcon === 'check-circle',
+                        'bg-info-light text-info': statusIcon === 'clock',
+                        'bg-surface text-base-muted': statusIcon === 'x-circle',
                     }"
                 >
                     <!-- Check circle -->
@@ -91,16 +87,11 @@ const showPosition = computed(() => {
             </div>
 
             <!-- Position in waiting list -->
-            <div
-                v-if="showPosition"
-                class="text-right"
-            >
+            <div v-if="showPosition" class="text-right">
                 <p class="text-sm text-base-muted">
                     {{ t('eventRegistrations.fields.position') }}
                 </p>
-                <p class="text-2xl font-bold text-base-primary">
-                    #{{ registration.position }}
-                </p>
+                <p class="text-2xl font-bold text-base-primary">#{{ registration.position }}</p>
             </div>
         </div>
 

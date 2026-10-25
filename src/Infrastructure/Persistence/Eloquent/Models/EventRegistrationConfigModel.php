@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\EventRegistrations\Infrastructure\Persistence\Eloquent\Models;
 
 use App\Infrastructure\Persistence\Eloquent\Models\EventModel;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -14,17 +15,17 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int|null $max_participants
  * @property bool $waiting_list_enabled
  * @property int|null $max_waiting_list
- * @property \Carbon\Carbon|null $registration_opens_at
- * @property \Carbon\Carbon|null $registration_closes_at
- * @property \Carbon\Carbon|null $cancellation_deadline
+ * @property Carbon|null $registration_opens_at
+ * @property Carbon|null $registration_closes_at
+ * @property Carbon|null $cancellation_deadline
  * @property bool $requires_confirmation
  * @property bool $requires_payment
  * @property bool $members_only
  * @property array<array{name: string, label: string, type: string, required: bool, options?: array<string>}>|null $custom_fields
  * @property string|null $confirmation_message
  * @property string|null $notification_email
- * @property \Carbon\Carbon|null $created_at
- * @property \Carbon\Carbon|null $updated_at
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
  * @property-read EventModel $event
  */
 final class EventRegistrationConfigModel extends Model

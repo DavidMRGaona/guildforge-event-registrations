@@ -35,7 +35,11 @@ const STATE_CLASSES: Record<RegistrationState, string> = {
 };
 
 function isMyRegistrationsResponse(body: unknown): body is MyRegistrationsResponse {
-    return typeof body === 'object' && body !== null && Array.isArray((body as { data?: unknown }).data);
+    return (
+        typeof body === 'object' &&
+        body !== null &&
+        Array.isArray((body as { data?: unknown }).data)
+    );
 }
 
 async function fetchRegistrations(): Promise<void> {
@@ -102,14 +106,20 @@ function reloadPage(): void {
 }
 
 function startTime(registration: MyRegistration): number {
-    return registration.event ? new Date(registration.event.start_date).getTime() : Number.NEGATIVE_INFINITY;
+    return registration.event
+        ? new Date(registration.event.start_date).getTime()
+        : Number.NEGATIVE_INFINITY;
 }
 
 const upcoming = computed<MyRegistration[]>(() => {
     const now = Date.now();
 
     return registrations.value
-        .filter((registration) => registration.event !== null && new Date(registration.event.end_date).getTime() >= now)
+        .filter(
+            (registration) =>
+                registration.event !== null &&
+                new Date(registration.event.end_date).getTime() >= now
+        )
         .sort((a, b) => startTime(a) - startTime(b));
 });
 
@@ -117,21 +127,28 @@ const past = computed<MyRegistration[]>(() => {
     const now = Date.now();
 
     return registrations.value
-        .filter((registration) => registration.event !== null && new Date(registration.event.end_date).getTime() < now)
+        .filter(
+            (registration) =>
+                registration.event !== null && new Date(registration.event.end_date).getTime() < now
+        )
         .sort((a, b) => startTime(b) - startTime(a));
 });
 
 // Registrations whose event is not published: they cannot be dated, so they are neither upcoming nor past
 const unavailable = computed<MyRegistration[]>(() =>
-    registrations.value.filter((registration) => registration.event === null),
+    registrations.value.filter((registration) => registration.event === null)
 );
 
 const groups = computed(() =>
     [
         { id: 'upcoming', title: t('eventRegistrationsProfile.upcoming'), items: upcoming.value },
         { id: 'past', title: t('eventRegistrationsProfile.past'), items: past.value },
-        { id: 'unavailable', title: t('eventRegistrationsProfile.unavailable'), items: unavailable.value },
-    ].filter((group) => group.items.length > 0),
+        {
+            id: 'unavailable',
+            title: t('eventRegistrationsProfile.unavailable'),
+            items: unavailable.value,
+        },
+    ].filter((group) => group.items.length > 0)
 );
 
 function formatDate(iso: string): string {
@@ -291,10 +308,17 @@ onMounted(() => {
                                 </template>
                             </p>
                             <p
-                                v-if="registration.state === 'waiting_list' && registration.position !== null"
+                                v-if="
+                                    registration.state === 'waiting_list' &&
+                                    registration.position !== null
+                                "
                                 class="mt-1 text-sm text-info"
                             >
-                                {{ t('eventRegistrationsProfile.waitingListPosition', { position: registration.position }) }}
+                                {{
+                                    t('eventRegistrationsProfile.waitingListPosition', {
+                                        position: registration.position,
+                                    })
+                                }}
                             </p>
                         </div>
 

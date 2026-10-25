@@ -33,7 +33,7 @@ final class SendEventRemindersCommand extends Command
         }
 
         $now = CarbonImmutable::now();
-        $until = $now->addHours(self::hoursBefore());
+        $until = $now->addHours($this->hoursBefore());
         $sent = 0;
 
         $registrations = EventRegistrationModel::query()
@@ -51,7 +51,8 @@ final class SendEventRemindersCommand extends Command
         foreach ($registrations as $registration) {
             $user = $registration->user;
 
-            if ($user === null || $registration->event === null) {
+            // The event is there: its foreign key cascades and the query requires it
+            if ($user === null) {
                 continue;
             }
 
@@ -74,7 +75,7 @@ final class SendEventRemindersCommand extends Command
         return self::SUCCESS;
     }
 
-    private static function hoursBefore(): int
+    private function hoursBefore(): int
     {
         $hours = config('modules.settings.event-registrations.reminder_hours_before');
 

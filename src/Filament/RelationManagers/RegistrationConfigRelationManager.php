@@ -4,15 +4,16 @@ declare(strict_types=1);
 
 namespace Modules\EventRegistrations\Filament\RelationManagers;
 
-use Filament\Schemas\Components\Section;
-use Filament\Schemas\Components\Fieldset;
-use Filament\Schemas\Components\Utilities\Get;
 use App\Infrastructure\Persistence\Eloquent\Models\EventModel;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Notifications\Notification;
 use Filament\Resources\RelationManagers\RelationManager;
+use Filament\Schemas\Components\Component;
+use Filament\Schemas\Components\Fieldset;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Illuminate\Database\Eloquent\Model;
 use Modules\EventRegistrations\Application\DTOs\UpdateRegistrationConfigDTO;
@@ -21,7 +22,7 @@ use Modules\EventRegistrations\Domain\Repositories\EventRegistrationConfigReposi
 use Modules\EventRegistrations\Filament\Concerns\CapsDatesAtEventStart;
 
 /**
- * @property \Filament\Schemas\Schema $configForm
+ * @property Schema $configForm
  */
 final class RegistrationConfigRelationManager extends RelationManager
 {
@@ -30,7 +31,7 @@ final class RegistrationConfigRelationManager extends RelationManager
     /**
      * Key of the tab on the event edit page, used in its `?relation=` query string.
      */
-    public const RELATION_KEY = 'registration-config';
+    public const string RELATION_KEY = 'registration-config';
 
     protected static string $relationship = 'registrationConfig';
 
@@ -85,7 +86,7 @@ final class RegistrationConfigRelationManager extends RelationManager
     }
 
     /**
-     * @return array<\Filament\Schemas\Components\Component>
+     * @return array<Component>
      */
     protected function getFormSchema(): array
     {

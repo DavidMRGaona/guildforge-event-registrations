@@ -6,6 +6,7 @@ namespace Modules\EventRegistrations\Infrastructure\Persistence\Eloquent\Models;
 
 use App\Infrastructure\Persistence\Eloquent\Models\EventModel;
 use App\Infrastructure\Persistence\Eloquent\Models\UserModel;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -20,10 +21,10 @@ use Modules\EventRegistrations\Domain\Enums\RegistrationState;
  * @property array<string, mixed>|null $form_data
  * @property string|null $notes
  * @property string|null $admin_notes
- * @property \Carbon\Carbon|null $confirmed_at
- * @property \Carbon\Carbon|null $cancelled_at
- * @property \Carbon\Carbon|null $created_at
- * @property \Carbon\Carbon|null $updated_at
+ * @property Carbon|null $confirmed_at
+ * @property Carbon|null $cancelled_at
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
  * @property-read EventModel $event
  * @property-read UserModel|null $user (null once the user is soft-deleted, unless loaded withTrashed)
  */

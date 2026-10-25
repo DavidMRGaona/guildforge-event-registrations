@@ -4,18 +4,18 @@ declare(strict_types=1);
 
 namespace Modules\EventRegistrations\Filament\RelationManagers;
 
-use Filament\Schemas\Schema;
-use Filament\Actions\Action;
-use Filament\Actions\EditAction;
-use Filament\Actions\DeleteAction;
-use Filament\Actions\BulkActionGroup;
-use Filament\Actions\BulkAction;
-use Filament\Actions\DeleteBulkAction;
 use App\Infrastructure\Persistence\Eloquent\Models\EventModel;
+use Filament\Actions\Action;
+use Filament\Actions\BulkAction;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Notifications\Notification;
 use Filament\Resources\RelationManagers\RelationManager;
+use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
@@ -23,8 +23,8 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Modules\EventRegistrations\Application\Services\EventRegistrationServiceInterface;
 use Modules\EventRegistrations\Application\Services\WaitingListServiceInterface;
-use Modules\EventRegistrations\Domain\Repositories\EventRegistrationRepositoryInterface;
 use Modules\EventRegistrations\Domain\Enums\RegistrationState;
+use Modules\EventRegistrations\Domain\Repositories\EventRegistrationRepositoryInterface;
 use Modules\EventRegistrations\Infrastructure\Persistence\Eloquent\Models\EventRegistrationConfigModel;
 use Modules\EventRegistrations\Infrastructure\Persistence\Eloquent\Models\EventRegistrationModel;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -34,7 +34,7 @@ final class RegistrationsRelationManager extends RelationManager
     /**
      * Key of the tab on the event edit page, used in its `?relation=` query string.
      */
-    public const RELATION_KEY = 'registrations';
+    public const string RELATION_KEY = 'registrations';
 
     protected static string $relationship = 'registrations';
 
@@ -148,7 +148,7 @@ final class RegistrationsRelationManager extends RelationManager
             ], separator: ';', escape: '');
 
             foreach ($registrations as $registration) {
-                fputcsv($output, array_map(self::neutraliseCsvFormula(...), [
+                fputcsv($output, array_map($this->neutraliseCsvFormula(...), [
                     $registration->user->name ?? __('event-registrations::messages.export.deleted_user'),
                     $registration->user->email ?? '',
                     $registration->state->label(),
@@ -165,7 +165,7 @@ final class RegistrationsRelationManager extends RelationManager
     /**
      * Prefix values a spreadsheet would run as a formula (CSV injection) with a single quote.
      */
-    private static function neutraliseCsvFormula(mixed $value): mixed
+    private function neutraliseCsvFormula(mixed $value): mixed
     {
         if (is_string($value) && preg_match('/^[=+\-@\t\r]/', $value) === 1) {
             return "'".$value;
@@ -378,7 +378,7 @@ final class RegistrationsRelationManager extends RelationManager
 
         // Only a change INTO the waiting list goes to the end of the line; any other edit of a
         // waiting row (e.g. its notes) leaves it in its place in the queue
-        if ($record !== null && $record->exists && $record->wasChanged('state') && $record->state === RegistrationState::WaitingList) {
+        if ($record instanceof EventRegistrationModel && $record->exists && $record->wasChanged('state') && $record->state === RegistrationState::WaitingList) {
             $record->position = resolve(EventRegistrationRepositoryInterface::class)->getNextWaitingListPosition($eventId);
             $record->save();
 

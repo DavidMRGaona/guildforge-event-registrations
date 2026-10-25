@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Modules\EventRegistrations;
 
-use Filament\Schemas\Components\Section;
 use App\Application\Modules\DTOs\PermissionDTO;
 use App\Application\Modules\DTOs\SlotRegistrationDTO;
 use App\Filament\Resources\EventResource;
@@ -12,18 +11,20 @@ use App\Infrastructure\Persistence\Eloquent\Models\EventModel;
 use App\Modules\ModuleServiceProvider;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
+use Filament\Schemas\Components\Component;
+use Filament\Schemas\Components\Section;
 use Filament\Widgets\Widget;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Support\Facades\Event;
 use Inertia\Inertia;
 use Livewire\Livewire;
-use Modules\EventRegistrations\Console\Commands\SendEventRemindersCommand;
 use Modules\EventRegistrations\Application\Services\EventRegistrationServiceInterface;
 use Modules\EventRegistrations\Application\Services\MembershipCheckerInterface;
 use Modules\EventRegistrations\Application\Services\PublishedEventCheckerInterface;
 use Modules\EventRegistrations\Application\Services\RegistrationNotificationServiceInterface;
 use Modules\EventRegistrations\Application\Services\RegistrationQueryServiceInterface;
 use Modules\EventRegistrations\Application\Services\WaitingListServiceInterface;
+use Modules\EventRegistrations\Console\Commands\SendEventRemindersCommand;
 use Modules\EventRegistrations\Domain\Events\RegistrationConfirmed;
 use Modules\EventRegistrations\Domain\Events\RegistrationRejected;
 use Modules\EventRegistrations\Domain\Events\UserRegisteredToEvent;
@@ -155,14 +156,10 @@ final class EventRegistrationsServiceProvider extends ModuleServiceProvider
     {
         // Add registrations() relationship to EventModel dynamically
         // Note: resolveRelationUsing is idempotent - calling it multiple times is safe
-        EventModel::resolveRelationUsing('registrations', function (EventModel $eventModel) {
-            return $eventModel->hasMany(EventRegistrationModel::class, 'event_id', 'id');
-        });
+        EventModel::resolveRelationUsing('registrations', fn (EventModel $eventModel) => $eventModel->hasMany(EventRegistrationModel::class, 'event_id', 'id'));
 
         // Add registrationConfig() relationship for the configuration form section
-        EventModel::resolveRelationUsing('registrationConfig', function (EventModel $eventModel) {
-            return $eventModel->hasOne(EventRegistrationConfigModel::class, 'event_id', 'id');
-        });
+        EventModel::resolveRelationUsing('registrationConfig', fn (EventModel $eventModel) => $eventModel->hasOne(EventRegistrationConfigModel::class, 'event_id', 'id'));
     }
 
     /**
@@ -390,7 +387,7 @@ final class EventRegistrationsServiceProvider extends ModuleServiceProvider
     }
 
     /**
-     * @return array<\Filament\Schemas\Components\Component>
+     * @return array<Component>
      */
     public function getSettingsSchema(): array
     {
