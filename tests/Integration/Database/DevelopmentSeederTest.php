@@ -70,8 +70,12 @@ final class DevelopmentSeederTest extends ModuleTestCase
             $this->assertGreaterThan(0, EventRegistrationModel::where('state', $state->value)->count(), $state->value);
         }
 
-        $this->assertNotNull(EventRegistrationModel::where('state', RegistrationState::Cancelled->value)->first()->cancelled_at);
-        $this->assertSame(1, EventRegistrationModel::where('state', RegistrationState::WaitingList->value)->first()->position);
+        $cancelled = EventRegistrationModel::where('state', RegistrationState::Cancelled->value)->first();
+        $waiting = EventRegistrationModel::where('state', RegistrationState::WaitingList->value)->first();
+        $this->assertNotNull($cancelled);
+        $this->assertNotNull($waiting);
+        $this->assertNotNull($cancelled->cancelled_at);
+        $this->assertSame(1, $waiting->position);
         $this->assertSame(1, EventRegistrationConfigModel::where('members_only', true)->count());
         $this->assertTrue(EventRegistrationConfigModel::with('event')->get()->every(fn (EventRegistrationConfigModel $c): bool => $c->event->start_date->isFuture()));
 

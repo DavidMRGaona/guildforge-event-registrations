@@ -10,6 +10,9 @@ use PHPUnit\Framework\TestCase;
 
 final class EventRegistrationConfigTest extends TestCase
 {
+    /**
+     * @param  array<string, mixed>  $overrides
+     */
     private function createConfig(array $overrides = []): EventRegistrationConfig
     {
         return new EventRegistrationConfig(

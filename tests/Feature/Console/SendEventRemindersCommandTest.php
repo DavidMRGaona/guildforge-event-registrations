@@ -11,6 +11,7 @@ use Illuminate\Console\Scheduling\Event as ScheduledEvent;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Testing\PendingCommand;
 use Modules\EventRegistrations\Console\Commands\SendEventRemindersCommand;
 use Modules\EventRegistrations\Domain\Enums\RegistrationState;
 use Modules\EventRegistrations\Infrastructure\Persistence\Eloquent\Models\EventRegistrationModel;
@@ -43,7 +44,7 @@ final class SendEventRemindersCommandTest extends ModuleTestCase
     {
         [$user, $registration] = $this->registered($this->event($this->now->addHours(10)), RegistrationState::Confirmed);
 
-        $this->artisan('event-registrations:send-reminders')->assertSuccessful();
+        $this->sendReminders();
 
         Notification::assertNothingSent();
         $this->assertNull($registration->fresh()?->reminder_sent_at);
@@ -58,8 +59,8 @@ final class SendEventRemindersCommandTest extends ModuleTestCase
         [$pending] = $this->registered($event, RegistrationState::Pending);
         [$cancelled] = $this->registered($event, RegistrationState::Cancelled);
 
-        $this->artisan('event-registrations:send-reminders')->assertSuccessful();
-        $this->artisan('event-registrations:send-reminders')->assertSuccessful();
+        $this->sendReminders();
+        $this->sendReminders();
 
         Notification::assertSentToTimes($confirmed, EventReminderNotification::class, 1);
         Notification::assertNotSentTo([$waiting, $pending, $cancelled], EventReminderNotification::class);
@@ -77,7 +78,7 @@ final class SendEventRemindersCommandTest extends ModuleTestCase
         [$later] = $this->registered($this->event($this->now->addHours(30)), RegistrationState::Confirmed);
         [$started] = $this->registered($this->event($this->now->subHour()), RegistrationState::Confirmed);
 
-        $this->artisan('event-registrations:send-reminders')->assertSuccessful();
+        $this->sendReminders();
 
         Notification::assertNothingSent();
     }
@@ -100,7 +101,7 @@ final class SendEventRemindersCommandTest extends ModuleTestCase
         $hidden->forceFill(['is_published' => false])->save();
         [$unpublished] = $this->registered($hidden, RegistrationState::Confirmed);
 
-        $this->artisan('event-registrations:send-reminders')->assertSuccessful();
+        $this->sendReminders();
 
         Notification::assertNothingSent();
     }
@@ -110,7 +111,7 @@ final class SendEventRemindersCommandTest extends ModuleTestCase
         $this->enable(hours: 48);
         [$user] = $this->registered($this->event($this->now->addHours(30)), RegistrationState::Confirmed);
 
-        $this->artisan('event-registrations:send-reminders')->assertSuccessful();
+        $this->sendReminders();
 
         Notification::assertSentTo($user, EventReminderNotification::class);
     }
@@ -125,6 +126,13 @@ final class SendEventRemindersCommandTest extends ModuleTestCase
         $this->assertCount(1, $events);
         $this->assertSame('0 * * * *', $events[0]->expression);
         $this->assertTrue($events[0]->withoutOverlapping);
+    }
+
+    private function sendReminders(): void
+    {
+        $command = $this->artisan('event-registrations:send-reminders');
+        $this->assertInstanceOf(PendingCommand::class, $command);
+        $command->assertSuccessful();
     }
 
     private function enable(int $hours = 24): void
