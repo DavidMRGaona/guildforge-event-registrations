@@ -31,6 +31,7 @@ use Modules\EventRegistrations\Domain\Events\UserUnregisteredFromEvent;
 use Modules\EventRegistrations\Domain\Events\WaitingListPromoted;
 use Modules\EventRegistrations\Domain\Repositories\EventRegistrationConfigRepositoryInterface;
 use Modules\EventRegistrations\Domain\Repositories\EventRegistrationRepositoryInterface;
+use Modules\EventRegistrations\Domain\Services\Clock;
 use Modules\EventRegistrations\Filament\Pages\EventRegistrationConfigPage;
 use Modules\EventRegistrations\Filament\RelationManagers\RegistrationConfigRelationManager;
 use Modules\EventRegistrations\Filament\RelationManagers\RegistrationsRelationManager;
@@ -44,6 +45,7 @@ use Modules\EventRegistrations\Infrastructure\Services\EloquentPublishedEventChe
 use Modules\EventRegistrations\Infrastructure\Services\EventRegistrationService;
 use Modules\EventRegistrations\Infrastructure\Services\RegistrationNotificationService;
 use Modules\EventRegistrations\Infrastructure\Services\RegistrationQueryService;
+use Modules\EventRegistrations\Infrastructure\Services\SystemClock;
 use Modules\EventRegistrations\Infrastructure\Services\WaitingListService;
 use Modules\EventRegistrations\Listeners\PromoteFromWaitingListOnCancellation;
 use Modules\EventRegistrations\Listeners\SendRegistrationCancelledEmail;
@@ -108,6 +110,8 @@ final class EventRegistrationsServiceProvider extends ModuleServiceProvider
             PublishedEventCheckerInterface::class,
             EloquentPublishedEventChecker::class
         );
+
+        $this->app->bind(Clock::class, SystemClock::class);
     }
 
     public function boot(): void

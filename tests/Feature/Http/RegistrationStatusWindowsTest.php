@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\EventRegistrations\Tests\Feature\Http;
 
 use App\Infrastructure\Persistence\Eloquent\Models\EventModel;
+use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
 use Modules\EventRegistrations\Infrastructure\Persistence\Eloquent\Models\EventRegistrationConfigModel;
 use Tests\Support\Modules\ModuleTestCase;
@@ -18,6 +19,14 @@ final class RegistrationStatusWindowsTest extends ModuleTestCase
     protected ?string $moduleName = 'event-registrations';
 
     protected bool $autoEnableModule = true;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        // Away from the nights the clocks change (RegistrationAcrossDaylightSavingTest)
+        $this->travelTo(CarbonImmutable::parse('2026-11-02 10:00:00'));
+    }
 
     public function test_before_the_start_registration_and_cancellation_are_open(): void
     {

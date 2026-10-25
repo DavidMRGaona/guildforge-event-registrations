@@ -6,6 +6,7 @@ namespace Modules\EventRegistrations\Tests\Feature\Http;
 
 use App\Infrastructure\Persistence\Eloquent\Models\EventModel;
 use App\Infrastructure\Persistence\Eloquent\Models\UserModel;
+use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Facades\Notification;
 use Modules\EventRegistrations\Domain\Enums\RegistrationState;
@@ -14,8 +15,9 @@ use Modules\EventRegistrations\Infrastructure\Persistence\Eloquent\Models\EventR
 use Tests\Support\Modules\ModuleTestCase;
 
 /**
- * The start of the event closes registration and cancellation for users. The domain reads the
- * real clock, so starts sit a minute or more away from now; exact instants are unit tested.
+ * The start of the event closes registration and cancellation for users. Starts sit a minute or
+ * more away from a pinned now; exact instants are unit tested and the nights the clocks change
+ * are covered by RegistrationAcrossDaylightSavingTest.
  */
 final class RegistrationAtEventStartTest extends ModuleTestCase
 {
@@ -28,6 +30,8 @@ final class RegistrationAtEventStartTest extends ModuleTestCase
         parent::setUp();
 
         Notification::fake();
+        // Away from the nights the clocks change (RegistrationAcrossDaylightSavingTest)
+        $this->travelTo(CarbonImmutable::parse('2026-11-02 10:00:00'));
     }
 
     public function test_registering_before_the_start_is_accepted(): void

@@ -66,6 +66,20 @@ final class EloquentEventRegistrationConfigRepositoryTest extends ModuleTestCase
         $this->assertTrue($config->hasEventStarted(new DateTimeImmutable('2030-04-12 10:00:00', $siteTimezone)));
     }
 
+    /**
+     * Known limitation: dates are stored as wall times without offset, so a start inside the hour
+     * repeated in October cannot tell its two passes apart and is read as the second one (CET).
+     * It goes away once the core stores instants in UTC (DavidMRGaona/GuildForge#107).
+     */
+    public function test_a_start_inside_the_repeated_hour_is_read_as_its_second_pass(): void
+    {
+        $event = $this->eventStartingAt('2026-10-25 02:10:00');
+
+        $config = $this->repository->findByEventOrDefault($event->id);
+
+        $this->assertSame('2026-10-25T01:10:00+00:00', $config->eventStartsAt()?->setTimezone(new DateTimeZone('UTC'))->format('c'));
+    }
+
     private function eventStartingAt(string $startDate): EventModel
     {
         return EventModel::factory()->create([

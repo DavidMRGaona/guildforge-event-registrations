@@ -39,6 +39,7 @@ final readonly class EventRegistrationConfigDTO
         EventRegistrationConfig $config,
         int $currentParticipants,
         int $currentWaitingList,
+        DateTimeImmutable $now,
     ): self {
         $maxParticipants = $config->maxParticipants();
         $availableSpots = $maxParticipants !== null
@@ -64,9 +65,9 @@ final readonly class EventRegistrationConfigDTO
             currentParticipants: $currentParticipants,
             currentWaitingList: $currentWaitingList,
             availableSpots: $availableSpots === PHP_INT_MAX ? -1 : $availableSpots,
-            isOpen: $config->isOpen(),
+            isOpen: $config->isOpen($now),
             isFull: $isFull,
-            canCancel: $config->canCancelNow(),
+            canCancel: $config->canCancelNow($now),
         );
     }
 

@@ -6,6 +6,7 @@ namespace Modules\EventRegistrations\Tests\Feature\Http;
 
 use App\Infrastructure\Persistence\Eloquent\Models\EventModel;
 use App\Infrastructure\Persistence\Eloquent\Models\UserModel;
+use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Notification;
 use Modules\EventRegistrations\Domain\Enums\RegistrationState;
 use Modules\EventRegistrations\Infrastructure\Persistence\Eloquent\Models\EventRegistrationConfigModel;
@@ -29,6 +30,8 @@ final class CancellationEmailTest extends ModuleTestCase
 
         app()->setLocale('es');
         Notification::fake();
+        // Away from the nights the clocks change (RegistrationAcrossDaylightSavingTest)
+        $this->travelTo(CarbonImmutable::parse('2026-11-02 10:00:00'));
     }
 
     public function test_cancelling_a_registration_emails_the_user_with_a_link_to_the_event(): void

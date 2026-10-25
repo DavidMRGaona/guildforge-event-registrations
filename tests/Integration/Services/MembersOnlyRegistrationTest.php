@@ -15,6 +15,7 @@ use Modules\EventRegistrations\Domain\Exceptions\MembersOnlyException;
 use Modules\EventRegistrations\Domain\Repositories\EventRegistrationConfigRepositoryInterface;
 use Modules\EventRegistrations\Domain\Repositories\EventRegistrationRepositoryInterface;
 use Modules\EventRegistrations\Infrastructure\Services\EventRegistrationService;
+use Modules\EventRegistrations\Infrastructure\Services\SystemClock;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\MockObject\Stub;
 use Tests\TestCase;
@@ -152,6 +153,7 @@ final class MembersOnlyRegistrationTest extends TestCase
             $this->waitingListService,
             $checker,
             $this->publishedEvents(),
+            new SystemClock,
         );
     }
 

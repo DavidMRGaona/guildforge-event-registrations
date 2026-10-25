@@ -15,6 +15,7 @@ use Modules\EventRegistrations\Domain\Events\UserRegisteredToEvent;
 use Modules\EventRegistrations\Domain\Events\WaitingListPromoted;
 use Modules\EventRegistrations\Domain\Repositories\EventRegistrationConfigRepositoryInterface;
 use Modules\EventRegistrations\Domain\Repositories\EventRegistrationRepositoryInterface;
+use Modules\EventRegistrations\Domain\Services\Clock;
 use Modules\EventRegistrations\Domain\ValueObjects\EventRegistrationId;
 
 final readonly class WaitingListService implements WaitingListServiceInterface
@@ -22,6 +23,7 @@ final readonly class WaitingListService implements WaitingListServiceInterface
     public function __construct(
         private EventRegistrationRepositoryInterface $registrationRepository,
         private EventRegistrationConfigRepositoryInterface $configRepository,
+        private Clock $clock,
     ) {}
 
     /**
@@ -68,7 +70,7 @@ final readonly class WaitingListService implements WaitingListServiceInterface
     public function promoteNext(string $eventId, ?string $excludeRegistrationId = null): ?EventRegistrationResponseDTO
     {
         // Nobody is promoted once the event has started, whoever freed the spot
-        if ($this->configRepository->findByEventOrDefault($eventId)->hasEventStarted()) {
+        if ($this->configRepository->findByEventOrDefault($eventId)->hasEventStarted($this->clock->now())) {
             return null;
         }
 
@@ -90,7 +92,7 @@ final readonly class WaitingListService implements WaitingListServiceInterface
         $config = $this->configRepository->findByEventOrDefault($eventId);
 
         // No waiting list, or the event has started: nobody is promoted
-        if (! $config->isWaitingListEnabled() || $config->hasEventStarted()) {
+        if (! $config->isWaitingListEnabled() || $config->hasEventStarted($this->clock->now())) {
             return 0;
         }
 
