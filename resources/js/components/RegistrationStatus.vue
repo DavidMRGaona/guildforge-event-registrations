@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { CircleCheck, CircleX, Clock } from '@lucide/vue';
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { VENUE_TIMEZONE } from '@/utils/datetime';
@@ -68,50 +69,15 @@ const showPosition = computed(() => {
                     }"
                 >
                     <!-- Check circle -->
-                    <svg
+                    <CircleCheck
                         v-if="statusIcon === 'check-circle'"
                         class="h-6 w-6"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                    >
-                        <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2"
-                            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                        />
-                    </svg>
+                        aria-hidden="true"
+                    />
                     <!-- Clock -->
-                    <svg
-                        v-else-if="statusIcon === 'clock'"
-                        class="h-6 w-6"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                    >
-                        <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2"
-                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                        />
-                    </svg>
+                    <Clock v-else-if="statusIcon === 'clock'" class="h-6 w-6" aria-hidden="true" />
                     <!-- X circle -->
-                    <svg
-                        v-else
-                        class="h-6 w-6"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                    >
-                        <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2"
-                            d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
-                        />
-                    </svg>
+                    <CircleX v-else class="h-6 w-6" aria-hidden="true" />
                 </div>
 
                 <div>
