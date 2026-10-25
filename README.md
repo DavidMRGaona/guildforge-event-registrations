@@ -240,7 +240,7 @@ vendor/bin/phpunit -c modules/event-registrations/phpunit.xml --testsuite=Unit
 
 `php artisan test` no ejecuta los tests de los módulos.
 
-Los servicios leen la hora de `Domain\Services\Clock` (`SystemClock` en producción, que sigue a `travelTo()`), nunca de `new DateTimeImmutable`. Los tests que sitúan el inicio o los plazos a minutos de ahora fijan el reloj en una hora neutra. Las dos noches de cambio de hora se prueban en `RegistrationAcrossDaylightSavingTest` con `Tests\Support\FixedClock`, porque el reloj de pruebas de Carbon no puede representar la primera pasada de la hora que se repite en octubre.
+Los servicios leen la hora de `Domain\Services\Clock` (`SystemClock` en producción, que sigue a `travelTo()`), nunca de `new DateTimeImmutable`. Los tests que sitúan el inicio o los plazos a minutos de ahora fijan el reloj en una hora neutra y crean sus eventos con fechas relativas a esa hora: la fecha por defecto de la factoría sigue al reloj real, que `travelTo()` no mueve. Las dos noches de cambio de hora se prueban en `RegistrationAcrossDaylightSavingTest` con `Tests\Support\FixedClock`, porque el reloj de pruebas de Carbon no puede representar la primera pasada de la hora que se repite en octubre.
 
 Las fechas se guardan como hora peninsular sin desplazamiento, así que una fecha guardada dentro de la hora repetida de octubre (de 02:00 a 02:59) se lee como su segunda pasada (CET). Desaparecerá cuando el core guarde los instantes en UTC (DavidMRGaona/GuildForge#107).
 

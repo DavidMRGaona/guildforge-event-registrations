@@ -57,7 +57,7 @@ final class WaitingListPromotionTest extends ModuleTestCase
 
     public function test_promotes_next_user_when_participant_cancels(): void
     {
-        $eventId = EventModel::factory()->create()->id;
+        $eventId = $this->upcomingEventId();
 
         // Create event config with max 2 participants
         $config = new EventRegistrationConfig(
@@ -106,7 +106,7 @@ final class WaitingListPromotionTest extends ModuleTestCase
 
     public function test_does_not_promote_if_waiting_list_empty(): void
     {
-        $eventId = EventModel::factory()->create()->id;
+        $eventId = $this->upcomingEventId();
 
         // Create event config
         $config = new EventRegistrationConfig(
@@ -150,7 +150,7 @@ final class WaitingListPromotionTest extends ModuleTestCase
 
     public function test_updates_waiting_list_positions_after_promotion(): void
     {
-        $eventId = EventModel::factory()->create()->id;
+        $eventId = $this->upcomingEventId();
 
         // Create event config
         $config = new EventRegistrationConfig(
@@ -190,7 +190,7 @@ final class WaitingListPromotionTest extends ModuleTestCase
 
     public function test_does_not_promote_when_cancellation_was_from_waiting_list(): void
     {
-        $eventId = EventModel::factory()->create()->id;
+        $eventId = $this->upcomingEventId();
 
         // Create event config
         $config = new EventRegistrationConfig(
@@ -281,7 +281,7 @@ final class WaitingListPromotionTest extends ModuleTestCase
 
     public function test_fill_free_spots_promotes_as_many_as_there_are_free_spots(): void
     {
-        $eventId = EventModel::factory()->create()->id;
+        $eventId = $this->upcomingEventId();
         $this->configRepository->save(new EventRegistrationConfig(eventId: $eventId, maxParticipants: 3, waitingListEnabled: true));
         $this->registrationRepository->save($this->createRegistration($eventId, 'user-1', RegistrationState::Confirmed));
         foreach (['user-2', 'user-3', 'user-4'] as $position => $user) {
@@ -298,7 +298,7 @@ final class WaitingListPromotionTest extends ModuleTestCase
 
     public function test_fill_free_spots_stops_when_nobody_is_left_waiting(): void
     {
-        $eventId = EventModel::factory()->create()->id;
+        $eventId = $this->upcomingEventId();
         $this->configRepository->save(new EventRegistrationConfig(eventId: $eventId, maxParticipants: null, waitingListEnabled: true));
         $this->registrationRepository->save($this->createRegistration($eventId, 'user-1', RegistrationState::WaitingList, 1));
         $this->registrationRepository->save($this->createRegistration($eventId, 'user-2', RegistrationState::WaitingList, 2));
@@ -318,7 +318,7 @@ final class WaitingListPromotionTest extends ModuleTestCase
 
     public function test_fill_free_spots_skips_the_excluded_registration(): void
     {
-        $eventId = EventModel::factory()->create()->id;
+        $eventId = $this->upcomingEventId();
         $this->configRepository->save(new EventRegistrationConfig(eventId: $eventId, maxParticipants: null, waitingListEnabled: true));
         $excluded = $this->createRegistration($eventId, 'user-1', RegistrationState::WaitingList, 1);
         $this->registrationRepository->save($excluded);
@@ -332,7 +332,7 @@ final class WaitingListPromotionTest extends ModuleTestCase
 
     public function test_fill_free_spots_promotes_nobody_when_the_waiting_list_is_disabled(): void
     {
-        $eventId = EventModel::factory()->create()->id;
+        $eventId = $this->upcomingEventId();
         $this->configRepository->save(new EventRegistrationConfig(eventId: $eventId, maxParticipants: 2, waitingListEnabled: false));
         $this->registrationRepository->save($this->createRegistration($eventId, 'user-1', RegistrationState::WaitingList, 1));
 
@@ -384,6 +384,18 @@ final class WaitingListPromotionTest extends ModuleTestCase
         return EventModel::factory()->create([
             'start_date' => $startsAt,
             'end_date' => $startsAt->modify('+4 hours'),
+        ])->id;
+    }
+
+    /**
+     * An event a week after the pinned now. The factory's default start follows the real clock,
+     * which travelTo() does not move, so it could fall before the pinned now.
+     */
+    private function upcomingEventId(): string
+    {
+        return EventModel::factory()->create([
+            'start_date' => now()->addWeek(),
+            'end_date' => now()->addWeek()->addHours(4),
         ])->id;
     }
 
