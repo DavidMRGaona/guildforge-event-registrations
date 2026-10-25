@@ -29,10 +29,9 @@ final class CancellationWindowFrontendTest extends ModuleTestCase
 
     public function test_an_active_registration_is_not_disabled_by_the_registration_window(): void
     {
-        $this->assertSame(
-            1,
-            preg_match('/const isUnavailable = computed\(\(\) => \{(.*?)\n\}\);/s', $this->componentSource(), $body),
-        );
+        if (preg_match('/const isUnavailable = computed\(\(\) => \{(.*?)\n\}\);/s', $this->componentSource(), $body) !== 1) {
+            $this->fail('isUnavailable is not in the component');
+        }
 
         $byCancellation = strpos($body[1], 'if (hasActiveRegistration.value) return !canCancel.value;');
         $byRegistration = strpos($body[1], 'if (!config.value.is_open) return true;');

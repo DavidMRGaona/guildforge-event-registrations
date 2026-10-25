@@ -23,6 +23,7 @@ use Modules\EventRegistrations\Domain\Enums\RegistrationState;
  * @property string|null $admin_notes
  * @property Carbon|null $confirmed_at
  * @property Carbon|null $cancelled_at
+ * @property Carbon|null $reminder_sent_at
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @property-read EventModel $event

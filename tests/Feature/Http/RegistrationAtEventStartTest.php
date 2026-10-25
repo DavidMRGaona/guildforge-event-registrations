@@ -105,7 +105,7 @@ final class RegistrationAtEventStartTest extends ModuleTestCase
             ->assertJsonPath('message', 'No puedes cancelar la inscripción: el evento ya ha comenzado');
 
         $this->assertSame(RegistrationState::WaitingList, $registration->fresh()?->state);
-        $this->assertSame(1, $registration->fresh()?->position);
+        $this->assertSame(1, $registration->fresh()->position);
     }
 
     public function test_cancelling_before_the_start_works_after_registration_has_closed(): void

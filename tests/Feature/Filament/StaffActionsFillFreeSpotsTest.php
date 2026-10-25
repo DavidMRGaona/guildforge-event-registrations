@@ -72,7 +72,7 @@ final class StaffActionsFillFreeSpotsTest extends ModuleTestCase
 
         $this->assertSame(RegistrationState::Confirmed, $first->fresh()?->state);
         $this->assertSame(RegistrationState::WaitingList, $second->fresh()?->state);
-        $this->assertSame(1, $second->fresh()?->position);
+        $this->assertSame(1, $second->fresh()->position);
     }
 
     #[DataProvider('actionsThatFreeASpot')]
@@ -85,7 +85,7 @@ final class StaffActionsFillFreeSpotsTest extends ModuleTestCase
         $this->runStaffAction($action, $event, $confirmed);
 
         $this->assertSame(RegistrationState::WaitingList, $first->fresh()?->state);
-        $this->assertSame(1, $first->fresh()?->position);
+        $this->assertSame(1, $first->fresh()->position);
     }
 
     #[DataProvider('actionsThatFreeASpot')]
@@ -116,7 +116,7 @@ final class StaffActionsFillFreeSpotsTest extends ModuleTestCase
         $this->assertSame(RegistrationState::Confirmed, $first->fresh()?->state);
         $this->assertSame(RegistrationState::Confirmed, $second->fresh()?->state);
         $this->assertSame(RegistrationState::WaitingList, $third->fresh()?->state);
-        $this->assertSame(1, $third->fresh()?->position);
+        $this->assertSame(1, $third->fresh()->position);
     }
 
     public function test_a_registration_moved_behind_others_is_not_promoted_back(): void
@@ -129,7 +129,7 @@ final class StaffActionsFillFreeSpotsTest extends ModuleTestCase
 
         $this->assertSame(RegistrationState::Confirmed, $waiting->fresh()?->state);
         $this->assertSame(RegistrationState::WaitingList, $moved->fresh()?->state);
-        $this->assertSame(1, $moved->fresh()?->position);
+        $this->assertSame(1, $moved->fresh()->position);
     }
 
     public function test_a_registration_moved_to_an_empty_waiting_list_stays_there_and_the_spot_stays_free(): void
@@ -140,7 +140,7 @@ final class StaffActionsFillFreeSpotsTest extends ModuleTestCase
         $this->runStaffAction('move_to_waiting', $event, $moved);
 
         $this->assertSame(RegistrationState::WaitingList, $moved->fresh()?->state);
-        $this->assertSame(1, $moved->fresh()?->position);
+        $this->assertSame(1, $moved->fresh()->position);
         $this->assertSame(0, EventRegistrationModel::query()->where('state', RegistrationState::Confirmed)->count());
     }
 
@@ -152,7 +152,7 @@ final class StaffActionsFillFreeSpotsTest extends ModuleTestCase
         $this->runStaffAction('move_to_waiting', $event, $moved);
 
         $this->assertSame(RegistrationState::WaitingList, $moved->fresh()?->state);
-        $this->assertSame(1, $moved->fresh()?->position);
+        $this->assertSame(1, $moved->fresh()->position);
     }
 
     public function test_editing_the_state_to_waiting_list_promotes_the_other_person_and_keeps_the_edited_one_waiting(): void
@@ -167,7 +167,7 @@ final class StaffActionsFillFreeSpotsTest extends ModuleTestCase
 
         $this->assertSame(RegistrationState::Confirmed, $other->fresh()?->state);
         $this->assertSame(RegistrationState::WaitingList, $edited->fresh()?->state);
-        $this->assertSame(1, $edited->fresh()?->position);
+        $this->assertSame(1, $edited->fresh()->position);
     }
 
     public function test_editing_only_the_notes_of_a_waiting_registration_does_not_make_it_jump_the_queue(): void
@@ -260,11 +260,15 @@ final class StaffActionsFillFreeSpotsTest extends ModuleTestCase
             'edit' => $table->callTableAction('edit', $record, data: ['state' => RegistrationState::Pending->value]),
             'reject_selected' => $table->callTableBulkAction('reject_selected', [$record]),
             'delete_selected' => $table->callTableBulkAction('delete', [$record]),
+            default => $this->fail("Unknown staff action {$action}"),
         };
 
         $table->assertHasNoErrors();
     }
 
+    /**
+     * @return Testable<RegistrationsRelationManager>
+     */
     private function table(EventModel $event): Testable
     {
         return Livewire::test(RegistrationsRelationManager::class, ['ownerRecord' => $event, 'pageClass' => EditEvent::class]);

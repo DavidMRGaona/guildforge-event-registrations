@@ -178,11 +178,14 @@ final class WaitingListPromotionTest extends ModuleTestCase
 
         // Verify promoted user
         $promoted = $this->registrationRepository->findByUserAndEvent($this->users['user-2'], $eventId);
+        $this->assertNotNull($promoted);
         $this->assertEquals(RegistrationState::Confirmed, $promoted->state());
 
         // Verify remaining positions were recalculated
         $remaining2 = $this->registrationRepository->findByUserAndEvent($this->users['user-3'], $eventId);
         $remaining3 = $this->registrationRepository->findByUserAndEvent($this->users['user-4'], $eventId);
+        $this->assertNotNull($remaining2);
+        $this->assertNotNull($remaining3);
 
         $this->assertEquals(1, $remaining2->position()); // Was 2, now 1
         $this->assertEquals(2, $remaining3->position()); // Was 3, now 2
@@ -222,6 +225,7 @@ final class WaitingListPromotionTest extends ModuleTestCase
 
         // Verify user-3 was NOT promoted (still on waiting list)
         $user3 = $this->registrationRepository->findByUserAndEvent($this->users['user-3'], $eventId);
+        $this->assertNotNull($user3);
         $this->assertEquals(RegistrationState::WaitingList, $user3->state());
     }
 
@@ -292,8 +296,9 @@ final class WaitingListPromotionTest extends ModuleTestCase
 
         $this->assertSame(3, $this->registrationRepository->countConfirmedByEvent($eventId));
         $last = $this->registrationRepository->findByUserAndEvent($this->users['user-4'], $eventId);
-        $this->assertSame(RegistrationState::WaitingList, $last?->state());
-        $this->assertSame(1, $last?->position());
+        $this->assertNotNull($last);
+        $this->assertSame(RegistrationState::WaitingList, $last->state());
+        $this->assertSame(1, $last->position());
     }
 
     public function test_fill_free_spots_stops_when_nobody_is_left_waiting(): void

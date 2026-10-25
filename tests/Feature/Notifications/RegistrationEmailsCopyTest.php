@@ -45,7 +45,7 @@ final class RegistrationEmailsCopyTest extends ModuleTestCase
         $this->assertStringContainsString('confirmada', $text);
         $this->assertStringNotContainsString('recibida', $text);
         $this->assertSame('¡Hola, John!', $message->greeting);
-        $this->assertNull($message->salutation);
+        $this->assertNull($message->toArray()['salutation']);
     }
 
     public function test_a_waiting_list_registration_says_so_with_the_position(): void
