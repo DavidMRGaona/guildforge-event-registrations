@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\EventRegistrations\Domain\Entities;
 
 use DateTimeImmutable;
+use Modules\EventRegistrations\Domain\Enums\CancellationClosedReason;
 
 final class EventRegistrationConfig
 {
@@ -179,17 +180,26 @@ final class EventRegistrationConfig
      */
     public function canCancelNow(?DateTimeImmutable $now = null): bool
     {
+        return ! $this->cancellationClosedReason($now) instanceof CancellationClosedReason;
+    }
+
+    /**
+     * Why the user can no longer cancel, or null while they can. The start of the event wins
+     * over a deadline that has also passed.
+     */
+    public function cancellationClosedReason(?DateTimeImmutable $now = null): ?CancellationClosedReason
+    {
         $now ??= new DateTimeImmutable;
 
         if ($this->hasEventStarted($now)) {
-            return false;
+            return CancellationClosedReason::EventStarted;
         }
 
-        if (! $this->cancellationDeadline instanceof DateTimeImmutable) {
-            return true;
+        if ($this->cancellationDeadline instanceof DateTimeImmutable && $now > $this->cancellationDeadline) {
+            return CancellationClosedReason::DeadlinePassed;
         }
 
-        return $now <= $this->cancellationDeadline;
+        return null;
     }
 
     /**

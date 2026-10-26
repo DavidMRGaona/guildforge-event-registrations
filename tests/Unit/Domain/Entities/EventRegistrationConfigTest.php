@@ -6,6 +6,7 @@ namespace Modules\EventRegistrations\Tests\Unit\Domain\Entities;
 
 use DateTimeImmutable;
 use Modules\EventRegistrations\Domain\Entities\EventRegistrationConfig;
+use Modules\EventRegistrations\Domain\Enums\CancellationClosedReason;
 use PHPUnit\Framework\TestCase;
 
 final class EventRegistrationConfigTest extends TestCase
@@ -299,5 +300,51 @@ final class EventRegistrationConfigTest extends TestCase
         $config = $this->createConfig(['eventStartsAt' => null]);
 
         $this->assertFalse($config->canCancelNow(new DateTimeImmutable('2000-01-01 00:00:00')));
+    }
+
+    public function test_an_open_cancellation_has_no_closed_reason(): void
+    {
+        $config = $this->createConfig([
+            'eventStartsAt' => new DateTimeImmutable('2030-04-12 10:00:00'),
+            'cancellationDeadline' => new DateTimeImmutable('2030-04-12 08:00:00'),
+        ]);
+
+        $this->assertNull($config->cancellationClosedReason(new DateTimeImmutable('2030-04-12 08:00:00')));
+    }
+
+    public function test_a_passed_deadline_is_the_closed_reason_before_the_start(): void
+    {
+        $config = $this->createConfig([
+            'eventStartsAt' => new DateTimeImmutable('2030-04-12 10:00:00'),
+            'cancellationDeadline' => new DateTimeImmutable('2030-04-12 08:00:00'),
+        ]);
+
+        $this->assertSame(
+            CancellationClosedReason::DeadlinePassed,
+            $config->cancellationClosedReason(new DateTimeImmutable('2030-04-12 09:00:00')),
+        );
+    }
+
+    public function test_the_start_is_the_closed_reason_once_the_event_has_started_even_after_the_deadline(): void
+    {
+        $config = $this->createConfig([
+            'eventStartsAt' => new DateTimeImmutable('2030-04-12 10:00:00'),
+            'cancellationDeadline' => new DateTimeImmutable('2030-04-12 08:00:00'),
+        ]);
+
+        $this->assertSame(
+            CancellationClosedReason::EventStarted,
+            $config->cancellationClosedReason(new DateTimeImmutable('2030-04-12 10:00:00')),
+        );
+    }
+
+    public function test_an_unknown_start_is_closed_as_started(): void
+    {
+        $config = $this->createConfig(['eventStartsAt' => null]);
+
+        $this->assertSame(
+            CancellationClosedReason::EventStarted,
+            $config->cancellationClosedReason(new DateTimeImmutable('2000-01-01 00:00:00')),
+        );
     }
 }

@@ -7,6 +7,7 @@ namespace Modules\EventRegistrations\Application\DTOs;
 use App\Application\Services\TimezoneServiceInterface;
 use DateTimeImmutable;
 use Modules\EventRegistrations\Domain\Entities\EventRegistrationConfig;
+use Modules\EventRegistrations\Domain\Enums\CancellationClosedReason;
 
 final readonly class EventRegistrationConfigDTO
 {
@@ -34,6 +35,7 @@ final readonly class EventRegistrationConfigDTO
         public bool $isOpen,
         public bool $isFull,
         public bool $canCancel,
+        public ?CancellationClosedReason $cancellationClosedReason,
     ) {}
 
     public static function fromEntity(
@@ -69,6 +71,7 @@ final readonly class EventRegistrationConfigDTO
             isOpen: $config->isOpen($now),
             isFull: $isFull,
             canCancel: $config->canCancelNow($now),
+            cancellationClosedReason: $config->cancellationClosedReason($now),
         );
     }
 
@@ -99,6 +102,7 @@ final readonly class EventRegistrationConfigDTO
             'is_open' => $this->isOpen,
             'is_full' => $this->isFull,
             'can_cancel' => $this->canCancel,
+            'cancellation_closed_reason' => $this->cancellationClosedReason?->value,
         ];
     }
 }

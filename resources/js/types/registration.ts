@@ -1,5 +1,8 @@
 export type RegistrationState = 'pending' | 'confirmed' | 'waiting_list' | 'cancelled' | 'rejected';
 
+// The start of the event wins over a passed deadline
+export type CancellationClosedReason = 'event_started' | 'deadline_passed';
+
 export interface RegistrationConfig {
     event_id: string;
     registration_enabled: boolean;
@@ -22,6 +25,8 @@ export interface RegistrationConfig {
     is_full: boolean;
     // Whether the user may cancel now: before the cancellation deadline and before the event starts
     can_cancel: boolean;
+    // Why the user can no longer cancel; null while they can
+    cancellation_closed_reason: CancellationClosedReason | null;
     // Whether the current visitor meets the members-only requirement (always true when the event is open to everyone)
     meets_members_only: boolean;
 }

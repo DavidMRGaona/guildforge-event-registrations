@@ -6,6 +6,14 @@ export default {
     eventRegistrationsCapacity: {
         confirmed: '{count} confirmed | {count} confirmed',
     },
+    eventRegistrationsCancellation: {
+        closed: {
+            eventStarted:
+                'The event has already started: you can no longer cancel your registration',
+            deadlinePassed:
+                'The cancellation deadline has passed: you can no longer cancel your registration',
+        },
+    },
     eventRegistrationsProfile: {
         tabLabel: 'My registrations',
         title: 'My registrations',
