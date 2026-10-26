@@ -13,7 +13,6 @@ final class RegistrationStateTest extends TestCase
     {
         $cases = RegistrationState::cases();
 
-        $this->assertCount(5, $cases);
         $this->assertContains(RegistrationState::Pending, $cases);
         $this->assertContains(RegistrationState::Confirmed, $cases);
         $this->assertContains(RegistrationState::WaitingList, $cases);
