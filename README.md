@@ -188,17 +188,17 @@ const response = await fetch(`/eventos/${eventId}/inscripcion`, {
 
 ## Permisos
 
-Los administradores tienen todos los permisos.
+Los administradores tienen todos los permisos. Ninguno se propone a `editor`, que es el rol de contenido: se dan a los roles de función que cree la asociación.
 
 | Permiso | Descripción | Rol por defecto |
 |---------|-------------|-----------------|
-| `registrations.view_any` | Ver el listado de inscripciones y el widget | editor |
-| `registrations.view` | Ver el detalle de una inscripción | editor |
-| `registrations.create` | Crear inscripciones | editor |
-| `registrations.update` | Editar inscripciones | editor |
+| `registrations.view_any` | Ver el listado de inscripciones y el widget | ninguno |
+| `registrations.view` | Ver el detalle de una inscripción | ninguno |
+| `registrations.create` | Crear inscripciones | ninguno |
+| `registrations.update` | Editar inscripciones | ninguno |
 | `registrations.delete` | Eliminar inscripciones | ninguno |
-| `registrations.manage_config` | Gestionar la configuración de inscripciones | editor |
-| `registrations.export` | Exportar las inscripciones de un evento a CSV | editor |
+| `registrations.manage_config` | Gestionar la configuración de inscripciones | ninguno |
+| `registrations.export` | Exportar las inscripciones de un evento a CSV | ninguno |
 
 ## Arquitectura
 
