@@ -284,28 +284,24 @@ final class EventRegistrationsServiceProvider extends ModuleServiceProvider
                 label: __('event-registrations::messages.permissions.view_any'),
                 group: __('event-registrations::messages.navigation'),
                 module: 'event-registrations',
-                roles: ['editor'],
             ),
             new PermissionDTO(
                 name: 'registrations.view',
                 label: __('event-registrations::messages.permissions.view'),
                 group: __('event-registrations::messages.navigation'),
                 module: 'event-registrations',
-                roles: ['editor'],
             ),
             new PermissionDTO(
                 name: 'registrations.create',
                 label: __('event-registrations::messages.permissions.create'),
                 group: __('event-registrations::messages.navigation'),
                 module: 'event-registrations',
-                roles: ['editor'],
             ),
             new PermissionDTO(
                 name: 'registrations.update',
                 label: __('event-registrations::messages.permissions.update'),
                 group: __('event-registrations::messages.navigation'),
                 module: 'event-registrations',
-                roles: ['editor'],
             ),
             new PermissionDTO(
                 name: 'registrations.delete',
@@ -319,14 +315,12 @@ final class EventRegistrationsServiceProvider extends ModuleServiceProvider
                 label: __('event-registrations::messages.permissions.manage_config'),
                 group: __('event-registrations::messages.navigation'),
                 module: 'event-registrations',
-                roles: ['editor'],
             ),
             new PermissionDTO(
                 name: 'registrations.export',
                 label: __('event-registrations::messages.permissions.export'),
                 group: __('event-registrations::messages.navigation'),
                 module: 'event-registrations',
-                roles: ['editor'],
             ),
         ];
     }
