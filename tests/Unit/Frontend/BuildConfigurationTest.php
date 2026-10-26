@@ -17,8 +17,8 @@ final class BuildConfigurationTest extends TestCase
         $config = file_get_contents(__DIR__.'/../../../vite.config.ts');
         $this->assertNotFalse($config);
 
-        $this->assertStringContainsString("import { defineModuleConfig } from '../../vite.module.config';", $config);
-        $this->assertStringContainsString("defineModuleConfig({ name: 'event-registrations', root: __dirname })", $config);
+        $this->assertStringContainsString("import { defineModuleConfig } from '../../vite.module.config.ts';", $config);
+        $this->assertStringContainsString("defineModuleConfig({ name: 'event-registrations', root: import.meta.dirname })", $config);
     }
 
     public function test_the_module_declares_no_build_toolchain_of_its_own(): void
