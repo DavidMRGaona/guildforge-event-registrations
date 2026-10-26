@@ -16,7 +16,7 @@ use Modules\EventRegistrations\Infrastructure\Persistence\Eloquent\Models\EventR
 
 final class DevelopmentSeeder extends Seeder
 {
-    private const DEMO_EVENT_COUNT = 3;
+    private const int DEMO_EVENT_COUNT = 3;
 
     public function run(): void
     {

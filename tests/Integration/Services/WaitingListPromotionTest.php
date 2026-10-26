@@ -304,7 +304,7 @@ final class WaitingListPromotionTest extends ModuleTestCase
     public function test_fill_free_spots_stops_when_nobody_is_left_waiting(): void
     {
         $eventId = $this->upcomingEventId();
-        $this->configRepository->save(new EventRegistrationConfig(eventId: $eventId, maxParticipants: null, waitingListEnabled: true));
+        $this->configRepository->save(new EventRegistrationConfig(eventId: $eventId, waitingListEnabled: true));
         $this->registrationRepository->save($this->createRegistration($eventId, 'user-1', RegistrationState::WaitingList, 1));
         $this->registrationRepository->save($this->createRegistration($eventId, 'user-2', RegistrationState::WaitingList, 2));
 
@@ -324,7 +324,7 @@ final class WaitingListPromotionTest extends ModuleTestCase
     public function test_fill_free_spots_skips_the_excluded_registration(): void
     {
         $eventId = $this->upcomingEventId();
-        $this->configRepository->save(new EventRegistrationConfig(eventId: $eventId, maxParticipants: null, waitingListEnabled: true));
+        $this->configRepository->save(new EventRegistrationConfig(eventId: $eventId, waitingListEnabled: true));
         $excluded = $this->createRegistration($eventId, 'user-1', RegistrationState::WaitingList, 1);
         $this->registrationRepository->save($excluded);
         $this->registrationRepository->save($this->createRegistration($eventId, 'user-2', RegistrationState::WaitingList, 2));

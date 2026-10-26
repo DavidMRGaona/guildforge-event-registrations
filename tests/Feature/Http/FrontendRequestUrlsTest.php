@@ -243,7 +243,7 @@ final class FrontendRequestUrlsTest extends ModuleTestCase
         for ($i = $offset; $i < $length; $i++) {
             $char = $source[$i];
 
-            if ($char === '\'' || $char === '"' || $char === '`') {
+            if (in_array($char, ['\'', '"', '`'], true)) {
                 $i = $this->endOfString($source, $i);
 
                 continue;
@@ -336,7 +336,7 @@ final class FrontendRequestUrlsTest extends ModuleTestCase
         for ($i = 0; $i < $length; $i++) {
             $char = $text[$i];
 
-            if ($char === '\'' || $char === '"' || $char === '`') {
+            if (in_array($char, ['\'', '"', '`'], true)) {
                 $i = $this->endOfString($text, $i);
             } elseif (in_array($char, ['(', '[', '{'], true)) {
                 $depth++;
