@@ -369,7 +369,7 @@ final class EventRegistrationsPanelTest extends ModuleTestCase
 
     private function wallTime(?\DateTimeInterface $instant): ?string
     {
-        return $instant === null ? null : app(TimezoneServiceInterface::class)->toDisplayWallTime($instant, 'Y-m-d H:i:s');
+        return $instant instanceof \DateTimeInterface ? app(TimezoneServiceInterface::class)->toDisplayWallTime($instant, 'Y-m-d H:i:s') : null;
     }
 
     private function eventStartingAt(string $startDate): EventModel
