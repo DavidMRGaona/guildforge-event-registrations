@@ -174,12 +174,12 @@ final class DevelopmentSeeder extends Seeder
             }
         }
 
-        return EventModel::where('is_published', true)
+        return array_values(EventModel::where('is_published', true)
             ->where('start_date', '>', now())
             ->orderBy('start_date')
             ->limit(self::DEMO_EVENT_COUNT)
             ->get()
-            ->all();
+            ->all());
     }
 
     /**
