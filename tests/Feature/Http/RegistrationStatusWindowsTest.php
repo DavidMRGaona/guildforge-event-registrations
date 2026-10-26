@@ -35,7 +35,8 @@ final class RegistrationStatusWindowsTest extends ModuleTestCase
         $this->getJson("/eventos/{$event->id}/inscripcion/estado")
             ->assertOk()
             ->assertJsonPath('data.is_open', true)
-            ->assertJsonPath('data.can_cancel', true);
+            ->assertJsonPath('data.can_cancel', true)
+            ->assertJsonPath('data.cancellation_closed_reason', null);
     }
 
     public function test_once_the_event_has_started_both_are_closed_whatever_the_dates_say(): void
@@ -48,7 +49,8 @@ final class RegistrationStatusWindowsTest extends ModuleTestCase
         $this->getJson("/eventos/{$event->id}/inscripcion/estado")
             ->assertOk()
             ->assertJsonPath('data.is_open', false)
-            ->assertJsonPath('data.can_cancel', false);
+            ->assertJsonPath('data.can_cancel', false)
+            ->assertJsonPath('data.cancellation_closed_reason', 'event_started');
     }
 
     public function test_cancellation_stays_open_after_registration_closes(): void
@@ -68,7 +70,8 @@ final class RegistrationStatusWindowsTest extends ModuleTestCase
         $this->getJson("/eventos/{$event->id}/inscripcion/estado")
             ->assertOk()
             ->assertJsonPath('data.is_open', true)
-            ->assertJsonPath('data.can_cancel', false);
+            ->assertJsonPath('data.can_cancel', false)
+            ->assertJsonPath('data.cancellation_closed_reason', 'deadline_passed');
     }
 
     /**

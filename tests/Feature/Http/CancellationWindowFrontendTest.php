@@ -9,7 +9,7 @@ use Tests\Support\Modules\ModuleTestCase;
 /**
  * The module has no component tests, so this checks in the source that the registration button
  * offers cancelling from the server's `can_cancel` and not from the registration window, and
- * that it disappears, without any text of its own, once the user can no longer cancel.
+ * that, once the user can no longer cancel, it stays disabled and says why (as game tables do).
  */
 final class CancellationWindowFrontendTest extends ModuleTestCase
 {
@@ -41,25 +41,33 @@ final class CancellationWindowFrontendTest extends ModuleTestCase
         $this->assertLessThan($byRegistration, $byCancellation);
     }
 
-    public function test_the_button_is_not_rendered_once_an_active_registration_can_no_longer_be_cancelled(): void
+    public function test_the_button_stays_rendered_once_an_active_registration_can_no_longer_be_cancelled(): void
+    {
+        $source = $this->componentSource();
+
+        $this->assertMatchesRegularExpression('/<button\s+v-if="!showForm"\s/', $source);
+        $this->assertStringNotContainsString('isCancellationClosed', $source);
+    }
+
+    public function test_a_closed_cancellation_says_why_from_the_server_reason(): void
     {
         $source = $this->componentSource();
 
         $this->assertMatchesRegularExpression(
-            '/const isCancellationClosed = computed\(\s*\(\) => hasActiveRegistration\.value && !canCancel\.value,?\s*\);/',
+            '/if \(hasActiveRegistration\.value\) \{\s*if \(canCancel\.value\) return t\(\'eventRegistrations\.cancelRegistration\'\);\s*return cancellationClosedText\.value;\s*\}/',
             $source,
         );
-        $this->assertMatchesRegularExpression('/<button\s+v-if="!showForm && !isCancellationClosed"/', $source);
-    }
-
-    public function test_a_closed_cancellation_has_no_text_of_its_own(): void
-    {
-        $this->assertStringNotContainsString('cancellationClosed', $this->componentSource());
+        $this->assertStringContainsString("config.value?.cancellation_closed_reason === 'deadline_passed'", $source);
+        $this->assertStringContainsString("t('eventRegistrationsCancellation.closed.deadlinePassed')", $source);
+        $this->assertStringContainsString("t('eventRegistrationsCancellation.closed.eventStarted')", $source);
 
         foreach (['es', 'en'] as $locale) {
             $translations = file_get_contents(self::MODULE_ROOT."/resources/js/locales/{$locale}.ts");
             $this->assertIsString($translations);
-            $this->assertStringNotContainsString('cancellationClosed', $translations);
+            $this->assertMatchesRegularExpression(
+                '/eventRegistrationsCancellation: \{\s*closed: \{\s*eventStarted:[^}]*deadlinePassed:/s',
+                $translations,
+            );
         }
     }
 
@@ -73,7 +81,7 @@ final class CancellationWindowFrontendTest extends ModuleTestCase
         $this->assertStringNotContainsString('config.value = data.data;', $source);
     }
 
-    public function test_a_refused_cancellation_reloads_the_status_so_the_button_can_hide(): void
+    public function test_a_refused_cancellation_reloads_the_status_so_the_button_can_say_why(): void
     {
         $this->assertMatchesRegularExpression(
             '/if \(!response\.ok\) \{\s*error\.value = data\.message;[^}]*await fetchStatus\(\);\s*return;\s*\}/s',

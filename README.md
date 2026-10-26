@@ -131,7 +131,7 @@ No se envían emails de eventos ya terminados.
 
 `RegistrationButton` se inyecta en la ficha del evento (slot `event-detail-actions`) e incluye `RegistrationStatus` y `RegistrationForm`. Si la configuración del evento tiene campos personalizados (`custom_fields`), el botón pide esos datos antes de inscribir y los envía como `form_data`; el panel todavía no permite definirlos.
 
-Con una inscripción activa (pendiente, confirmada o en lista de espera), el botón ofrece cancelarla mientras `can_cancel` es `true`, aunque las inscripciones ya estén cerradas; cuando ya no se puede cancelar, el botón no se muestra y `RegistrationStatus` sigue indicando el estado de la inscripción.
+Con una inscripción activa (pendiente, confirmada o en lista de espera), el botón ofrece cancelarla mientras `can_cancel` es `true`, aunque las inscripciones ya estén cerradas; cuando ya no se puede cancelar, el botón sigue visible pero desactivado y dice por qué (el evento ya ha comenzado o ha pasado la fecha límite de cancelación, según `cancellation_closed_reason`), igual que en las partidas, y `RegistrationStatus` sigue indicando el estado de la inscripción.
 
 `UserRegistrations` es la pestaña «Mis inscripciones» del perfil (slot `profile-sections`). Pide `GET /mis-inscripciones` al abrirse; si la sesión ha caducado, ofrece recargar la página para volver a iniciar sesión.
 
@@ -151,7 +151,7 @@ Son rutas web (sesión y CSRF) que responden JSON; el módulo no registra rutas 
 
 | Método | Ruta | Descripción |
 |--------|------|-------------|
-| `GET` | `/eventos/{eventId}/inscripcion/estado` | Estado público de las inscripciones del evento; `is_open` indica si se admiten inscripciones ahora y `can_cancel` si se admiten cancelaciones ahora (las dos pasan a `false` al empezar el evento); `meets_members_only` indica si el visitante actual cumple el requisito de solo socios (siempre `true` si el evento está abierto a todos, `false` sin sesión en un evento solo para socios) |
+| `GET` | `/eventos/{eventId}/inscripcion/estado` | Estado público de las inscripciones del evento; `is_open` indica si se admiten inscripciones ahora y `can_cancel` si se admiten cancelaciones ahora (las dos pasan a `false` al empezar el evento); `cancellation_closed_reason` dice por qué ya no se puede cancelar (`event_started`, que también cubre un inicio desconocido y gana si además pasó la fecha límite, o `deadline_passed`) y es `null` mientras se puede; `meets_members_only` indica si el visitante actual cumple el requisito de solo socios (siempre `true` si el evento está abierto a todos, `false` sin sesión en un evento solo para socios) |
 | `GET` | `/eventos/{eventId}/inscripcion` | Inscripción del usuario (requiere sesión) |
 | `POST` | `/eventos/{eventId}/inscripcion` | Inscribirse (requiere sesión; `notes`, `form_data`) |
 | `DELETE` | `/eventos/{eventId}/inscripcion` | Cancelar la inscripción (requiere sesión) |
