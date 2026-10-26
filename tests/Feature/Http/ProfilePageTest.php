@@ -130,7 +130,6 @@ final class ProfilePageTest extends ModuleTestCase
      */
     private function moduleTranslations(): array
     {
-        /** @var array<string, array<string, mixed>> $translations */
         $translations = [];
 
         $this->actingAs(UserModel::factory()->create())
@@ -139,9 +138,11 @@ final class ProfilePageTest extends ModuleTestCase
                 $translations = $page->toArray()['props']['moduleTranslations']['event-registrations'] ?? [];
             });
 
+        $this->assertIsArray($translations);
         $this->assertArrayHasKey('es', $translations);
         $this->assertArrayHasKey('en', $translations);
 
+        /** @var array<string, array<string, mixed>> $translations */
         return $translations;
     }
 
