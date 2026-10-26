@@ -53,6 +53,16 @@ final class RegistrationStatusWindowsTest extends ModuleTestCase
             ->assertJsonPath('data.cancellation_closed_reason', 'event_started');
     }
 
+    public function test_once_the_event_has_ended_its_end_is_the_closed_reason(): void
+    {
+        $event = $this->eventStarting(now()->subDay());
+
+        $this->getJson("/eventos/{$event->id}/inscripcion/estado")
+            ->assertOk()
+            ->assertJsonPath('data.can_cancel', false)
+            ->assertJsonPath('data.cancellation_closed_reason', 'event_ended');
+    }
+
     public function test_cancellation_stays_open_after_registration_closes(): void
     {
         $event = $this->eventStarting(now()->addDay(), ['registration_closes_at' => now()->subHour()]);

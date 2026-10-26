@@ -30,6 +30,7 @@ final class EventRegistrationConfig
         private readonly ?DateTimeImmutable $createdAt = null,
         private readonly ?DateTimeImmutable $updatedAt = null,
         private readonly ?DateTimeImmutable $eventStartsAt = null,
+        private readonly ?DateTimeImmutable $eventEndsAt = null,
     ) {}
 
     public function eventId(): string
@@ -136,6 +137,17 @@ final class EventRegistrationConfig
     }
 
     /**
+     * Whether the event has ended. An unknown end never counts as ended: the start already
+     * closes everything, the end only changes why.
+     */
+    public function hasEventEnded(?DateTimeImmutable $now = null): bool
+    {
+        $now ??= new DateTimeImmutable;
+
+        return $this->eventEndsAt instanceof DateTimeImmutable && $now >= $this->eventEndsAt;
+    }
+
+    /**
      * Check if registration is currently open: enabled, within the configured dates and before
      * the event starts (the start closes it whatever the close date says).
      */
@@ -184,12 +196,16 @@ final class EventRegistrationConfig
     }
 
     /**
-     * Why the user can no longer cancel, or null while they can. The start of the event wins
-     * over a deadline that has also passed.
+     * Why the user can no longer cancel, or null while they can. The end of the event wins over
+     * its start, and the start over a deadline that has also passed.
      */
     public function cancellationClosedReason(?DateTimeImmutable $now = null): ?CancellationClosedReason
     {
         $now ??= new DateTimeImmutable;
+
+        if ($this->hasEventEnded($now)) {
+            return CancellationClosedReason::EventEnded;
+        }
 
         if ($this->hasEventStarted($now)) {
             return CancellationClosedReason::EventStarted;
