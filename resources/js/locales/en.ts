@@ -8,6 +8,7 @@ export default {
     },
     eventRegistrationsCancellation: {
         closed: {
+            eventEnded: 'The event has already ended',
             eventStarted:
                 'The event has already started: you can no longer cancel your registration',
             deadlinePassed:

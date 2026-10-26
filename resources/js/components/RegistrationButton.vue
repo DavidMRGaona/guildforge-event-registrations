@@ -7,6 +7,7 @@ import { Link, usePage } from '@inertiajs/vue3';
 import { csrfHeaders, isCsrfFailure } from '@/utils/csrf';
 import { useVerificationGate } from '@/composables/useVerificationGate';
 import type {
+    CancellationClosedReason,
     RegistrationConfig,
     UserRegistration,
     RegistrationFormData,
@@ -143,12 +144,16 @@ const canJoinWaitingList = computed(() => {
 // The server decides the cancellation window: the deadline and the start of the event
 const canCancel = computed(() => hasActiveRegistration.value && config.value?.can_cancel === true);
 
+const CANCELLATION_CLOSED_KEYS: Record<CancellationClosedReason, string> = {
+    event_ended: 'eventRegistrationsCancellation.closed.eventEnded',
+    event_started: 'eventRegistrationsCancellation.closed.eventStarted',
+    deadline_passed: 'eventRegistrationsCancellation.closed.deadlinePassed',
+};
+
 // Why an active registration can no longer be cancelled: the disabled button says it, as game
 // tables do. The start of the event is also the fallback, since it always closes the window
 const cancellationClosedText = computed(() =>
-    config.value?.cancellation_closed_reason === 'deadline_passed'
-        ? t('eventRegistrationsCancellation.closed.deadlinePassed')
-        : t('eventRegistrationsCancellation.closed.eventStarted')
+    t(CANCELLATION_CLOSED_KEYS[config.value?.cancellation_closed_reason ?? 'event_started'])
 );
 
 const buttonText = computed(() => {

@@ -9,6 +9,9 @@ namespace Modules\EventRegistrations\Domain\Enums;
  */
 enum CancellationClosedReason: string
 {
+    /** The event has ended; it wins over the other reasons. */
+    case EventEnded = 'event_ended';
+
     /** The event has started (or its start is unknown); it wins over a passed deadline. */
     case EventStarted = 'event_started';
 

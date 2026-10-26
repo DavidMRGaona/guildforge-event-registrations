@@ -51,6 +51,7 @@ final readonly class EloquentEventRegistrationConfigRepository implements EventR
         // Return default config with module settings (disabled by default)
         $maxParticipants = config('modules.settings.event-registrations.default_max_participants');
         $maxWaitingList = config('modules.settings.event-registrations.default_max_waiting_list');
+        $event = $this->eventDates($eventId);
 
         return new EventRegistrationConfig(
             eventId: $eventId,
@@ -59,7 +60,8 @@ final readonly class EloquentEventRegistrationConfigRepository implements EventR
             waitingListEnabled: (bool) config('modules.settings.event-registrations.default_waiting_list_enabled', true),
             maxWaitingList: $maxWaitingList !== null ? (int) $maxWaitingList : null,
             requiresConfirmation: (bool) config('modules.settings.event-registrations.default_requires_confirmation', false),
-            eventStartsAt: $this->eventStartsAt($eventId),
+            eventStartsAt: $event?->start_date->toDateTimeImmutable(),
+            eventEndsAt: $event?->end_date->toDateTimeImmutable(),
         );
     }
 
@@ -79,6 +81,8 @@ final readonly class EloquentEventRegistrationConfigRepository implements EventR
 
     private function toEntity(EventRegistrationConfigModel $model): EventRegistrationConfig
     {
+        $event = $this->eventDates($model->event_id);
+
         return new EventRegistrationConfig(
             eventId: $model->event_id,
             registrationEnabled: $model->registration_enabled,
@@ -105,19 +109,16 @@ final readonly class EloquentEventRegistrationConfigRepository implements EventR
             updatedAt: $model->updated_at !== null
                 ? DateTimeImmutable::createFromMutable($model->updated_at->toDateTime())
                 : null,
-            eventStartsAt: $this->eventStartsAt($model->event_id),
+            eventStartsAt: $event?->start_date->toDateTimeImmutable(),
+            eventEndsAt: $event?->end_date->toDateTimeImmutable(),
         );
     }
 
     /**
-     * Start of the core event, or null when the event does not exist.
+     * The core event, with only its dates, or null when it does not exist.
      */
-    private function eventStartsAt(string $eventId): ?DateTimeImmutable
+    private function eventDates(string $eventId): ?EventModel
     {
-        $event = EventModel::query()->find($eventId, ['id', 'start_date']);
-
-        return $event !== null
-            ? DateTimeImmutable::createFromMutable($event->start_date->toDateTime())
-            : null;
+        return EventModel::query()->find($eventId, ['id', 'start_date', 'end_date']);
     }
 }

@@ -57,15 +57,16 @@ final class CancellationWindowFrontendTest extends ModuleTestCase
             '/if \(hasActiveRegistration\.value\) \{\s*if \(canCancel\.value\) return t\(\'eventRegistrations\.cancelRegistration\'\);\s*return cancellationClosedText\.value;\s*\}/',
             $source,
         );
-        $this->assertStringContainsString("config.value?.cancellation_closed_reason === 'deadline_passed'", $source);
-        $this->assertStringContainsString("t('eventRegistrationsCancellation.closed.deadlinePassed')", $source);
-        $this->assertStringContainsString("t('eventRegistrationsCancellation.closed.eventStarted')", $source);
+        $this->assertMatchesRegularExpression(
+            "/const CANCELLATION_CLOSED_KEYS: Record<CancellationClosedReason, string> = \\{\\s*event_ended: 'eventRegistrationsCancellation\\.closed\\.eventEnded',\\s*event_started: 'eventRegistrationsCancellation\\.closed\\.eventStarted',\\s*deadline_passed: 'eventRegistrationsCancellation\\.closed\\.deadlinePassed',\\s*\\};/",
+            $source,
+        );
 
         foreach (['es', 'en'] as $locale) {
             $translations = file_get_contents(self::MODULE_ROOT."/resources/js/locales/{$locale}.ts");
             $this->assertIsString($translations);
             $this->assertMatchesRegularExpression(
-                '/eventRegistrationsCancellation: \{\s*closed: \{\s*eventStarted:[^}]*deadlinePassed:/s',
+                '/eventRegistrationsCancellation: \{\s*closed: \{\s*eventEnded:[^}]*eventStarted:[^}]*deadlinePassed:/s',
                 $translations,
             );
         }

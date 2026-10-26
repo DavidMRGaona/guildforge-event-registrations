@@ -1,7 +1,7 @@
 export type RegistrationState = 'pending' | 'confirmed' | 'waiting_list' | 'cancelled' | 'rejected';
 
-// The start of the event wins over a passed deadline
-export type CancellationClosedReason = 'event_started' | 'deadline_passed';
+// The end of the event wins over its start, and the start over a passed deadline
+export type CancellationClosedReason = 'event_ended' | 'event_started' | 'deadline_passed';
 
 export interface RegistrationConfig {
     event_id: string;

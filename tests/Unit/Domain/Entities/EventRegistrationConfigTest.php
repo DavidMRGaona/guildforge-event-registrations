@@ -30,6 +30,7 @@ final class EventRegistrationConfigTest extends TestCase
             eventStartsAt: array_key_exists('eventStartsAt', $overrides)
                 ? $overrides['eventStartsAt']
                 : new DateTimeImmutable('+1 week'),
+            eventEndsAt: $overrides['eventEndsAt'] ?? null,
         );
     }
 
@@ -346,5 +347,42 @@ final class EventRegistrationConfigTest extends TestCase
             CancellationClosedReason::EventStarted,
             $config->cancellationClosedReason(new DateTimeImmutable('2000-01-01 00:00:00')),
         );
+    }
+
+    public function test_the_event_has_not_ended_just_before_its_end(): void
+    {
+        $config = $this->createConfig([
+            'eventStartsAt' => new DateTimeImmutable('2030-04-12 10:00:00'),
+            'eventEndsAt' => new DateTimeImmutable('2030-04-12 14:00:00'),
+        ]);
+
+        $this->assertFalse($config->hasEventEnded(new DateTimeImmutable('2030-04-12 13:59:59')));
+        $this->assertTrue($config->hasEventEnded(new DateTimeImmutable('2030-04-12 14:00:00')));
+    }
+
+    public function test_an_event_whose_end_is_unknown_never_counts_as_ended(): void
+    {
+        $config = $this->createConfig(['eventStartsAt' => new DateTimeImmutable('2030-04-12 10:00:00')]);
+
+        $this->assertFalse($config->hasEventEnded(new DateTimeImmutable('2031-01-01 00:00:00')));
+    }
+
+    public function test_the_end_is_the_closed_reason_once_the_event_has_ended_even_after_the_deadline(): void
+    {
+        $config = $this->createConfig([
+            'eventStartsAt' => new DateTimeImmutable('2030-04-12 10:00:00'),
+            'eventEndsAt' => new DateTimeImmutable('2030-04-12 14:00:00'),
+            'cancellationDeadline' => new DateTimeImmutable('2030-04-12 08:00:00'),
+        ]);
+
+        $this->assertSame(
+            CancellationClosedReason::EventStarted,
+            $config->cancellationClosedReason(new DateTimeImmutable('2030-04-12 13:59:59')),
+        );
+        $this->assertSame(
+            CancellationClosedReason::EventEnded,
+            $config->cancellationClosedReason(new DateTimeImmutable('2030-04-12 14:00:00')),
+        );
+        $this->assertFalse($config->canCancelNow(new DateTimeImmutable('2030-04-12 14:00:00')));
     }
 }
