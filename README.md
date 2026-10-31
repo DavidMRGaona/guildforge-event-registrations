@@ -14,11 +14,12 @@ Inscripciones a los eventos de GuildForge: aforo, lista de espera con promoción
 - **Emails**: inscripción recibida (con la posición si queda en lista de espera), confirmación desde el panel, plaza liberada y cancelación; aviso opcional a un email del organizador. No se envían emails de eventos ya terminados.
 - **Exportación**: descarga en CSV de las inscripciones de un evento.
 - **Widget del dashboard**: totales de inscripciones confirmadas, en lista de espera y pendientes.
+- **Encuestas**: con el módulo de encuestas instalado, cada evento con inscripciones se puede encuestar al terminar, y los inscritos confirmados la responden desde la ficha. Ver [Encuestas](#encuestas).
 - **Zonas horarias**: las fechas se guardan en la zona de almacenamiento del sitio (UTC cuando el sitio lo usa) y todo lo que ve una persona (emails, CSV, panel) se muestra en la zona de visualización del sitio (por defecto Europe/Madrid).
 
 ## Requisitos
 
-- GuildForge core `^3.22` (almacenamiento de fechas en UTC y zona horaria de visualización)
+- GuildForge core `^3.29` (almacenamiento de fechas en UTC, zona horaria de visualización y contrato de encuestas)
 - PHP >= 8.5, Laravel >= 13, Filament 5
 
 El core rechaza el módulo si no se cumplen (`module.json` → `requires`).
@@ -156,6 +157,7 @@ Son rutas web (sesión y CSRF) que responden JSON; el módulo no registra rutas 
 | `POST` | `/eventos/{eventId}/inscripcion` | Inscribirse (requiere sesión; `notes`, `form_data`) |
 | `DELETE` | `/eventos/{eventId}/inscripcion` | Cancelar la inscripción (requiere sesión) |
 | `GET` | `/mis-inscripciones` | Inscripciones del usuario, de la más reciente a la más antigua (requiere sesión) |
+| `GET` | `/eventos/{eventId}/encuestas` | Enlaces a las encuestas del evento para el usuario (requiere sesión): `{manageUrl, surveys: [{title, url, action}]}` o `null`; ver [Encuestas](#encuestas) |
 
 Las cuatro rutas `/eventos/{eventId}/inscripcion…` responden 404 con «Evento no encontrado» si el evento no existe o no está publicado, también a quien ya tenía una inscripción en él (las tres que exigen sesión responden antes 401 a un visitante sin sesión). Las acciones del panel no tienen esa restricción.
 
@@ -175,6 +177,16 @@ const response = await fetch(`/eventos/${eventId}/inscripcion`, {
     body: JSON.stringify({ notes: 'Comentarios opcionales' }),
 });
 ```
+
+## Encuestas
+
+Con el módulo de encuestas instalado, los eventos publicados con inscripciones activadas se pueden encuestar (tipo de sujeto `event`). El módulo habla con él solo a través del contrato del core (`SurveySubjectSourceInterface`); sin él no pasa nada.
+
+- **Quién responde:** las inscripciones confirmadas de cuentas no anonimizadas. Los pendientes, la lista de espera, los cancelados y los rechazados quedan fuera.
+- **Quién las gestiona:** quien tenga `registrations.manage_surveys` (y los administradores). Ver lo que opinan los asistentes no es editar el evento, así que el permiso es propio y no se da a ningún rol por defecto. Esas personas figuran como organizadoras de la encuesta: la ven en su lista y, si el tipo «Evento» está configurado para preguntar al terminar, reciben el aviso.
+- **Fin del evento:** los eventos no tienen un momento de fin propio, así que `event-registrations:announce-ended-events` (cada 15 minutos) anuncia una sola vez cada evento cuya fecha de fin ya pasó y que tiene alguna inscripción confirmada. Compara instantes, así que el cambio de hora no adelanta ningún fin. La migración que lo introduce marca como ya anunciados los eventos terminados antes de instalarla, para que el historial no genere encuestas.
+- **Cancelación:** borrar un evento antes de su fin avisa al módulo de encuestas, que descarta las encuestas que aún no se habían abierto.
+- **Ficha del evento:** debajo del botón de inscripción, quien gestiona las encuestas ve «Encuestas del evento» y cada inscrito los enlaces para responder o ver los resultados de las suyas.
 
 ## Eventos de dominio
 
@@ -199,6 +211,7 @@ Los administradores tienen todos los permisos. Ninguno se propone a `editor`, qu
 | `registrations.delete` | Eliminar inscripciones | ninguno |
 | `registrations.manage_config` | Gestionar la configuración de inscripciones | ninguno |
 | `registrations.export` | Exportar las inscripciones de un evento a CSV | ninguno |
+| `registrations.manage_surveys` | Gestionar las encuestas de los eventos en la web (prepararlas, enviarlas y ver sus resultados) | ninguno |
 
 ## Arquitectura
 

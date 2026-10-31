@@ -38,7 +38,7 @@ final class ProfilePageTest extends ModuleTestCase
             );
     }
 
-    public function test_the_registration_button_keeps_its_slot_on_the_event_page(): void
+    public function test_the_registration_button_and_the_survey_links_keep_their_slots_on_the_event_page(): void
     {
         $slots = $this->moduleSlots();
 
@@ -47,6 +47,13 @@ final class ProfilePageTest extends ModuleTestCase
             'component' => 'components/RegistrationButton.vue',
             'module' => 'event-registrations',
             'order' => 0,
+            'props' => [],
+            'dataKeys' => ['event'],
+        ], [
+            'slot' => 'event-detail-actions',
+            'component' => 'components/EventSurveyLinks.vue',
+            'module' => 'event-registrations',
+            'order' => 10,
             'props' => [],
             'dataKeys' => ['event'],
         ]], $this->registrationsOf('event-registrations', $slots['event-detail-actions'] ?? []));

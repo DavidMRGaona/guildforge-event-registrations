@@ -6,6 +6,7 @@ namespace Modules\EventRegistrations;
 
 use App\Application\Modules\DTOs\PermissionDTO;
 use App\Application\Modules\DTOs\SlotRegistrationDTO;
+use App\Application\Surveys\Contracts\SurveySubjectSourceInterface;
 use App\Filament\Resources\EventResource;
 use App\Infrastructure\Persistence\Eloquent\Models\EventModel;
 use App\Modules\ModuleServiceProvider;
@@ -24,6 +25,7 @@ use Modules\EventRegistrations\Application\Services\PublishedEventCheckerInterfa
 use Modules\EventRegistrations\Application\Services\RegistrationNotificationServiceInterface;
 use Modules\EventRegistrations\Application\Services\RegistrationQueryServiceInterface;
 use Modules\EventRegistrations\Application\Services\WaitingListServiceInterface;
+use Modules\EventRegistrations\Console\Commands\AnnounceEndedEventsCommand;
 use Modules\EventRegistrations\Console\Commands\SendEventRemindersCommand;
 use Modules\EventRegistrations\Domain\Events\RegistrationConfirmed;
 use Modules\EventRegistrations\Domain\Events\RegistrationRejected;
@@ -48,6 +50,8 @@ use Modules\EventRegistrations\Infrastructure\Services\RegistrationNotificationS
 use Modules\EventRegistrations\Infrastructure\Services\RegistrationQueryService;
 use Modules\EventRegistrations\Infrastructure\Services\SystemClock;
 use Modules\EventRegistrations\Infrastructure\Services\WaitingListService;
+use Modules\EventRegistrations\Infrastructure\Surveys\EventSurveySubjectSource;
+use Modules\EventRegistrations\Listeners\AnnounceDeletedEventCancellation;
 use Modules\EventRegistrations\Listeners\PromoteFromWaitingListOnCancellation;
 use Modules\EventRegistrations\Listeners\SendRegistrationCancelledEmail;
 use Modules\EventRegistrations\Listeners\SendRegistrationConfirmedEmail;
@@ -133,6 +137,7 @@ final class EventRegistrationsServiceProvider extends ModuleServiceProvider
         if ($this->app->runningInConsole()) {
             $this->commands([
                 SendEventRemindersCommand::class,
+                AnnounceEndedEventsCommand::class,
             ]);
         }
     }
@@ -143,6 +148,11 @@ final class EventRegistrationsServiceProvider extends ModuleServiceProvider
             // Does nothing until the reminder is enabled in the module settings
             $schedule->command('event-registrations:send-reminders')
                 ->hourly()
+                ->withoutOverlapping(10);
+
+            // Events have no "ended" signal of their own: the surveys module learns it from here
+            $schedule->command('event-registrations:announce-ended-events')
+                ->everyFifteenMinutes()
                 ->withoutOverlapping(10);
         });
     }
@@ -248,6 +258,9 @@ final class EventRegistrationsServiceProvider extends ModuleServiceProvider
             RegistrationRejected::class,
             SendRegistrationRejectedEmail::class
         );
+
+        // Events are core records: a deletion before the end cancels them as survey subjects
+        EventModel::deleted(fn (EventModel $event) => $this->app->make(AnnounceDeletedEventCancellation::class)->handle($event));
     }
 
     /**
@@ -322,7 +335,24 @@ final class EventRegistrationsServiceProvider extends ModuleServiceProvider
                 group: __('event-registrations::messages.navigation'),
                 module: 'event-registrations',
             ),
+            // Seeing what attendees think is not editing the event: never handed out by default
+            new PermissionDTO(
+                name: EventSurveySubjectSource::MANAGE_PERMISSION,
+                label: __('event-registrations::messages.permissions.manage_surveys'),
+                group: __('event-registrations::messages.navigation'),
+                module: 'event-registrations',
+            ),
         ];
+    }
+
+    /**
+     * Events with registrations as survey subjects, for the surveys module when it is installed.
+     *
+     * @return array<class-string<SurveySubjectSourceInterface>>
+     */
+    public function registerSurveySubjectSources(): array
+    {
+        return [EventSurveySubjectSource::class];
     }
 
     /**
@@ -360,6 +390,15 @@ final class EventRegistrationsServiceProvider extends ModuleServiceProvider
                 component: 'components/RegistrationButton.vue',
                 module: $this->moduleName(),
                 order: 0,
+                props: [],
+                dataKeys: ['event'],
+            ),
+            // Links to the event's surveys, below the registration button (empty without a surveys module)
+            new SlotRegistrationDTO(
+                slot: 'event-detail-actions',
+                component: 'components/EventSurveyLinks.vue',
+                module: $this->moduleName(),
+                order: 10,
                 props: [],
                 dataKeys: ['event'],
             ),

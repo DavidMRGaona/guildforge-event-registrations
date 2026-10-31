@@ -23,4 +23,17 @@ final class PermissionSuggestionsTest extends TestCase
 
         $this->assertSame([], array_values(array_map(fn (PermissionDTO $permission): string => $permission->name, $suggested)));
     }
+
+    /**
+     * Seeing what attendees think of an event is not editing it: event surveys have their own
+     * permission, handed to a role by the association, never to anyone by default.
+     */
+    public function test_event_surveys_have_a_permission_of_their_own_without_a_suggested_role(): void
+    {
+        $permissions = (new EventRegistrationsServiceProvider($this->app))->registerPermissions();
+        $surveys = array_values(array_filter($permissions, fn (PermissionDTO $permission): bool => $permission->name === 'registrations.manage_surveys'));
+
+        $this->assertCount(1, $surveys);
+        $this->assertSame([], $surveys[0]->roles);
+    }
 }

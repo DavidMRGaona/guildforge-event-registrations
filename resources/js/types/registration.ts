@@ -139,3 +139,17 @@ export function isWaitingState(state: RegistrationState): boolean {
 export function isFinalState(state: RegistrationState): boolean {
     return state === 'cancelled' || state === 'rejected';
 }
+
+/** A survey of the event one person can reach, through the core's survey links contract */
+export interface EventSurveyLink {
+    title: string;
+    url: string;
+    action: 'respond' | 'view_results';
+}
+
+/** The event's surveys for the person viewing it: null without a surveys module or nothing to link */
+export interface EventSurveyLinks {
+    /** The event's surveys page, for whoever manages them */
+    manageUrl: string | null;
+    surveys: EventSurveyLink[];
+}

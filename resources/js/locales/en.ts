@@ -1,4 +1,9 @@
 export default {
+    eventRegistrationsSurveys: {
+        manage: 'Event surveys',
+        respond: 'Answer “{title}”',
+        results: 'Results of “{title}”',
+    },
     eventRegistrationsEligibility: {
         membersOnly: 'Members only',
         membersOnlyNotice: 'Only members of the association can register.',

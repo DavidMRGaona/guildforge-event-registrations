@@ -1,4 +1,9 @@
 export default {
+    eventRegistrationsSurveys: {
+        manage: 'Encuestas del evento',
+        respond: 'Responder «{title}»',
+        results: 'Resultados de «{title}»',
+    },
     eventRegistrationsEligibility: {
         membersOnly: 'Solo para socios',
         membersOnlyNotice: 'Solo pueden inscribirse los socios de la asociación.',
