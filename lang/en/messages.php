@@ -46,6 +46,15 @@ return [
         'confirm_selected' => 'Confirm selected',
         'reject_selected' => 'Reject selected',
         'export' => 'Export',
+        'manage_surveys' => 'Manage event surveys',
+    ],
+
+    // Surveys (through the core's survey subject contract)
+    'surveys' => [
+        'source_label' => 'Event',
+        'attributes' => [
+            'members_only' => 'Members only',
+        ],
     ],
 
     // Bulk actions

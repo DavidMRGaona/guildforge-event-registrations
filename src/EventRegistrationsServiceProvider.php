@@ -6,6 +6,7 @@ namespace Modules\EventRegistrations;
 
 use App\Application\Modules\DTOs\PermissionDTO;
 use App\Application\Modules\DTOs\SlotRegistrationDTO;
+use App\Application\Surveys\Contracts\SurveySubjectSourceInterface;
 use App\Filament\Resources\EventResource;
 use App\Infrastructure\Persistence\Eloquent\Models\EventModel;
 use App\Modules\ModuleServiceProvider;
@@ -48,6 +49,7 @@ use Modules\EventRegistrations\Infrastructure\Services\RegistrationNotificationS
 use Modules\EventRegistrations\Infrastructure\Services\RegistrationQueryService;
 use Modules\EventRegistrations\Infrastructure\Services\SystemClock;
 use Modules\EventRegistrations\Infrastructure\Services\WaitingListService;
+use Modules\EventRegistrations\Infrastructure\Surveys\EventSurveySubjectSource;
 use Modules\EventRegistrations\Listeners\PromoteFromWaitingListOnCancellation;
 use Modules\EventRegistrations\Listeners\SendRegistrationCancelledEmail;
 use Modules\EventRegistrations\Listeners\SendRegistrationConfirmedEmail;
@@ -322,7 +324,24 @@ final class EventRegistrationsServiceProvider extends ModuleServiceProvider
                 group: __('event-registrations::messages.navigation'),
                 module: 'event-registrations',
             ),
+            // Seeing what attendees think is not editing the event: never handed out by default
+            new PermissionDTO(
+                name: EventSurveySubjectSource::MANAGE_PERMISSION,
+                label: __('event-registrations::messages.permissions.manage_surveys'),
+                group: __('event-registrations::messages.navigation'),
+                module: 'event-registrations',
+            ),
         ];
+    }
+
+    /**
+     * Events with registrations as survey subjects, for the surveys module when it is installed.
+     *
+     * @return array<class-string<SurveySubjectSourceInterface>>
+     */
+    public function registerSurveySubjectSources(): array
+    {
+        return [EventSurveySubjectSource::class];
     }
 
     /**
