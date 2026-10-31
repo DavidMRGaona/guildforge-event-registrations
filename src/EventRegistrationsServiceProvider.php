@@ -25,6 +25,7 @@ use Modules\EventRegistrations\Application\Services\PublishedEventCheckerInterfa
 use Modules\EventRegistrations\Application\Services\RegistrationNotificationServiceInterface;
 use Modules\EventRegistrations\Application\Services\RegistrationQueryServiceInterface;
 use Modules\EventRegistrations\Application\Services\WaitingListServiceInterface;
+use Modules\EventRegistrations\Console\Commands\AnnounceEndedEventsCommand;
 use Modules\EventRegistrations\Console\Commands\SendEventRemindersCommand;
 use Modules\EventRegistrations\Domain\Events\RegistrationConfirmed;
 use Modules\EventRegistrations\Domain\Events\RegistrationRejected;
@@ -135,6 +136,7 @@ final class EventRegistrationsServiceProvider extends ModuleServiceProvider
         if ($this->app->runningInConsole()) {
             $this->commands([
                 SendEventRemindersCommand::class,
+                AnnounceEndedEventsCommand::class,
             ]);
         }
     }
@@ -145,6 +147,11 @@ final class EventRegistrationsServiceProvider extends ModuleServiceProvider
             // Does nothing until the reminder is enabled in the module settings
             $schedule->command('event-registrations:send-reminders')
                 ->hourly()
+                ->withoutOverlapping(10);
+
+            // Events have no "ended" signal of their own: the surveys module learns it from here
+            $schedule->command('event-registrations:announce-ended-events')
+                ->everyFifteenMinutes()
                 ->withoutOverlapping(10);
         });
     }
