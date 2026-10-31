@@ -51,6 +51,7 @@ use Modules\EventRegistrations\Infrastructure\Services\RegistrationQueryService;
 use Modules\EventRegistrations\Infrastructure\Services\SystemClock;
 use Modules\EventRegistrations\Infrastructure\Services\WaitingListService;
 use Modules\EventRegistrations\Infrastructure\Surveys\EventSurveySubjectSource;
+use Modules\EventRegistrations\Listeners\AnnounceDeletedEventCancellation;
 use Modules\EventRegistrations\Listeners\PromoteFromWaitingListOnCancellation;
 use Modules\EventRegistrations\Listeners\SendRegistrationCancelledEmail;
 use Modules\EventRegistrations\Listeners\SendRegistrationConfirmedEmail;
@@ -257,6 +258,9 @@ final class EventRegistrationsServiceProvider extends ModuleServiceProvider
             RegistrationRejected::class,
             SendRegistrationRejectedEmail::class
         );
+
+        // Events are core records: a deletion before the end cancels them as survey subjects
+        EventModel::deleted(fn (EventModel $event) => $this->app->make(AnnounceDeletedEventCancellation::class)->handle($event));
     }
 
     /**
