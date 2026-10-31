@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Illuminate\Support\Facades\Route;
 use Modules\EventRegistrations\Http\Controllers\EventRegistrationController;
+use Modules\EventRegistrations\Http\Controllers\EventSurveyLinksController;
 
 /*
 |--------------------------------------------------------------------------
@@ -33,6 +34,12 @@ Route::prefix('eventos/{eventId}/inscripcion')
                 ->name('destroy');
         });
     });
+
+// The event's surveys for the signed-in person (links from the event page)
+Route::get('eventos/{eventId}/encuestas', EventSurveyLinksController::class)
+    ->whereUuid('eventId')
+    ->middleware('auth')
+    ->name('event-registrations.surveys');
 
 // User's registrations
 Route::middleware('auth')

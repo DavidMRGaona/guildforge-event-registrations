@@ -393,6 +393,15 @@ final class EventRegistrationsServiceProvider extends ModuleServiceProvider
                 props: [],
                 dataKeys: ['event'],
             ),
+            // Links to the event's surveys, below the registration button (empty without a surveys module)
+            new SlotRegistrationDTO(
+                slot: 'event-detail-actions',
+                component: 'components/EventSurveyLinks.vue',
+                module: $this->moduleName(),
+                order: 10,
+                props: [],
+                dataKeys: ['event'],
+            ),
             // "Mis inscripciones" tab of the profile; the section loads GET /mis-inscripciones itself
             new SlotRegistrationDTO(
                 slot: 'profile-sections',
