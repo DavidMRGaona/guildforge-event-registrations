@@ -68,7 +68,7 @@ final readonly class EventSurveySubjectSource implements SurveySubjectSourceInte
             title: $event->title,
             startsAt: DateTimeImmutable::createFromInterface($event->start_date),
             endsAt: $endsAt,
-            organizerIds: $this->holders->usersWhoCan(self::MANAGE_PERMISSION)->map(static fn (UserModel $user): string => (string) $user->id)->all(),
+            organizerIds: array_values($this->holders->usersWhoCan(self::MANAGE_PERMISSION)->map(static fn (UserModel $user): string => (string) $user->id)->all()),
             attributes: [
                 new SurveySubjectAttributeDTO('members_only', __('event-registrations::messages.surveys.attributes.members_only'), (bool) $config?->members_only),
             ],
@@ -84,7 +84,7 @@ final readonly class EventSurveySubjectSource implements SurveySubjectSourceInte
             return SurveyAudienceDTO::empty();
         }
 
-        $userIds = EventRegistrationModel::query()
+        $userIds = array_values(EventRegistrationModel::query()
             ->where('event_id', $event->id)
             ->where('state', RegistrationState::Confirmed->value)
             // An anonymised account keeps only a placeholder address
@@ -92,7 +92,7 @@ final readonly class EventSurveySubjectSource implements SurveySubjectSourceInte
             ->orderBy('created_at')
             ->pluck('user_id')
             ->map(static fn (mixed $id): string => (string) $id)
-            ->all();
+            ->all());
 
         return new SurveyAudienceDTO(userIds: $userIds, guests: []);
     }
