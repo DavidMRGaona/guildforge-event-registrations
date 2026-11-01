@@ -7,6 +7,7 @@ namespace Modules\EventRegistrations;
 use App\Application\Modules\DTOs\PermissionDTO;
 use App\Application\Modules\DTOs\SlotRegistrationDTO;
 use App\Application\Surveys\Contracts\SurveySubjectSourceInterface;
+use App\Filament\Forms\Components\EndSurveyField;
 use App\Filament\Resources\EventResource;
 use App\Infrastructure\Persistence\Eloquent\Models\EventModel;
 use App\Modules\ModuleServiceProvider;
@@ -206,7 +207,8 @@ final class EventRegistrationsServiceProvider extends ModuleServiceProvider
     }
 
     /**
-     * Register Filament extensions: RelationManagers for config and registrations.
+     * Register Filament extensions: RelationManagers for config and registrations, and the end
+     * survey field in the event form.
      */
     private function registerFilamentExtensions(): void
     {
@@ -221,6 +223,12 @@ final class EventRegistrationsServiceProvider extends ModuleServiceProvider
         EventResource::extendRelations([
             RegistrationConfigRelationManager::RELATION_KEY => RegistrationConfigRelationManager::class,
             RegistrationsRelationManager::RELATION_KEY => RegistrationsRelationManager::class,
+        ]);
+
+        // Which survey goes out when the event ends; hidden without the surveys module. Keyed so
+        // booting again replaces it instead of adding a second one
+        EventResource::extendFormSections([
+            'event-registrations.end-survey' => EndSurveyField::forSubject(EventSurveySubjectSource::TYPE)->columnSpanFull(),
         ]);
     }
 
