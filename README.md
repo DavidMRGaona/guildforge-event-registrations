@@ -19,7 +19,7 @@ Inscripciones a los eventos de GuildForge: aforo, lista de espera con promoción
 
 ## Requisitos
 
-- GuildForge core `^3.29` (almacenamiento de fechas en UTC, zona horaria de visualización y contrato de encuestas)
+- GuildForge core `^3.31` (almacenamiento de fechas en UTC, zona horaria de visualización, contrato de encuestas y campo «Encuesta al terminar»)
 - PHP >= 8.5, Laravel >= 13, Filament 5
 
 El core rechaza el módulo si no se cumplen (`module.json` → `requires`).
@@ -187,6 +187,7 @@ Con el módulo de encuestas instalado, los eventos publicados con inscripciones 
 - **Fin del evento:** los eventos no tienen un momento de fin propio, así que `event-registrations:announce-ended-events` (cada 15 minutos) anuncia una sola vez cada evento cuya fecha de fin ya pasó y que tiene alguna inscripción confirmada. Compara instantes, así que el cambio de hora no adelanta ningún fin. La migración que lo introduce marca como ya anunciados los eventos terminados antes de instalarla, para que el historial no genere encuestas.
 - **Cancelación:** borrar un evento antes de su fin avisa al módulo de encuestas, que descarta las encuestas que aún no se habían abierto.
 - **Ficha del evento:** debajo del botón de inscripción, quien gestiona las encuestas ve «Encuestas del evento» y cada inscrito los enlaces para responder o ver los resultados de las suyas.
+- **Encuesta al terminar:** el formulario del evento en el panel lleva el campo «Encuesta al terminar» del core, para elegir la plantilla del tipo (por defecto), otra plantilla, una encuesta propia o ninguna. Sin el módulo de encuestas no aparece. Elige quien gestiona las encuestas del evento o quien tiene `surveys.manage`.
 
 ## Eventos de dominio
 
