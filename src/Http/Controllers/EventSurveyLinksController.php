@@ -44,6 +44,8 @@ final class EventSurveyLinksController extends Controller
                 'url' => $link->url,
                 'action' => $link->action->value,
             ], $links->surveys),
+            // The help guide the surveys module picks for this person
+            'guideId' => $links->guideId,
         ]]);
     }
 }

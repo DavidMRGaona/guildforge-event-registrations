@@ -152,4 +152,6 @@ export interface EventSurveyLinks {
     /** The event's surveys page, for whoever manages them */
     manageUrl: string | null;
     surveys: EventSurveyLink[];
+    /** The help guide on these surveys for this person, from the surveys module */
+    guideId: string | null;
 }

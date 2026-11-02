@@ -2,6 +2,7 @@
 import { computed, onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { usePage } from '@inertiajs/vue3';
+import HelpLink from '@/components/knowledge/HelpLink.vue';
 import type { EventSurveyLinks } from '../types/registration';
 
 interface EventProp {
@@ -70,5 +71,6 @@ onMounted(async () => {
                     : t('eventRegistrationsSurveys.results', { title: survey.title })
             }}
         </a>
+        <HelpLink v-if="links.guideId" :guide="links.guideId" class="self-center" />
     </div>
 </template>

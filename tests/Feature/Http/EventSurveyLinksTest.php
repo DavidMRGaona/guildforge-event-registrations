@@ -46,6 +46,7 @@ final class EventSurveyLinksTest extends ModuleTestCase
                 new SurveyLinkDTO('Valoración del evento', 'https://example.com/encuestas/1', SurveyLinkAction::Respond),
                 new SurveyLinkDTO('Encuesta anterior', 'https://example.com/encuestas/2', SurveyLinkAction::ViewResults),
             ],
+            guideId: 'surveys.organizer-end-survey',
         ));
 
         $this->actingAs($user)->getJson($this->url($event->id))
@@ -56,6 +57,7 @@ final class EventSurveyLinksTest extends ModuleTestCase
                     ['title' => 'Valoración del evento', 'url' => 'https://example.com/encuestas/1', 'action' => 'respond'],
                     ['title' => 'Encuesta anterior', 'url' => 'https://example.com/encuestas/2', 'action' => 'view_results'],
                 ],
+                'guideId' => 'surveys.organizer-end-survey',
             ]]);
 
         $this->assertSame([['event', $event->id, $user->id]], $this->asked->getArrayCopy());
