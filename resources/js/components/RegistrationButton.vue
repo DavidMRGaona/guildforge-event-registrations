@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { TriangleAlert } from '@lucide/vue';
 import LoadingSpinner from '@/components/ui/LoadingSpinner.vue';
+import HelpLink from '@/components/knowledge/HelpLink.vue';
 import { ref, computed, onMounted, useId } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { Link, usePage } from '@inertiajs/vue3';
 import { csrfHeaders, isCsrfFailure } from '@/utils/csrf';
 import { useVerificationGate } from '@/composables/useVerificationGate';
+import { useKnowledgeVisibility } from '@/composables/useKnowledgeVisibility';
 import type {
     CancellationClosedReason,
     RegistrationConfig,
@@ -62,6 +64,9 @@ const isRegistrationPeriodPassed = computed(() => {
 
 const { t } = useI18n();
 const gate = useVerificationGate();
+// The help link sits on a line of its own: only rendered when the guide is there for this person
+const HELP_GUIDE = 'event-registrations.sign-up';
+const { isVisible: isGuideVisible } = useKnowledgeVisibility();
 // Unique per instance: the reason the button is disabled while the email is not verified
 const verificationNoticeId = useId();
 
@@ -467,6 +472,11 @@ onMounted(async () => {
                 · {{ config.current_waiting_list }}
                 {{ $t('eventRegistrations.states.waitingList').toLowerCase() }}
             </template>
+        </div>
+
+        <!-- Help on registering, for whoever may see the guide -->
+        <div v-if="isGuideVisible(HELP_GUIDE)" class="mt-2 flex justify-center">
+            <HelpLink :guide="HELP_GUIDE" />
         </div>
 
         <!-- Cancel confirmation modal -->

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\EventRegistrations\Filament\RelationManagers;
 
 use App\Application\Services\TimezoneServiceInterface;
+use App\Filament\Concerns\HasKnowledgeGuideAction;
 use App\Infrastructure\Persistence\Eloquent\Models\EventModel;
 use Filament\Actions\Action;
 use Filament\Actions\BulkAction;
@@ -32,6 +33,8 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 final class RegistrationsRelationManager extends RelationManager
 {
+    use HasKnowledgeGuideAction;
+
     /**
      * Key of the tab on the event edit page, used in its `?relation=` query string.
      */
@@ -214,14 +217,15 @@ final class RegistrationsRelationManager extends RelationManager
                     ->label(__('event-registrations::messages.fields.state'))
                     ->options(RegistrationState::options()),
             ])
-            ->headerActions([
+            ->headerActions(array_filter([
                 Action::make('export')
                     ->label(__('event-registrations::messages.actions.export'))
                     ->icon('heroicon-o-arrow-down-tray')
                     ->color('gray')
                     ->visible(fn (): bool => auth()->user()?->can('export', EventRegistrationModel::class) ?? false)
                     ->action(fn (): StreamedResponse => $this->exportCsv()),
-            ])
+                $this->knowledgeGuideAction('event-registrations.panel.manage-registrations'),
+            ]))
             ->recordActions([
                 Action::make('confirm')
                     ->label(__('event-registrations::messages.actions.confirm'))
