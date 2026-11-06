@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\EventRegistrations\Filament\RelationManagers;
 
+use App\Filament\Concerns\HasKnowledgeGuideAction;
 use App\Infrastructure\Persistence\Eloquent\Models\EventModel;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\TextInput;
@@ -27,6 +28,7 @@ use Modules\EventRegistrations\Filament\Concerns\CapsDatesAtEventStart;
 final class RegistrationConfigRelationManager extends RelationManager
 {
     use CapsDatesAtEventStart;
+    use HasKnowledgeGuideAction;
 
     /**
      * Key of the tab on the event edit page, used in its `?relation=` query string.
@@ -95,6 +97,8 @@ final class RegistrationConfigRelationManager extends RelationManager
 
         return [
             Section::make(__('event-registrations::messages.config.general'))
+                // The tab has no page header of its own: its help button goes in the first section
+                ->afterHeader(array_filter([$this->knowledgeGuideAction('event-registrations.panel.configure')]))
                 ->schema([
                     Toggle::make('registration_enabled')
                         ->label(__('event-registrations::messages.config.registration_enabled'))

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Calendar } from '@lucide/vue';
 import LoadingSpinner from '@/components/ui/LoadingSpinner.vue';
+import HelpLink from '@/components/knowledge/HelpLink.vue';
 import { computed, nextTick, onMounted, ref } from 'vue';
 import { Link } from '@inertiajs/vue3';
 import { useI18n } from 'vue-i18n';
@@ -177,6 +178,7 @@ onMounted(() => {
             class="text-lg font-semibold text-base-primary focus:outline-none"
         >
             {{ t('eventRegistrationsProfile.title') }}
+            <HelpLink guide="event-registrations.my-registrations" class="ml-1 align-middle" />
         </h2>
 
         <!-- Always mounted, so screen readers announce the text when it changes -->
