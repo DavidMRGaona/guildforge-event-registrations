@@ -65,6 +65,18 @@ final class EventRegistrationsPanelTest extends ModuleTestCase
         $this->assertSame(12, $config->max_participants);
     }
 
+    public function test_the_config_tab_shows_a_stored_maximum_of_zero_as_no_limit_and_saves_it(): void
+    {
+        EventRegistrationConfigModel::create(['event_id' => $this->event->id, 'registration_enabled' => true, 'max_participants' => 0]);
+
+        Livewire::test(RegistrationConfigRelationManager::class, ['ownerRecord' => $this->event, 'pageClass' => EditEvent::class])
+            ->assertSet('configData.max_participants', null)
+            ->call('save')
+            ->assertHasNoErrors();
+
+        $this->assertNull(EventRegistrationConfigModel::query()->findOrFail($this->event->id)->max_participants);
+    }
+
     public function test_registrations_relation_manager_renders_when_registration_is_enabled(): void
     {
         EventRegistrationConfigModel::create(['event_id' => $this->event->id, 'registration_enabled' => true]);

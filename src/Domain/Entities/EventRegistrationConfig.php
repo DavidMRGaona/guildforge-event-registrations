@@ -171,11 +171,21 @@ final class EventRegistrationConfig
     }
 
     /**
-     * Check if the event has a participant limit.
+     * Check if the event has a participant limit. An empty maximum and a maximum of 0 both
+     * mean no limit.
      */
     public function hasParticipantLimit(): bool
     {
         return $this->maxParticipants !== null && $this->maxParticipants > 0;
+    }
+
+    /**
+     * The participant limit, or null when the event has none (empty or 0). Capacity checks use
+     * this, never maxParticipants(), so 0 is read the same way everywhere.
+     */
+    public function participantLimit(): ?int
+    {
+        return $this->hasParticipantLimit() ? $this->maxParticipants : null;
     }
 
     /**
