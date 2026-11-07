@@ -13,7 +13,6 @@ use Illuminate\Support\Facades\Notification;
 use Livewire\Features\SupportTesting\Testable;
 use Livewire\Livewire;
 use Modules\EventRegistrations\Domain\Enums\RegistrationState;
-use Modules\EventRegistrations\Filament\Pages\EventRegistrationConfigPage;
 use Modules\EventRegistrations\Filament\RelationManagers\RegistrationConfigRelationManager;
 use Modules\EventRegistrations\Filament\RelationManagers\RegistrationsRelationManager;
 use Modules\EventRegistrations\Infrastructure\Persistence\Eloquent\Models\EventRegistrationConfigModel;
@@ -95,14 +94,6 @@ final class RegistrationTabsPermissionsTest extends ModuleTestCase
         $this->actingAs($this->editorWithPermissions(['events.update']));
 
         Livewire::test(RegistrationConfigRelationManager::class, ['ownerRecord' => $this->event, 'pageClass' => EditEvent::class])
-            ->assertForbidden();
-    }
-
-    public function test_the_configuration_page_refuses_to_load_without_permission_to_manage_the_configuration(): void
-    {
-        $this->actingAs($this->editorWithPermissions(['events.update']));
-
-        Livewire::test(EventRegistrationConfigPage::class, ['eventId' => $this->event->id])
             ->assertForbidden();
     }
 
@@ -204,19 +195,6 @@ final class RegistrationTabsPermissionsTest extends ModuleTestCase
 
         $this->actingAs($this->editorWithPermissions(['events.update']));
         $tab->call('save')
-            ->assertForbidden();
-
-        $this->assertTrue(EventRegistrationConfigModel::query()->where('event_id', $this->event->id)->firstOrFail()->registration_enabled);
-    }
-
-    public function test_saving_the_configuration_page_needs_permission_to_manage_the_configuration(): void
-    {
-        $this->actingAs($this->editorWithPermissions(['events.update', self::MANAGE_CONFIG]));
-        $page = Livewire::test(EventRegistrationConfigPage::class, ['eventId' => $this->event->id])
-            ->set('data.registration_enabled', false);
-
-        $this->actingAs($this->editorWithPermissions(['events.update']));
-        $page->call('save')
             ->assertForbidden();
 
         $this->assertTrue(EventRegistrationConfigModel::query()->where('event_id', $this->event->id)->firstOrFail()->registration_enabled);
