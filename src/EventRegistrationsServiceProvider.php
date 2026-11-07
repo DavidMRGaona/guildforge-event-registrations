@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\EventRegistrations;
 
+use App\Application\Calendar\Contracts\CalendarAttendanceSourceInterface;
 use App\Application\Modules\DTOs\PermissionDTO;
 use App\Application\Modules\DTOs\SlotRegistrationDTO;
 use App\Application\Surveys\Contracts\SurveySubjectSourceInterface;
@@ -40,6 +41,7 @@ use Modules\EventRegistrations\Filament\Pages\EventRegistrationConfigPage;
 use Modules\EventRegistrations\Filament\RelationManagers\RegistrationConfigRelationManager;
 use Modules\EventRegistrations\Filament\RelationManagers\RegistrationsRelationManager;
 use Modules\EventRegistrations\Filament\Widgets\RegistrationStatsWidget;
+use Modules\EventRegistrations\Infrastructure\Calendar\EventAttendanceSource;
 use Modules\EventRegistrations\Infrastructure\Persistence\Eloquent\Models\EventRegistrationConfigModel;
 use Modules\EventRegistrations\Infrastructure\Persistence\Eloquent\Models\EventRegistrationModel;
 use Modules\EventRegistrations\Infrastructure\Persistence\Eloquent\Repositories\EloquentEventRegistrationConfigRepository;
@@ -361,6 +363,16 @@ final class EventRegistrationsServiceProvider extends ModuleServiceProvider
     public function registerSurveySubjectSources(): array
     {
         return [EventSurveySubjectSource::class];
+    }
+
+    /**
+     * The events each person is confirmed in, for the personal calendar (core >= 3.38).
+     *
+     * @return array<class-string<CalendarAttendanceSourceInterface>>
+     */
+    public function registerCalendarAttendanceSources(): array
+    {
+        return [EventAttendanceSource::class];
     }
 
     /**

@@ -19,7 +19,7 @@ Inscripciones a los eventos de GuildForge: aforo, lista de espera con promoción
 
 ## Requisitos
 
-- GuildForge core `^3.31` (almacenamiento de fechas en UTC, zona horaria de visualización, contrato de encuestas y campo «Encuesta al terminar»)
+- GuildForge core `^3.38` (almacenamiento de fechas en UTC, zona horaria de visualización, contrato de encuestas y campo «Encuesta al terminar», calendario personal)
 - PHP >= 8.5, Laravel >= 13, Filament 5
 
 El core rechaza el módulo si no se cumplen (`module.json` → `requires`).

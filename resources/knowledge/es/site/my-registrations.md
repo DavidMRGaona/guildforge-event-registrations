@@ -29,6 +29,10 @@ Pulsa el nombre de un evento para abrir su página. Desde ahí puedes cancelar t
 
 Si aún no te has inscrito en nada, verás «Todavía no te has inscrito en ningún evento.» y el enlace **Ver eventos**.
 
+## Verlas en tu calendario
+
+Los eventos en los que estás **confirmado** salen también en tu calendario personal: en el calendario de la web, activa el filtro de lo que estás inscrito, o suscríbete desde tu perfil con el enlace privado. Las inscripciones pendientes, en lista de espera, rechazadas o canceladas no aparecen.
+
 ## Si algo no sale bien
 
 - **«Para ver tus inscripciones, verifica tu email.»**: pulsa **Ver cómo** y sigue la guía de verificación.
