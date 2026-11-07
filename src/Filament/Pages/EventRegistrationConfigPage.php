@@ -59,7 +59,7 @@ final class EventRegistrationConfigPage extends Page implements HasForms
 
         $this->form->fill([
             'registration_enabled' => $config->isRegistrationEnabled(),
-            'max_participants' => $config->maxParticipants(),
+            'max_participants' => $config->participantLimit(),
             'waiting_list_enabled' => $config->isWaitingListEnabled(),
             'max_waiting_list' => $config->maxWaitingList(),
             'registration_opens_at' => $config->registrationOpensAt()?->format('Y-m-d H:i:s'),

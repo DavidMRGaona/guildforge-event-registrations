@@ -96,7 +96,7 @@ final readonly class WaitingListService implements WaitingListServiceInterface
             return 0;
         }
 
-        $maxParticipants = $config->maxParticipants();
+        $maxParticipants = $config->participantLimit();
         // Each promotion takes one person off the list: never more rounds than people waiting
         $rounds = $this->registrationRepository->countWaitingListByEvent($eventId);
         $promoted = 0;

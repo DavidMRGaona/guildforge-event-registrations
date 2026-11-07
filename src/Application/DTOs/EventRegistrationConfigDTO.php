@@ -44,7 +44,8 @@ final readonly class EventRegistrationConfigDTO
         int $currentWaitingList,
         DateTimeImmutable $now,
     ): self {
-        $maxParticipants = $config->maxParticipants();
+        // A maximum of 0 is no limit: the web gets null, as for an empty maximum
+        $maxParticipants = $config->participantLimit();
         $availableSpots = $maxParticipants !== null
             ? max(0, $maxParticipants - $currentParticipants)
             : PHP_INT_MAX;
@@ -54,7 +55,7 @@ final readonly class EventRegistrationConfigDTO
         return new self(
             eventId: $config->eventId(),
             registrationEnabled: $config->isRegistrationEnabled(),
-            maxParticipants: $config->maxParticipants(),
+            maxParticipants: $maxParticipants,
             waitingListEnabled: $config->isWaitingListEnabled(),
             maxWaitingList: $config->maxWaitingList(),
             registrationOpensAt: $config->registrationOpensAt(),

@@ -313,9 +313,9 @@ final readonly class EventRegistrationService implements EventRegistrationServic
         EventRegistrationConfig $config,
         int $currentConfirmed,
     ): ?RegistrationState {
-        $maxParticipants = $config->maxParticipants();
+        $maxParticipants = $config->participantLimit();
 
-        // No limit - can be confirmed (or pending if requires confirmation)
+        // No limit (empty or 0) - can be confirmed (or pending if requires confirmation)
         if ($maxParticipants === null) {
             return $config->requiresConfirmation()
                 ? RegistrationState::Pending

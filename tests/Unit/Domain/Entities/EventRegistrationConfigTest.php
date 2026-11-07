@@ -95,6 +95,20 @@ final class EventRegistrationConfigTest extends TestCase
         $this->assertFalse($configWithoutLimit->hasParticipantLimit());
     }
 
+    public function test_a_maximum_of_zero_participants_is_no_limit(): void
+    {
+        $config = $this->createConfig(['maxParticipants' => 0]);
+
+        $this->assertFalse($config->hasParticipantLimit());
+        $this->assertNull($config->participantLimit());
+    }
+
+    public function test_the_participant_limit_is_the_positive_maximum(): void
+    {
+        $this->assertSame(10, $this->createConfig(['maxParticipants' => 10])->participantLimit());
+        $this->assertNull($this->createConfig(['maxParticipants' => null])->participantLimit());
+    }
+
     public function test_has_waiting_list_limit_when_max_is_set(): void
     {
         $configWithLimit = $this->createConfig(['maxWaitingList' => 5]);
