@@ -64,7 +64,7 @@ const isRegistrationPeriodPassed = computed(() => {
 
 const { t } = useI18n();
 const gate = useVerificationGate();
-// The help link sits on a line of its own: only rendered when the guide is there for this person
+// The help link ends the count line: only rendered when the guide is there for this person
 const HELP_GUIDE = 'event-registrations.sign-up';
 const { isVisible: isGuideVisible } = useKnowledgeVisibility();
 // Unique per instance: the reason the button is disabled while the email is not verified
@@ -469,24 +469,27 @@ onMounted(async () => {
             {{ $t('eventRegistrationsEligibility.membersOnlyNotice') }}
         </p>
 
-        <!-- Capacity info: out of the limit when there is one -->
-        <div v-if="config && showCapacity" class="mt-2 text-center text-sm text-base-muted">
-            <template v-if="config.max_participants !== null">
-                {{ config.current_participants }} / {{ config.max_participants }}
-                {{ $t('eventRegistrations.stats.confirmed').toLowerCase() }}
-            </template>
-            <template v-else>
-                {{ t('eventRegistrationsCapacity.confirmed', config.current_participants) }}
-            </template>
-            <template v-if="config.waiting_list_enabled && config.current_waiting_list > 0">
-                · {{ config.current_waiting_list }}
-                {{ $t('eventRegistrations.states.waitingList').toLowerCase() }}
-            </template>
-        </div>
-
-        <!-- Help on registering, for whoever may see the guide -->
-        <div v-if="isGuideVisible(HELP_GUIDE)" class="mt-2 flex justify-center">
-            <HelpLink :guide="HELP_GUIDE" />
+        <!-- Capacity info (out of the limit when there is one) and, at its end, the help on
+             registering for whoever may see the guide; the help keeps the line when there is no count -->
+        <div
+            v-if="(config && showCapacity) || isGuideVisible(HELP_GUIDE)"
+            data-testid="registration-capacity"
+            class="mt-2 flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-center text-sm text-base-muted"
+        >
+            <span v-if="config && showCapacity">
+                <template v-if="config.max_participants !== null">
+                    {{ config.current_participants }} / {{ config.max_participants }}
+                    {{ $t('eventRegistrations.stats.confirmed').toLowerCase() }}
+                </template>
+                <template v-else>
+                    {{ t('eventRegistrationsCapacity.confirmed', config.current_participants) }}
+                </template>
+                <template v-if="config.waiting_list_enabled && config.current_waiting_list > 0">
+                    · {{ config.current_waiting_list }}
+                    {{ $t('eventRegistrations.states.waitingList').toLowerCase() }}
+                </template>
+            </span>
+            <HelpLink v-if="isGuideVisible(HELP_GUIDE)" :guide="HELP_GUIDE" />
         </div>
 
         <!-- Cancel confirmation modal -->
