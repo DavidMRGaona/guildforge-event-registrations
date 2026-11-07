@@ -26,6 +26,7 @@ final readonly class UpdateRegistrationConfigDTO
         public bool $membersOnly = false,
         public array $customFields = [],
         public ?string $confirmationMessage = null,
+        public ?string $notificationEmail = null,
     ) {}
 
     /**
@@ -35,6 +36,7 @@ final readonly class UpdateRegistrationConfigDTO
     {
         $maxParticipants = $data['max_participants'] ?? null;
         $maxWaitingList = $data['max_waiting_list'] ?? null;
+        $notificationEmail = $data['notification_email'] ?? null;
 
         return new self(
             eventId: $data['event_id'],
@@ -56,6 +58,8 @@ final readonly class UpdateRegistrationConfigDTO
             membersOnly: (bool) ($data['members_only'] ?? false),
             customFields: $data['custom_fields'] ?? [],
             confirmationMessage: $data['confirmation_message'] ?? null,
+            // An emptied field clears the address: no notices are sent then
+            notificationEmail: is_string($notificationEmail) && trim($notificationEmail) !== '' ? trim($notificationEmail) : null,
         );
     }
 
@@ -80,6 +84,7 @@ final readonly class UpdateRegistrationConfigDTO
             'members_only' => $this->membersOnly,
             'custom_fields' => $this->customFields,
             'confirmation_message' => $this->confirmationMessage,
+            'notification_email' => $this->notificationEmail,
         ];
     }
 }

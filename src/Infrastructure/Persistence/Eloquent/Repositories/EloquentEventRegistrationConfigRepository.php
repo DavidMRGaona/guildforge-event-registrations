@@ -29,6 +29,7 @@ final readonly class EloquentEventRegistrationConfigRepository implements EventR
                 'members_only' => $config->isMembersOnly(),
                 'custom_fields' => $config->customFields(),
                 'confirmation_message' => $config->confirmationMessage(),
+                'notification_email' => $config->notificationEmail(),
             ]
         );
     }
@@ -103,6 +104,7 @@ final readonly class EloquentEventRegistrationConfigRepository implements EventR
             membersOnly: $model->members_only,
             customFields: $model->custom_fields ?? [],
             confirmationMessage: $model->confirmation_message,
+            notificationEmail: $model->notification_email,
             createdAt: $model->created_at !== null
                 ? DateTimeImmutable::createFromMutable($model->created_at->toDateTime())
                 : null,
