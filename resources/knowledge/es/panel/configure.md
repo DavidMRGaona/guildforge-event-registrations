@@ -49,7 +49,7 @@ Ni el cierre ni la fecha límite pueden ser posteriores al inicio del evento: el
 
 ## Cerrar o quitar las inscripciones
 
-Para cerrar las inscripciones antes de tiempo, pon un **Cierre de inscripciones** o desactiva **Inscripciones habilitadas** y guarda. Desactivarlas quita el botón de la web, pero no borra a nadie: los inscritos siguen en la pestaña **Inscripciones**.
+Para cerrar las inscripciones antes de tiempo, pon un **Cierre de inscripciones** o desactiva **Inscripciones habilitadas** y guarda. Desactivarlas quita el botón de la web, pero no borra a nadie: los inscritos siguen en la pestaña **Inscripciones**, y las plazas, las fechas y las opciones se conservan para cuando vuelvas a activarlas.
 
 ## Si algo no sale bien
 

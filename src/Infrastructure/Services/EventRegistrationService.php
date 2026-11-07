@@ -274,22 +274,31 @@ final readonly class EventRegistrationService implements EventRegistrationServic
 
     public function updateConfig(UpdateRegistrationConfigDTO $dto): void
     {
-        $config = new EventRegistrationConfig(
-            eventId: $dto->eventId,
-            registrationEnabled: $dto->registrationEnabled,
-            maxParticipants: $dto->maxParticipants,
-            waitingListEnabled: $dto->waitingListEnabled,
-            maxWaitingList: $dto->maxWaitingList,
-            registrationOpensAt: $dto->registrationOpensAt,
-            registrationClosesAt: $dto->registrationClosesAt,
-            cancellationDeadline: $dto->cancellationDeadline,
-            requiresConfirmation: $dto->requiresConfirmation,
-            requiresPayment: $dto->requiresPayment,
-            membersOnly: $dto->membersOnly,
-            customFields: $dto->customFields,
-            confirmationMessage: $dto->confirmationMessage,
-            notificationEmail: $dto->notificationEmail,
-        );
+        // Only what the change provides, on top of what is stored (or the defaults of a new
+        // config): a form that does not show a field, or hides it, never blanks it
+        $config = $this->configRepository->findByEventOrDefault($dto->eventId);
+
+        $setters = [
+            'registration_enabled' => fn () => $config->setRegistrationEnabled($dto->registrationEnabled),
+            'max_participants' => fn () => $config->setMaxParticipants($dto->maxParticipants),
+            'waiting_list_enabled' => fn () => $config->setWaitingListEnabled($dto->waitingListEnabled),
+            'max_waiting_list' => fn () => $config->setMaxWaitingList($dto->maxWaitingList),
+            'registration_opens_at' => fn () => $config->setRegistrationOpensAt($dto->registrationOpensAt),
+            'registration_closes_at' => fn () => $config->setRegistrationClosesAt($dto->registrationClosesAt),
+            'cancellation_deadline' => fn () => $config->setCancellationDeadline($dto->cancellationDeadline),
+            'requires_confirmation' => fn () => $config->setRequiresConfirmation($dto->requiresConfirmation),
+            'requires_payment' => fn () => $config->setRequiresPayment($dto->requiresPayment),
+            'members_only' => fn () => $config->setMembersOnly($dto->membersOnly),
+            'custom_fields' => fn () => $config->setCustomFields($dto->customFields),
+            'confirmation_message' => fn () => $config->setConfirmationMessage($dto->confirmationMessage),
+            'notification_email' => fn () => $config->setNotificationEmail($dto->notificationEmail),
+        ];
+
+        foreach ($setters as $field => $set) {
+            if ($dto->provides($field)) {
+                $set();
+            }
+        }
 
         $this->configRepository->save($config);
     }
