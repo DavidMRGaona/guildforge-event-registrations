@@ -48,6 +48,7 @@ Según lo que tenga activado tu web:
 - Al inscribirte: «Inscripción confirmada: (evento)», «Inscripción recibida: (evento)» si quedas pendiente, o «Lista de espera: (evento)» con tu posición.
 - Si estabas pendiente y te confirman: «Inscripción confirmada: (evento)».
 - Si pasas de la lista de espera a tener plaza: «¡Plaza disponible en (evento)!».
+- Si la organización rechaza tu inscripción: «Inscripción rechazada: (evento)».
 - Si tienes plaza, unas horas antes del evento te llega un recordatorio: «Recordatorio: (evento), (fecha)».
 
 ## Si algo no sale bien

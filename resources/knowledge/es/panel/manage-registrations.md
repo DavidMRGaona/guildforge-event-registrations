@@ -26,12 +26,12 @@ Arriba, un resumen cuenta las inscripciones de cada estado, por ejemplo «12 Con
 | Acción | Cuándo sale | Qué hace | Correo |
 |---|---|---|---|
 | **Confirmar** | Inscripción **Pendiente** o en **Lista de espera** | Le da plaza ya, aunque el evento esté lleno. | «Inscripción confirmada: (evento)» |
-| **Rechazar** | Inscripción **Pendiente**, **Confirmado** o en **Lista de espera** | La rechaza. Si tenía plaza, pasa al primero de la lista de espera. | Ninguno |
+| **Rechazar** | Inscripción **Pendiente**, **Confirmado** o en **Lista de espera** | La rechaza. Si tenía plaza, pasa al primero de la lista de espera. | «Inscripción rechazada: (evento)» |
 | **Mover a lista de espera** | Inscripción **Confirmado** | La pone al final de la cola. Su plaza pasa a quien ya esperaba. | Ninguno |
 | **Editar** | Siempre, con el permiso **Editar inscripciones** | Cambia el **Estado** y las **Notas del administrador**, que solo se ven en el panel. | Ninguno |
 | **Borrar** | Siempre, con el permiso **Eliminar inscripciones** | Quita la inscripción. Si tenía plaza, pasa al primero de la lista de espera. | Ninguno |
 
-**Confirmar**, **Rechazar**, **Mover a lista de espera** y **Borrar** piden confirmación antes de hacer nada. Quien sube de la lista de espera a una plaza recibe «¡Plaza disponible en (evento)!». Los correos salen si están activados en la configuración del módulo.
+**Confirmar**, **Rechazar**, **Mover a lista de espera** y **Borrar** piden confirmación antes de hacer nada. Quien sube de la lista de espera a una plaza recibe «¡Plaza disponible en (evento)!». Los correos salen si están activados en la configuración del módulo; el de rechazo no tiene ajuste y sale siempre, también con **Rechazar seleccionados**.
 
 > [!TIP]
 > Para confirmar a alguien con su correo, usa **Confirmar**. Cambiar el estado con **Editar** no envía ningún correo.

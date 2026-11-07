@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\EventRegistrations\Infrastructure\Services;
 
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Modules\EventRegistrations\Application\DTOs\EventRegistrationResponseDTO;
 use Modules\EventRegistrations\Application\DTOs\RegisterToEventDTO;
@@ -17,6 +18,7 @@ use Modules\EventRegistrations\Domain\Entities\EventRegistrationConfig;
 use Modules\EventRegistrations\Domain\Enums\ConfirmationSource;
 use Modules\EventRegistrations\Domain\Enums\RegistrationState;
 use Modules\EventRegistrations\Domain\Events\RegistrationConfirmed;
+use Modules\EventRegistrations\Domain\Events\RegistrationRejected;
 use Modules\EventRegistrations\Domain\Events\UserRegisteredToEvent;
 use Modules\EventRegistrations\Domain\Events\UserUnregisteredFromEvent;
 use Modules\EventRegistrations\Domain\Exceptions\AlreadyRegisteredException;
@@ -218,8 +220,14 @@ final readonly class EventRegistrationService implements EventRegistrationServic
             EventRegistrationId::fromString($registrationId)
         );
 
+        // Already rejected: nothing changes and nobody is told again
+        if ($registration->state() === RegistrationState::Rejected) {
+            return EventRegistrationResponseDTO::fromEntity($registration);
+        }
+
         $registration->reject();
         $this->registrationRepository->save($registration);
+        $this->announceRejection($registration);
 
         // A rejected confirmed registration frees a spot for the waiting list
         $this->waitingListService->fillFreeSpots($registration->eventId());
@@ -232,21 +240,25 @@ final readonly class EventRegistrationService implements EventRegistrationServic
         $eventIds = [];
         $rejected = 0;
 
-        foreach ($registrationIds as $registrationId) {
-            $registration = $this->registrationRepository->findOrFail(
-                EventRegistrationId::fromString($registrationId)
-            );
+        // All or none: a failure halfway leaves every selected registration as it was
+        DB::transaction(function () use ($registrationIds, &$eventIds, &$rejected): void {
+            foreach ($registrationIds as $registrationId) {
+                $registration = $this->registrationRepository->findOrFail(
+                    EventRegistrationId::fromString($registrationId)
+                );
 
-            if ($registration->state() === RegistrationState::Rejected) {
-                continue;
+                if ($registration->state() === RegistrationState::Rejected) {
+                    continue;
+                }
+
+                $registration->reject();
+                $this->registrationRepository->save($registration);
+                $this->announceRejection($registration);
+
+                $eventIds[$registration->eventId()] = true;
+                $rejected++;
             }
-
-            $registration->reject();
-            $this->registrationRepository->save($registration);
-
-            $eventIds[$registration->eventId()] = true;
-            $rejected++;
-        }
+        });
 
         // Fill only after every selected registration is out, once per event
         foreach (array_keys($eventIds) as $eventId) {
@@ -323,6 +335,21 @@ final readonly class EventRegistrationService implements EventRegistrationServic
         return $registration instanceof EventRegistration
             ? EventRegistrationResponseDTO::fromEntity($registration)
             : null;
+    }
+
+    /**
+     * Tell the person their registration was rejected, once the change is committed: a
+     * rolled back rejection never sends the email.
+     */
+    private function announceRejection(EventRegistration $registration): void
+    {
+        $event = RegistrationRejected::create(
+            registrationId: $registration->id()->value,
+            eventId: $registration->eventId(),
+            userId: $registration->userId(),
+        );
+
+        DB::afterCommit(static fn () => Event::dispatch($event));
     }
 
     private function determineInitialState(
