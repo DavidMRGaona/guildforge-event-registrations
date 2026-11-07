@@ -47,7 +47,7 @@ Un evento **Solo socios** admite solo a quien tiene el rol de {{association_role
 | **Pendiente** | La organización tiene que confirmar tu inscripción. |
 | **Lista de espera** | Estás en la cola, con tu posición. |
 | **Cancelado** | Cancelaste tu inscripción. |
-| **Rechazado** | La organización no ha aceptado tu inscripción. |
+| **Rechazado** | La organización no ha aceptado tu inscripción. No puedes volver a inscribirte en ese evento. |
 
 ## Encuestas
 

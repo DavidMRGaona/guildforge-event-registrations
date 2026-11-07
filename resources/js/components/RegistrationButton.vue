@@ -101,6 +101,10 @@ const hasActiveRegistration = computed(
     () => !!registration.value && !isFinalState(registration.value.state)
 );
 
+// The organisers rejected it: it cannot be requested again (the server refuses it too). A
+// cancelled registration, by contrast, may register again
+const isRejected = computed(() => registration.value?.state === 'rejected');
+
 // Signed-in users who are not association members cannot register to a members-only event;
 // the server refuses them too. Guests keep the button, which sends them to the login page.
 const isBlockedByMembersOnly = computed(() => {
@@ -133,6 +137,7 @@ const canRegister = computed(() => {
     if (!config.value.is_open) return false;
     if (isBlockedByMembersOnly.value) return false;
     if (hasActiveRegistration.value) return false;
+    if (isRejected.value) return false;
     return true;
 });
 
@@ -142,7 +147,8 @@ const canJoinWaitingList = computed(() => {
     if (!config.value.is_full) return false;
     if (!config.value.waiting_list_enabled) return false;
     if (isBlockedByMembersOnly.value) return false;
-    if (registration.value && !isFinalState(registration.value.state)) return false;
+    if (hasActiveRegistration.value) return false;
+    if (isRejected.value) return false;
     return true;
 });
 
@@ -168,6 +174,8 @@ const buttonText = computed(() => {
         if (canCancel.value) return t('eventRegistrations.cancelRegistration');
         return cancellationClosedText.value;
     }
+
+    if (isRejected.value) return t('eventRegistrationsRejection.button');
 
     if (!config.value.is_open) {
         return t('eventRegistrations.registrationClosed');
@@ -197,8 +205,8 @@ const isUnavailable = computed(() => {
     if (!config.value.is_open) return true;
     if (isBlockedByMembersOnly.value) return true;
     if (config.value.is_full && !config.value.waiting_list_enabled) return true;
-    // A cancelled or rejected registration keeps the button disabled, as before
-    if (registration.value) return true;
+    // A rejected registration cannot be requested again; a cancelled one may register again
+    if (isRejected.value) return true;
     return false;
 });
 
@@ -368,6 +376,8 @@ function handleClick(): void {
         if (canCancel.value) promptCancel();
         return;
     }
+
+    if (isRejected.value) return;
 
     if (config.value?.custom_fields && config.value.custom_fields.length > 0) {
         showForm.value = true;
