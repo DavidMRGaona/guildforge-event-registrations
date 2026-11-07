@@ -103,6 +103,55 @@ final class EventRegistrationsPanelTest extends ModuleTestCase
         $this->assertNull(EventRegistrationConfigModel::query()->findOrFail($this->event->id)->notification_email);
     }
 
+    public function test_saving_the_config_tab_keeps_the_fields_it_does_not_show(): void
+    {
+        $customFields = [['name' => 'army', 'label' => 'Ejército', 'type' => 'text', 'required' => true]];
+        EventRegistrationConfigModel::create([
+            'event_id' => $this->event->id,
+            'registration_enabled' => true,
+            'requires_payment' => true,
+            'confirmation_message' => 'Trae tus dados',
+            'custom_fields' => $customFields,
+        ]);
+
+        Livewire::test(RegistrationConfigRelationManager::class, ['ownerRecord' => $this->event, 'pageClass' => EditEvent::class])
+            ->set('configData.max_participants', 12)
+            ->call('save')
+            ->assertHasNoErrors();
+
+        $config = EventRegistrationConfigModel::query()->findOrFail($this->event->id);
+        $this->assertSame(12, $config->max_participants);
+        $this->assertTrue($config->requires_payment);
+        $this->assertSame('Trae tus dados', $config->confirmation_message);
+        $this->assertSame($customFields, $config->custom_fields);
+    }
+
+    public function test_saving_the_config_tab_with_registration_disabled_keeps_the_hidden_fields(): void
+    {
+        EventRegistrationConfigModel::create([
+            'event_id' => $this->event->id,
+            'registration_enabled' => true,
+            'max_participants' => 12,
+            'waiting_list_enabled' => false,
+            'requires_confirmation' => true,
+            'members_only' => true,
+            'notification_email' => 'organisers@example.test',
+        ]);
+
+        Livewire::test(RegistrationConfigRelationManager::class, ['ownerRecord' => $this->event, 'pageClass' => EditEvent::class])
+            ->set('configData.registration_enabled', false)
+            ->call('save')
+            ->assertHasNoErrors();
+
+        $config = EventRegistrationConfigModel::query()->findOrFail($this->event->id);
+        $this->assertFalse($config->registration_enabled);
+        $this->assertSame(12, $config->max_participants);
+        $this->assertFalse($config->waiting_list_enabled);
+        $this->assertTrue($config->requires_confirmation);
+        $this->assertTrue($config->members_only);
+        $this->assertSame('organisers@example.test', $config->notification_email);
+    }
+
     public function test_registrations_relation_manager_renders_when_registration_is_enabled(): void
     {
         EventRegistrationConfigModel::create(['event_id' => $this->event->id, 'registration_enabled' => true]);

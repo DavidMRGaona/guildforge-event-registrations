@@ -7,10 +7,37 @@ namespace Modules\EventRegistrations\Application\DTOs;
 use App\Application\Services\TimezoneServiceInterface;
 use DateTimeImmutable;
 
+/**
+ * A change to the registration config of an event. Only the fields it provides are changed:
+ * a form sends the fields it shows (Filament leaves hidden ones out), and saving it must not
+ * blank the others.
+ */
 final readonly class UpdateRegistrationConfigDTO
 {
     /**
+     * Every field of the config that can be changed, by its form key.
+     *
+     * @var list<string>
+     */
+    public const array FIELDS = [
+        'registration_enabled',
+        'max_participants',
+        'waiting_list_enabled',
+        'max_waiting_list',
+        'registration_opens_at',
+        'registration_closes_at',
+        'cancellation_deadline',
+        'requires_confirmation',
+        'requires_payment',
+        'members_only',
+        'custom_fields',
+        'confirmation_message',
+        'notification_email',
+    ];
+
+    /**
      * @param  array<array{name: string, label: string, type: string, required: bool, options?: array<string>}>  $customFields
+     * @param  list<string>|null  $fields  the fields to change; null changes them all
      */
     public function __construct(
         public string $eventId,
@@ -27,7 +54,16 @@ final readonly class UpdateRegistrationConfigDTO
         public array $customFields = [],
         public ?string $confirmationMessage = null,
         public ?string $notificationEmail = null,
+        public ?array $fields = null,
     ) {}
+
+    /**
+     * Whether this change sets the field (by its form key).
+     */
+    public function provides(string $field): bool
+    {
+        return in_array($field, $this->fields ?? self::FIELDS, true);
+    }
 
     /**
      * @param  array<string, mixed>  $data
@@ -60,6 +96,7 @@ final readonly class UpdateRegistrationConfigDTO
             confirmationMessage: $data['confirmation_message'] ?? null,
             // An emptied field clears the address: no notices are sent then
             notificationEmail: is_string($notificationEmail) && trim($notificationEmail) !== '' ? trim($notificationEmail) : null,
+            fields: array_values(array_intersect(self::FIELDS, array_keys($data))),
         );
     }
 

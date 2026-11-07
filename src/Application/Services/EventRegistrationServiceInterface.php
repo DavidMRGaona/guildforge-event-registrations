@@ -74,7 +74,8 @@ interface EventRegistrationServiceInterface
     public function moveToWaitingList(string $registrationId): EventRegistrationResponseDTO;
 
     /**
-     * Update registration config for an event.
+     * Update registration config for an event: only the fields the DTO provides change, the
+     * rest keep what is stored.
      */
     public function updateConfig(UpdateRegistrationConfigDTO $dto): void;
 
