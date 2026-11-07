@@ -21,6 +21,7 @@ use Modules\EventRegistrations\Application\DTOs\UpdateRegistrationConfigDTO;
 use Modules\EventRegistrations\Application\Services\EventRegistrationServiceInterface;
 use Modules\EventRegistrations\Domain\Repositories\EventRegistrationConfigRepositoryInterface;
 use Modules\EventRegistrations\Filament\Concerns\CapsDatesAtEventStart;
+use Modules\EventRegistrations\Infrastructure\Persistence\Eloquent\Models\EventRegistrationModel;
 
 /**
  * @property Schema $configForm
@@ -51,15 +52,17 @@ final class RegistrationConfigRelationManager extends RelationManager
     }
 
     /**
-     * Always show the config tab so admins can configure registrations.
+     * Show the config tab on every event to who may configure registrations.
      */
     public static function canViewForRecord(Model $ownerRecord, string $pageClass): bool
     {
-        return $ownerRecord instanceof EventModel;
+        return $ownerRecord instanceof EventModel && self::userCanManageConfig();
     }
 
     public function mount(): void
     {
+        abort_unless(self::userCanManageConfig(), 403);
+
         parent::mount();
 
         $eventId = $this->getOwnerRecord()->getKey();
@@ -182,6 +185,9 @@ final class RegistrationConfigRelationManager extends RelationManager
 
     public function save(): void
     {
+        // Livewire methods can be called without the tab on screen: check again on every save
+        abort_unless(self::userCanManageConfig(), 403);
+
         $formData = $this->configForm->getState();
         $eventId = $this->getOwnerRecord()->getKey();
 
@@ -195,5 +201,10 @@ final class RegistrationConfigRelationManager extends RelationManager
             ->title(__('event-registrations::messages.config.saved'))
             ->success()
             ->send();
+    }
+
+    private static function userCanManageConfig(): bool
+    {
+        return auth()->user()?->can('manageConfig', EventRegistrationModel::class) ?? false;
     }
 }

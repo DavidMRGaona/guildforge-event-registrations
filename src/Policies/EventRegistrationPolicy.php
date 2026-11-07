@@ -37,6 +37,14 @@ final class EventRegistrationPolicy
         return $this->authorize($user, 'event-registrations:registrations.update');
     }
 
+    /**
+     * Change the state of several registrations at once (bulk actions have no single record).
+     */
+    public function updateAny(UserModel $user): bool
+    {
+        return $this->authorize($user, 'event-registrations:registrations.update');
+    }
+
     public function delete(UserModel $user, EventRegistrationModel $registration): bool
     {
         return $this->authorize($user, 'event-registrations:registrations.delete');

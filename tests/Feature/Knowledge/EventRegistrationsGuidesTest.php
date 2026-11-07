@@ -111,7 +111,8 @@ final class EventRegistrationsGuidesTest extends ModuleTestCase
 
     public function test_the_registrations_tab_has_no_help_for_someone_who_cannot_see_its_guide(): void
     {
-        $this->actingAs(UserModel::factory()->editor()->create());
+        // The guide also asks for permission to edit events
+        $this->actingAs($this->userWith('event-registrations:registrations.view_any'));
         EventRegistrationConfigModel::create(['event_id' => $this->event->id, 'registration_enabled' => true]);
 
         Livewire::test(RegistrationsRelationManager::class, ['ownerRecord' => $this->event, 'pageClass' => EditEvent::class])
@@ -129,7 +130,8 @@ final class EventRegistrationsGuidesTest extends ModuleTestCase
 
     public function test_the_configuration_tab_has_no_help_for_someone_who_cannot_see_its_guide(): void
     {
-        $this->actingAs(UserModel::factory()->editor()->create());
+        // The guide also asks for permission to edit events
+        $this->actingAs($this->userWith('event-registrations:registrations.manage_config'));
 
         Livewire::test(RegistrationConfigRelationManager::class, ['ownerRecord' => $this->event, 'pageClass' => EditEvent::class])
             ->assertOk()
