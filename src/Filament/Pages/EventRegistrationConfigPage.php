@@ -22,6 +22,7 @@ use Modules\EventRegistrations\Application\DTOs\UpdateRegistrationConfigDTO;
 use Modules\EventRegistrations\Application\Services\EventRegistrationServiceInterface;
 use Modules\EventRegistrations\Domain\Repositories\EventRegistrationConfigRepositoryInterface;
 use Modules\EventRegistrations\Filament\Concerns\CapsDatesAtEventStart;
+use Modules\EventRegistrations\Infrastructure\Persistence\Eloquent\Models\EventRegistrationModel;
 
 /**
  * @property Schema $form
@@ -42,8 +43,15 @@ final class EventRegistrationConfigPage extends Page implements HasForms
     /** @var array<string, mixed> */
     public array $data = [];
 
+    public static function canAccess(): bool
+    {
+        return auth()->user()?->can('manageConfig', EventRegistrationModel::class) ?? false;
+    }
+
     public function mount(string $eventId): void
     {
+        abort_unless(self::canAccess(), 403);
+
         $this->eventId = $eventId;
 
         $configRepository = app(EventRegistrationConfigRepositoryInterface::class);
@@ -176,6 +184,9 @@ final class EventRegistrationConfigPage extends Page implements HasForms
 
     public function save(): void
     {
+        // Livewire methods can be called without the page on screen: check again on every save
+        abort_unless(self::canAccess(), 403);
+
         $data = $this->form->getState();
 
         $service = app(EventRegistrationServiceInterface::class);

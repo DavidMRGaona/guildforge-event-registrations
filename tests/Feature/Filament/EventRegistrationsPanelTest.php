@@ -22,11 +22,13 @@ use Modules\EventRegistrations\Filament\Widgets\RegistrationStatsWidget;
 use Modules\EventRegistrations\Infrastructure\Persistence\Eloquent\Models\EventRegistrationConfigModel;
 use Modules\EventRegistrations\Infrastructure\Persistence\Eloquent\Models\EventRegistrationModel;
 use PHPUnit\Framework\Attributes\DataProvider;
+use Tests\Support\Authorization\CreatesUsersWithPermissions;
 use Tests\Support\Modules\InteractsWithModulePanel;
 use Tests\Support\Modules\ModuleTestCase;
 
 final class EventRegistrationsPanelTest extends ModuleTestCase
 {
+    use CreatesUsersWithPermissions;
     use InteractsWithModulePanel;
 
     protected ?string $moduleName = 'event-registrations';
@@ -263,7 +265,7 @@ final class EventRegistrationsPanelTest extends ModuleTestCase
     public function test_export_is_hidden_without_the_export_permission(): void
     {
         EventRegistrationConfigModel::create(['event_id' => $this->event->id, 'registration_enabled' => true]);
-        $this->actingAs(UserModel::factory()->create());
+        $this->actingAs($this->editorWithPermissions(['events.update', 'event-registrations:registrations.view_any']));
 
         Livewire::test(RegistrationsRelationManager::class, ['ownerRecord' => $this->event, 'pageClass' => EditEvent::class])
             ->assertTableActionHidden('export');

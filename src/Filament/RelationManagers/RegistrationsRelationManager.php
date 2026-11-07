@@ -50,11 +50,12 @@ final class RegistrationsRelationManager extends RelationManager
     }
 
     /**
-     * Only show this tab if registrations are enabled OR there are existing registrations.
+     * Only show this tab to who may see registrations, and only if registrations are enabled OR
+     * there are existing registrations.
      */
     public static function canViewForRecord(Model $ownerRecord, string $pageClass): bool
     {
-        if (! $ownerRecord instanceof EventModel) {
+        if (! $ownerRecord instanceof EventModel || ! self::userCanViewRegistrations()) {
             return false;
         }
 
@@ -68,6 +69,21 @@ final class RegistrationsRelationManager extends RelationManager
         $config = EventRegistrationConfigModel::where('event_id', $ownerRecord->id)->first();
 
         return $config !== null && $config->registration_enabled === true;
+    }
+
+    /**
+     * The tab is a Livewire component of its own: refuse it to whoever may not see it, whatever the page did.
+     */
+    public function mount(): void
+    {
+        abort_unless(self::userCanViewRegistrations(), 403);
+
+        parent::mount();
+    }
+
+    private static function userCanViewRegistrations(): bool
+    {
+        return auth()->user()?->can('viewAny', EventRegistrationModel::class) ?? false;
     }
 
     public function form(Schema $schema): Schema
@@ -228,6 +244,7 @@ final class RegistrationsRelationManager extends RelationManager
             ]))
             ->recordActions([
                 Action::make('confirm')
+                    ->authorize('update')
                     ->label(__('event-registrations::messages.actions.confirm'))
                     ->icon('heroicon-o-check-circle')
                     ->color('success')
@@ -246,6 +263,7 @@ final class RegistrationsRelationManager extends RelationManager
                             ->send();
                     }),
                 Action::make('reject')
+                    ->authorize('update')
                     ->label(__('event-registrations::messages.actions.reject'))
                     ->icon('heroicon-o-x-circle')
                     ->color('danger')
@@ -264,6 +282,7 @@ final class RegistrationsRelationManager extends RelationManager
                             ->send();
                     }),
                 Action::make('move_to_waiting')
+                    ->authorize('update')
                     ->label(__('event-registrations::messages.actions.move_to_waiting'))
                     ->icon('heroicon-o-clock')
                     ->color('warning')
@@ -290,6 +309,7 @@ final class RegistrationsRelationManager extends RelationManager
             ->toolbarActions([
                 BulkActionGroup::make([
                     BulkAction::make('confirm_selected')
+                        ->authorize('updateAny')
                         ->label(__('event-registrations::messages.actions.confirm_selected'))
                         ->icon('heroicon-o-check-circle')
                         ->color('success')
@@ -333,6 +353,7 @@ final class RegistrationsRelationManager extends RelationManager
                             $livewire->dispatch('$refresh');
                         }),
                     BulkAction::make('reject_selected')
+                        ->authorize('updateAny')
                         ->label(__('event-registrations::messages.actions.reject_selected'))
                         ->icon('heroicon-o-x-circle')
                         ->color('danger')
