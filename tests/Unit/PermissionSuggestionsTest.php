@@ -6,6 +6,7 @@ namespace Modules\EventRegistrations\Tests\Unit;
 
 use App\Application\Modules\DTOs\PermissionDTO;
 use Modules\EventRegistrations\EventRegistrationsServiceProvider;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
 final class PermissionSuggestionsTest extends TestCase
@@ -35,5 +36,26 @@ final class PermissionSuggestionsTest extends TestCase
 
         $this->assertCount(1, $surveys);
         $this->assertSame([], $surveys[0]->roles);
+    }
+
+    /**
+     * The role editor shows each label as it comes: a missing translation would show its raw key.
+     *
+     * @return array<string, array{string}>
+     */
+    public static function locales(): array
+    {
+        return ['spanish' => ['es'], 'english' => ['en']];
+    }
+
+    #[DataProvider('locales')]
+    public function test_every_permission_label_is_translated(string $locale): void
+    {
+        $this->app['translator']->addNamespace('event-registrations', dirname(__DIR__, 2).'/lang');
+        app()->setLocale($locale);
+
+        foreach ((new EventRegistrationsServiceProvider($this->app))->registerPermissions() as $permission) {
+            $this->assertStringNotContainsString('event-registrations::', $permission->label, $permission->name);
+        }
     }
 }

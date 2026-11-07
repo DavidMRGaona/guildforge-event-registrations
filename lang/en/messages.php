@@ -46,7 +46,6 @@ return [
         'confirm_selected' => 'Confirm selected',
         'reject_selected' => 'Reject selected',
         'export' => 'Export',
-        'manage_surveys' => 'Manage event surveys',
     ],
 
     // Surveys (through the core's survey subject contract)
@@ -176,6 +175,7 @@ return [
         'delete' => 'Delete registrations',
         'manage_config' => 'Manage registration configuration',
         'export' => 'Export registrations',
+        'manage_surveys' => 'Manage event surveys',
     ],
 
     // Emails
