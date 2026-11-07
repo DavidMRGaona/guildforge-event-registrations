@@ -17,6 +17,7 @@ use Modules\EventRegistrations\Domain\Exceptions\EventNotFoundException;
 use Modules\EventRegistrations\Domain\Exceptions\MembersOnlyException;
 use Modules\EventRegistrations\Domain\Exceptions\RegistrationClosedException;
 use Modules\EventRegistrations\Domain\Exceptions\RegistrationNotFoundException;
+use Modules\EventRegistrations\Domain\Exceptions\RegistrationRejectedException;
 use Modules\EventRegistrations\Http\Requests\RegisterToEventRequest;
 
 final class EventRegistrationController extends Controller
@@ -118,6 +119,11 @@ final class EventRegistrationController extends Controller
         } catch (AlreadyRegisteredException $e) {
             return response()->json([
                 'message' => __('event-registrations::messages.errors.already_registered'),
+                'error' => $e->getMessage(),
+            ], 422);
+        } catch (RegistrationRejectedException $e) {
+            return response()->json([
+                'message' => __('event-registrations::messages.errors.registration_rejected'),
                 'error' => $e->getMessage(),
             ], 422);
         } catch (MembersOnlyException $e) {

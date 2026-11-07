@@ -138,6 +138,7 @@ return [
         'registration_closed' => 'Registration is closed',
         'event_full' => 'Event is full',
         'already_registered' => 'You are already registered for this event',
+        'registration_rejected' => 'Your registration for this event was rejected. If you think this is a mistake, contact the organisers.',
         'not_found' => 'Registration not found',
         'cannot_cancel' => 'Cannot cancel registration',
         'unauthenticated' => 'You must log in',

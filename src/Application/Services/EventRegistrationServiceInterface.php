@@ -13,6 +13,7 @@ use Modules\EventRegistrations\Domain\Exceptions\EventFullException;
 use Modules\EventRegistrations\Domain\Exceptions\MembersOnlyException;
 use Modules\EventRegistrations\Domain\Exceptions\RegistrationClosedException;
 use Modules\EventRegistrations\Domain\Exceptions\RegistrationNotFoundException;
+use Modules\EventRegistrations\Domain\Exceptions\RegistrationRejectedException;
 
 interface EventRegistrationServiceInterface
 {
@@ -22,6 +23,7 @@ interface EventRegistrationServiceInterface
      * @throws RegistrationClosedException
      * @throws EventFullException
      * @throws AlreadyRegisteredException
+     * @throws RegistrationRejectedException a rejected registration cannot be requested again
      * @throws MembersOnlyException
      */
     public function register(RegisterToEventDTO $dto): EventRegistrationResponseDTO;

@@ -29,6 +29,7 @@ Si no has iniciado sesión, el botón te lleva a la página para entrar. Despué
 | **Inscripciones cerradas** | Las inscripciones aún no se han abierto, ya se han cerrado o el evento ha empezado. |
 | **Solo para socios** | El evento es solo para quien tiene el rol de {{association_role}}. |
 | **Cancelar inscripción** | Ya estás inscrito. La guía «Cancelar tu inscripción a un evento» lo explica. |
+| **Inscripción rechazada** | La organización no aceptó tu inscripción y no puedes volver a solicitarla. |
 
 Debajo del botón ves cuántas personas están confirmadas, por ejemplo «12 / 20 confirmados», y cuántas esperan en la lista.
 
@@ -56,6 +57,7 @@ Según lo que tenga activado tu web:
 - **«El evento ya ha comenzado»**: ya no admite inscripciones.
 - **«El evento está completo»**: no quedan plazas, o la lista de espera también está llena.
 - **«Ya estás inscrito en este evento»**: tu inscripción ya existe. Mírala en tu perfil, pestaña **Mis inscripciones**.
+- **«Tu inscripción en este evento fue rechazada. Si crees que es un error, contacta con la organización.»**: solo la organización puede cambiarla.
 - **«Solo los socios pueden inscribirse en este evento»**: es solo para quien tiene el rol de {{association_role}}.
 - **«Tu sesión ha caducado. Recarga la página e inténtalo de nuevo.»**: recarga la página y vuelve a pulsar el botón.
 - **No te llega el correo**: mira en la carpeta de correo no deseado.

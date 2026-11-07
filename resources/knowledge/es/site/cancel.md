@@ -19,7 +19,7 @@ Si al final no puedes ir, cancela tu inscripción cuanto antes: tu plaza puede p
 Tu inscripción desaparece del bloque del evento y te llega el correo «Inscripción cancelada: (evento)», si la web envía ese aviso. Funciona igual si estabas confirmado, pendiente o en la lista de espera: en la lista de espera, dejas tu puesto.
 
 > [!IMPORTANT]
-> Cancelar no se puede deshacer. En tu perfil, la inscripción queda como **Cancelado**.
+> Cancelar no se puede deshacer, pero puedes volver a inscribirte mientras las inscripciones sigan abiertas; si ya no quedan plazas, entras en la lista de espera. En tu perfil, la inscripción queda como **Cancelado** hasta entonces.
 
 ## Hasta cuándo
 

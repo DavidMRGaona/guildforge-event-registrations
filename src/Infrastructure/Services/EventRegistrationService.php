@@ -25,6 +25,7 @@ use Modules\EventRegistrations\Domain\Exceptions\EventFullException;
 use Modules\EventRegistrations\Domain\Exceptions\MembersOnlyException;
 use Modules\EventRegistrations\Domain\Exceptions\RegistrationClosedException;
 use Modules\EventRegistrations\Domain\Exceptions\RegistrationNotFoundException;
+use Modules\EventRegistrations\Domain\Exceptions\RegistrationRejectedException;
 use Modules\EventRegistrations\Domain\Repositories\EventRegistrationConfigRepositoryInterface;
 use Modules\EventRegistrations\Domain\Repositories\EventRegistrationRepositoryInterface;
 use Modules\EventRegistrations\Domain\Services\Clock;
@@ -56,6 +57,11 @@ final readonly class EventRegistrationService implements EventRegistrationServic
         $existing = $this->registrationRepository->findByUserAndEvent($dto->userId, $dto->eventId);
         if ($existing instanceof EventRegistration && ! $existing->state()->isFinal()) {
             throw AlreadyRegisteredException::userAlreadyRegistered($dto->eventId, $dto->userId);
+        }
+
+        // A cancelled registration may register again; a rejected one stays as the organisers left it
+        if ($existing instanceof EventRegistration && $existing->state() === RegistrationState::Rejected) {
+            throw RegistrationRejectedException::cannotRegisterAgain($dto->eventId, $dto->userId);
         }
 
         // Get config and validate registration is open
@@ -107,7 +113,7 @@ final readonly class EventRegistrationService implements EventRegistrationServic
             );
         }
 
-        // Reactivate existing cancelled/rejected registration or create new one
+        // Reactivate an existing cancelled registration or create a new one
         if ($existing instanceof EventRegistration && $existing->state()->isFinal()) {
             $registration = $existing;
             $registration->reactivate($state, $dto->formData, $dto->notes);

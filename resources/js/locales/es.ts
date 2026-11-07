@@ -8,6 +8,9 @@ export default {
         membersOnly: 'Solo para socios',
         membersOnlyNotice: 'Solo pueden inscribirse los socios de la asociación.',
     },
+    eventRegistrationsRejection: {
+        button: 'Inscripción rechazada',
+    },
     eventRegistrationsCapacity: {
         confirmed: '{count} confirmado | {count} confirmados',
     },

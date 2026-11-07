@@ -8,6 +8,9 @@ export default {
         membersOnly: 'Members only',
         membersOnlyNotice: 'Only members of the association can register.',
     },
+    eventRegistrationsRejection: {
+        button: 'Registration rejected',
+    },
     eventRegistrationsCapacity: {
         confirmed: '{count} confirmed | {count} confirmed',
     },

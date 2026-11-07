@@ -138,6 +138,7 @@ return [
         'registration_closed' => 'Las inscripciones están cerradas',
         'event_full' => 'El evento está completo',
         'already_registered' => 'Ya estás inscrito en este evento',
+        'registration_rejected' => 'Tu inscripción en este evento fue rechazada. Si crees que es un error, contacta con la organización.',
         'not_found' => 'Inscripción no encontrada',
         'cannot_cancel' => 'No se puede cancelar la inscripción',
         'unauthenticated' => 'Debes iniciar sesión',
