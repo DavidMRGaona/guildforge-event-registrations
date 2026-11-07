@@ -45,32 +45,35 @@ onMounted(async () => {
 </script>
 
 <template>
-    <!-- Plain links: the surveys' pages belong to another module -->
-    <div v-if="links" class="mt-3 flex flex-col gap-2">
-        <a
-            v-if="links.manageUrl"
-            :href="links.manageUrl"
-            class="inline-flex min-h-[44px] items-center justify-center rounded-md border border-default px-4 py-2 text-sm font-medium text-base-primary transition-colors hover:bg-muted focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 focus:ring-offset-surface"
-        >
-            {{ t('eventRegistrationsSurveys.manage') }}
-        </a>
-        <a
-            v-for="survey in links.surveys"
-            :key="survey.url"
-            :href="survey.url"
-            class="inline-flex min-h-[44px] items-center justify-center rounded-md px-4 py-2 text-center text-sm font-medium break-words transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 focus:ring-offset-surface"
-            :class="
-                survey.action === 'respond'
-                    ? 'bg-primary text-white hover:bg-primary-700'
-                    : 'border border-default text-base-primary hover:bg-muted'
-            "
-        >
-            {{
-                survey.action === 'respond'
-                    ? t('eventRegistrationsSurveys.respond', { title: survey.title })
-                    : t('eventRegistrationsSurveys.results', { title: survey.title })
-            }}
-        </a>
-        <HelpLink v-if="links.guideId" :guide="links.guideId" class="self-center" />
+    <!-- Plain links: the surveys' pages belong to another module. The help on these surveys
+         sits beside the links, not on a line of its own, so it reads as theirs -->
+    <div v-if="links" data-testid="survey-links" class="mt-3 flex items-center gap-2">
+        <div data-testid="survey-link-list" class="flex min-w-0 flex-1 flex-col gap-2">
+            <a
+                v-if="links.manageUrl"
+                :href="links.manageUrl"
+                class="inline-flex min-h-[44px] items-center justify-center rounded-md border border-default px-4 py-2 text-sm font-medium text-base-primary transition-colors hover:bg-muted focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 focus:ring-offset-surface"
+            >
+                {{ t('eventRegistrationsSurveys.manage') }}
+            </a>
+            <a
+                v-for="survey in links.surveys"
+                :key="survey.url"
+                :href="survey.url"
+                class="inline-flex min-h-[44px] items-center justify-center rounded-md px-4 py-2 text-center text-sm font-medium break-words transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 focus:ring-offset-surface"
+                :class="
+                    survey.action === 'respond'
+                        ? 'bg-primary text-white hover:bg-primary-700'
+                        : 'border border-default text-base-primary hover:bg-muted'
+                "
+            >
+                {{
+                    survey.action === 'respond'
+                        ? t('eventRegistrationsSurveys.respond', { title: survey.title })
+                        : t('eventRegistrationsSurveys.results', { title: survey.title })
+                }}
+            </a>
+        </div>
+        <HelpLink v-if="links.guideId" :guide="links.guideId" class="shrink-0" />
     </div>
 </template>
