@@ -20,7 +20,6 @@ use Modules\EventRegistrations\Application\Services\RegistrationQueryServiceInte
 use Modules\EventRegistrations\Domain\Entities\EventRegistration;
 use Modules\EventRegistrations\Domain\Enums\RegistrationState;
 use Modules\EventRegistrations\Domain\ValueObjects\EventRegistrationId;
-use Modules\EventRegistrations\Filament\Pages\EventRegistrationConfigPage;
 use Modules\EventRegistrations\Filament\RelationManagers\RegistrationConfigRelationManager;
 use Modules\EventRegistrations\Filament\RelationManagers\RegistrationsRelationManager;
 use Modules\EventRegistrations\Infrastructure\Persistence\Eloquent\Models\EventRegistrationConfigModel;
@@ -193,7 +192,7 @@ final class UtcStorageTest extends ModuleTestCase
         $this->assertSame('2026-07-01 10:00:00', $this->storedValue('registration_closes_at'));
     }
 
-    public function test_the_config_page_shows_madrid_wall_time_and_saves_the_utc_instant(): void
+    public function test_the_config_tab_shows_the_cancellation_deadline_in_madrid_wall_time_and_saves_the_utc_instant(): void
     {
         $this->actingAsPanelAdmin();
         $event = $this->event();
@@ -203,10 +202,10 @@ final class UtcStorageTest extends ModuleTestCase
             'cancellation_deadline' => CarbonImmutable::parse('2026-06-30T08:00:00Z'),
         ]);
 
-        Livewire::test(EventRegistrationConfigPage::class, ['eventId' => $event->id])
-            ->assertSet('data.cancellation_deadline', '2026-06-30 10:00:00')
-            ->set('data.registration_opens_at', '2026-06-02 12:00:00')
-            ->set('data.cancellation_deadline', '2026-07-01 12:00:00')
+        Livewire::test(RegistrationConfigRelationManager::class, ['ownerRecord' => $event, 'pageClass' => EditEvent::class])
+            ->assertSet('configData.cancellation_deadline', '2026-06-30 10:00:00')
+            ->set('configData.registration_opens_at', '2026-06-02 12:00:00')
+            ->set('configData.cancellation_deadline', '2026-07-01 12:00:00')
             ->call('save')
             ->assertHasNoErrors();
 
@@ -214,7 +213,7 @@ final class UtcStorageTest extends ModuleTestCase
         $this->assertSame('2026-07-01 10:00:00', $this->storedValue('cancellation_deadline'));
     }
 
-    public function test_the_config_forms_cap_dates_at_the_event_start_in_madrid_time(): void
+    public function test_the_config_tab_caps_dates_at_the_event_start_in_madrid_time(): void
     {
         $this->actingAsPanelAdmin();
         $event = $this->event();
@@ -227,9 +226,10 @@ final class UtcStorageTest extends ModuleTestCase
             ->assertHasErrors(['configData.registration_closes_at' => 'before_or_equal'])
             ->assertSee('No puede ser posterior al inicio del evento (01/07/2026 12:00)');
 
-        Livewire::test(EventRegistrationConfigPage::class, ['eventId' => $event->id])
-            ->set('data.registration_opens_at', '2026-06-01 10:00:00')
-            ->set('data.cancellation_deadline', '2026-07-01 12:00:00')
+        Livewire::test(RegistrationConfigRelationManager::class, ['ownerRecord' => $event, 'pageClass' => EditEvent::class])
+            ->set('configData.registration_enabled', true)
+            ->set('configData.registration_opens_at', '2026-06-01 10:00:00')
+            ->set('configData.cancellation_deadline', '2026-07-01 12:00:00')
             ->call('save')
             ->assertHasNoErrors();
     }

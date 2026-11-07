@@ -37,7 +37,6 @@ use Modules\EventRegistrations\Domain\Events\WaitingListPromoted;
 use Modules\EventRegistrations\Domain\Repositories\EventRegistrationConfigRepositoryInterface;
 use Modules\EventRegistrations\Domain\Repositories\EventRegistrationRepositoryInterface;
 use Modules\EventRegistrations\Domain\Services\Clock;
-use Modules\EventRegistrations\Filament\Pages\EventRegistrationConfigPage;
 use Modules\EventRegistrations\Filament\RelationManagers\RegistrationConfigRelationManager;
 use Modules\EventRegistrations\Filament\RelationManagers\RegistrationsRelationManager;
 use Modules\EventRegistrations\Filament\Widgets\RegistrationStatsWidget;
@@ -199,12 +198,6 @@ final class EventRegistrationsServiceProvider extends ModuleServiceProvider
         Livewire::component(
             'modules.event-registrations.filament.widgets.registration-stats-widget',
             RegistrationStatsWidget::class
-        );
-
-        // Register Page
-        Livewire::component(
-            'modules.event-registrations.filament.pages.event-registration-config-page',
-            EventRegistrationConfigPage::class
         );
     }
 

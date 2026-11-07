@@ -15,7 +15,6 @@ use Livewire\Features\SupportTesting\Testable;
 use Livewire\Livewire;
 use Modules\EventRegistrations\Domain\Enums\RegistrationState;
 use Modules\EventRegistrations\EventRegistrationsServiceProvider;
-use Modules\EventRegistrations\Filament\Pages\EventRegistrationConfigPage;
 use Modules\EventRegistrations\Filament\RelationManagers\RegistrationConfigRelationManager;
 use Modules\EventRegistrations\Filament\RelationManagers\RegistrationsRelationManager;
 use Modules\EventRegistrations\Filament\Widgets\RegistrationStatsWidget;
@@ -160,11 +159,6 @@ final class EventRegistrationsPanelTest extends ModuleTestCase
             ->assertOk();
     }
 
-    public function test_config_page_renders(): void
-    {
-        Livewire::test(EventRegistrationConfigPage::class, ['eventId' => $this->event->id])->assertOk();
-    }
-
     #[DataProvider('datesCappedAtTheEventStart')]
     public function test_the_config_tab_refuses_a_date_after_the_event_start(string $field): void
     {
@@ -197,39 +191,11 @@ final class EventRegistrationsPanelTest extends ModuleTestCase
         $this->assertSame('2030-04-12 10:00:00', $this->wallTime($config->{$field}));
     }
 
-    #[DataProvider('datesCappedAtTheEventStart')]
-    public function test_the_config_page_refuses_a_date_after_the_event_start(string $field): void
+    public function test_the_config_tab_saves_with_its_untouched_defaults(): void
     {
         $event = $this->eventStartingAt('2030-04-12 10:00:00');
 
-        Livewire::test(EventRegistrationConfigPage::class, ['eventId' => $event->id])
-            ->set('data.registration_opens_at', '2030-04-01 10:00:00')
-            ->set("data.{$field}", '2030-04-12 10:01:00')
-            ->call('save')
-            ->assertHasErrors(["data.{$field}" => 'before_or_equal'])
-            ->assertSee('No puede ser posterior al inicio del evento (12/04/2030 10:00)');
-    }
-
-    #[DataProvider('datesCappedAtTheEventStart')]
-    public function test_the_config_page_accepts_a_date_equal_to_the_event_start(string $field): void
-    {
-        $event = $this->eventStartingAt('2030-04-12 10:00:00');
-
-        Livewire::test(EventRegistrationConfigPage::class, ['eventId' => $event->id])
-            ->set('data.registration_opens_at', '2030-04-01 10:00:00')
-            ->set("data.{$field}", '2030-04-12 10:00:00')
-            ->call('save')
-            ->assertHasNoErrors();
-
-        $config = EventRegistrationConfigModel::query()->where('event_id', $event->id)->firstOrFail();
-        $this->assertSame('2030-04-12 10:00:00', $this->wallTime($config->{$field}));
-    }
-
-    public function test_the_config_page_saves_with_its_untouched_defaults(): void
-    {
-        $event = $this->eventStartingAt('2030-04-12 10:00:00');
-
-        Livewire::test(EventRegistrationConfigPage::class, ['eventId' => $event->id])
+        Livewire::test(RegistrationConfigRelationManager::class, ['ownerRecord' => $event, 'pageClass' => EditEvent::class])
             ->call('save')
             ->assertHasNoErrors();
 
