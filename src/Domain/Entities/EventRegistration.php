@@ -7,6 +7,7 @@ namespace Modules\EventRegistrations\Domain\Entities;
 use DateTimeImmutable;
 use Modules\EventRegistrations\Domain\Enums\RegistrationState;
 use Modules\EventRegistrations\Domain\Exceptions\CannotCancelRegistrationException;
+use Modules\EventRegistrations\Domain\Exceptions\InvalidRegistrationTransitionException;
 use Modules\EventRegistrations\Domain\ValueObjects\EventRegistrationId;
 
 final class EventRegistration
@@ -93,20 +94,32 @@ final class EventRegistration
     }
 
     /**
-     * Confirm the registration.
+     * Confirm the registration: only a pending one or one on the waiting list.
+     *
+     * @throws InvalidRegistrationTransitionException
      */
     public function confirm(): void
     {
+        if (! $this->state->canBeConfirmed()) {
+            throw InvalidRegistrationTransitionException::cannotConfirm($this->id->value, $this->state);
+        }
+
         $this->state = RegistrationState::Confirmed;
         $this->confirmedAt = new DateTimeImmutable;
         $this->position = null; // Clear position when confirmed
     }
 
     /**
-     * Move to waiting list with a given position.
+     * Move to waiting list with a given position: only a pending or confirmed registration.
+     *
+     * @throws InvalidRegistrationTransitionException
      */
     public function moveToWaitingList(int $position): void
     {
+        if (! $this->state->canMoveToWaitingList()) {
+            throw InvalidRegistrationTransitionException::cannotMoveToWaitingList($this->id->value, $this->state);
+        }
+
         $this->state = RegistrationState::WaitingList;
         $this->position = $position;
     }
@@ -131,10 +144,16 @@ final class EventRegistration
     }
 
     /**
-     * Reject the registration.
+     * Reject the registration: anything but a cancelled or already rejected one.
+     *
+     * @throws InvalidRegistrationTransitionException
      */
     public function reject(): void
     {
+        if (! $this->state->canBeRejected()) {
+            throw InvalidRegistrationTransitionException::cannotReject($this->id->value, $this->state);
+        }
+
         $this->state = RegistrationState::Rejected;
     }
 

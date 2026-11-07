@@ -25,7 +25,7 @@ Arriba, un resumen cuenta las inscripciones de cada estado, por ejemplo «12 Con
 
 | Acción | Cuándo sale | Qué hace | Correo |
 |---|---|---|---|
-| **Confirmar** | Inscripción **Pendiente** o en **Lista de espera** | Le da plaza ya, aunque el evento esté lleno. | «Inscripción confirmada: (evento)» |
+| **Confirmar** | Inscripción **Pendiente** o en **Lista de espera** | Le da plaza si queda alguna libre; con el evento lleno se niega: «No quedan plazas libres: el evento está completo.». Si venía de la lista de espera, quienes iban detrás suben un puesto. | «Inscripción confirmada: (evento)» |
 | **Rechazar** | Inscripción **Pendiente**, **Confirmado** o en **Lista de espera** | La rechaza. Si tenía plaza, pasa al primero de la lista de espera. | «Inscripción rechazada: (evento)» |
 | **Mover a lista de espera** | Inscripción **Confirmado** | La pone al final de la cola. Su plaza pasa a quien ya esperaba. | Ninguno |
 | **Editar** | Siempre, con el permiso **Editar inscripciones** | Cambia el **Estado** y las **Notas del administrador**, que solo se ven en el panel. | Ninguno |
@@ -34,17 +34,17 @@ Arriba, un resumen cuenta las inscripciones de cada estado, por ejemplo «12 Con
 **Confirmar**, **Rechazar**, **Mover a lista de espera** y **Borrar** piden confirmación antes de hacer nada. Quien sube de la lista de espera a una plaza recibe «¡Plaza disponible en (evento)!». Los correos salen si están activados en la configuración del módulo; el de rechazo no tiene ajuste y sale siempre, también con **Rechazar seleccionados**.
 
 > [!TIP]
-> Para confirmar a alguien con su correo, usa **Confirmar**. Cambiar el estado con **Editar** no envía ningún correo.
+> Para confirmar a alguien con su correo, usa **Confirmar**. Cambiar el estado con **Editar** no envía ningún correo ni mira las plazas libres.
 
 ## Varias a la vez
 
 Marca las casillas de las filas, abre el menú de acciones en bloque y elige:
 
-- **Confirmar seleccionados**: confirma todas las seleccionadas que aún no estaban confirmadas, también las canceladas o rechazadas.
-- **Rechazar seleccionados**: rechaza todas las seleccionadas que aún no estaban rechazadas, también las canceladas.
+- **Confirmar seleccionados**: confirma las seleccionadas que están pendientes o en la lista de espera, hasta llenar las plazas libres: primero la lista de espera, por su puesto, y después las pendientes, de la más antigua a la más reciente. Se salta las canceladas, las rechazadas, las ya confirmadas y las que no caben, que se quedan como estaban.
+- **Rechazar seleccionados**: rechaza las seleccionadas que están pendientes, confirmadas o en la lista de espera. Se salta las canceladas y las ya rechazadas.
 - **Eliminar**: borra las seleccionadas.
 
-Al terminar, las plazas que hayan quedado libres pasan a quien espera en la lista.
+El aviso final dice cuántas ha cambiado y cuántas se ha saltado, y por qué. Al terminar, las plazas que hayan quedado libres pasan a quien espera en la lista.
 
 ## Exportar la lista
 

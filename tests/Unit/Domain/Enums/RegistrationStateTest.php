@@ -84,4 +84,28 @@ final class RegistrationStateTest extends TestCase
         $this->assertEquals('gray', RegistrationState::Cancelled->color());
         $this->assertEquals('danger', RegistrationState::Rejected->color());
     }
+
+    public function test_only_pending_and_waiting_registrations_can_be_confirmed(): void
+    {
+        $this->assertSame(
+            [RegistrationState::Pending, RegistrationState::WaitingList],
+            array_values(array_filter(RegistrationState::cases(), fn (RegistrationState $state): bool => $state->canBeConfirmed())),
+        );
+    }
+
+    public function test_cancelled_and_rejected_registrations_cannot_be_rejected(): void
+    {
+        $this->assertSame(
+            [RegistrationState::Pending, RegistrationState::Confirmed, RegistrationState::WaitingList],
+            array_values(array_filter(RegistrationState::cases(), fn (RegistrationState $state): bool => $state->canBeRejected())),
+        );
+    }
+
+    public function test_only_pending_and_confirmed_registrations_can_move_to_the_waiting_list(): void
+    {
+        $this->assertSame(
+            [RegistrationState::Pending, RegistrationState::Confirmed],
+            array_values(array_filter(RegistrationState::cases(), fn (RegistrationState $state): bool => $state->canMoveToWaitingList())),
+        );
+    }
 }

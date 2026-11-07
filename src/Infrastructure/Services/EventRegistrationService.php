@@ -6,6 +6,7 @@ namespace Modules\EventRegistrations\Infrastructure\Services;
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
+use Modules\EventRegistrations\Application\DTOs\BulkTransitionResultDTO;
 use Modules\EventRegistrations\Application\DTOs\EventRegistrationResponseDTO;
 use Modules\EventRegistrations\Application\DTOs\RegisterToEventDTO;
 use Modules\EventRegistrations\Application\DTOs\UpdateRegistrationConfigDTO;
@@ -24,6 +25,7 @@ use Modules\EventRegistrations\Domain\Events\UserUnregisteredFromEvent;
 use Modules\EventRegistrations\Domain\Exceptions\AlreadyRegisteredException;
 use Modules\EventRegistrations\Domain\Exceptions\CannotCancelRegistrationException;
 use Modules\EventRegistrations\Domain\Exceptions\EventFullException;
+use Modules\EventRegistrations\Domain\Exceptions\InvalidRegistrationTransitionException;
 use Modules\EventRegistrations\Domain\Exceptions\MembersOnlyException;
 use Modules\EventRegistrations\Domain\Exceptions\RegistrationClosedException;
 use Modules\EventRegistrations\Domain\Exceptions\RegistrationNotFoundException;
@@ -201,17 +203,89 @@ final readonly class EventRegistrationService implements EventRegistrationServic
             EventRegistrationId::fromString($registrationId)
         );
 
+        // The state first: a cancelled registration says so, not that the event is full
+        if (! $registration->state()->canBeConfirmed()) {
+            throw InvalidRegistrationTransitionException::cannotConfirm($registration->id()->value, $registration->state());
+        }
+
+        if ($this->freeSpots($registration->eventId()) === 0) {
+            throw EventFullException::noSpotsToConfirm($registration->eventId());
+        }
+
+        $wasWaiting = $registration->isOnWaitingList();
         $registration->confirm();
         $this->registrationRepository->save($registration);
 
-        // Dispatch confirmation event
-        Event::dispatch(RegistrationConfirmed::create(
-            registrationId: $registration->id()->value,
-            eventId: $registration->eventId(),
-            userId: $registration->userId(),
-        ));
+        // Whoever was behind on the waiting list moves up
+        if ($wasWaiting) {
+            $this->waitingListService->recalculatePositions($registration->eventId());
+        }
+
+        $this->announceConfirmation($registration);
 
         return EventRegistrationResponseDTO::fromEntity($registration);
+    }
+
+    public function confirmMany(array $registrationIds): BulkTransitionResultDTO
+    {
+        $registrations = array_map(
+            fn (string $registrationId): EventRegistration => $this->registrationRepository->findOrFail(
+                EventRegistrationId::fromString($registrationId)
+            ),
+            $registrationIds,
+        );
+
+        $confirmable = array_values(array_filter(
+            $registrations,
+            fn (EventRegistration $registration): bool => $registration->state()->canBeConfirmed(),
+        ));
+        $skippedInvalid = count($registrations) - count($confirmable);
+
+        // The waiting list first, by position; then pending registrations, oldest first
+        usort($confirmable, fn (EventRegistration $a, EventRegistration $b): int => $this->confirmationOrder($a) <=> $this->confirmationOrder($b));
+
+        $confirmed = 0;
+        $skippedFull = 0;
+
+        DB::transaction(function () use ($confirmable, &$confirmed, &$skippedFull): void {
+            /** @var array<string, int|null> $freeSpots null when the event has no limit */
+            $freeSpots = [];
+            $waitingEvents = [];
+
+            foreach ($confirmable as $registration) {
+                $eventId = $registration->eventId();
+
+                if (! array_key_exists($eventId, $freeSpots)) {
+                    $freeSpots[$eventId] = $this->freeSpots($eventId);
+                }
+
+                if ($freeSpots[$eventId] === 0) {
+                    $skippedFull++;
+
+                    continue;
+                }
+
+                if ($registration->isOnWaitingList()) {
+                    $waitingEvents[$eventId] = true;
+                }
+
+                $registration->confirm();
+                $this->registrationRepository->save($registration);
+                $this->announceConfirmation($registration);
+
+                if ($freeSpots[$eventId] !== null) {
+                    $freeSpots[$eventId]--;
+                }
+                $confirmed++;
+            }
+
+            // Whoever was behind on the waiting list moves up
+            foreach (array_keys($waitingEvents) as $eventId) {
+                $this->waitingListService->recalculatePositions((string) $eventId);
+            }
+        });
+
+        return new BulkTransitionResultDTO(changed: $confirmed, skippedInvalid: $skippedInvalid, skippedFull: $skippedFull);
     }
 
     public function reject(string $registrationId): EventRegistrationResponseDTO
@@ -225,6 +299,7 @@ final readonly class EventRegistrationService implements EventRegistrationServic
             return EventRegistrationResponseDTO::fromEntity($registration);
         }
 
+        // A cancelled registration cannot be rejected: the domain refuses it
         $registration->reject();
         $this->registrationRepository->save($registration);
         $this->announceRejection($registration);
@@ -235,19 +310,23 @@ final readonly class EventRegistrationService implements EventRegistrationServic
         return EventRegistrationResponseDTO::fromEntity($registration);
     }
 
-    public function rejectMany(array $registrationIds): int
+    public function rejectMany(array $registrationIds): BulkTransitionResultDTO
     {
         $eventIds = [];
         $rejected = 0;
+        $skipped = 0;
 
         // All or none: a failure halfway leaves every selected registration as it was
-        DB::transaction(function () use ($registrationIds, &$eventIds, &$rejected): void {
+        DB::transaction(function () use ($registrationIds, &$eventIds, &$rejected, &$skipped): void {
             foreach ($registrationIds as $registrationId) {
                 $registration = $this->registrationRepository->findOrFail(
                     EventRegistrationId::fromString($registrationId)
                 );
 
-                if ($registration->state() === RegistrationState::Rejected) {
+                // Cancelled and already rejected registrations stay as they are
+                if (! $registration->state()->canBeRejected()) {
+                    $skipped++;
+
                     continue;
                 }
 
@@ -265,7 +344,7 @@ final readonly class EventRegistrationService implements EventRegistrationServic
             $this->waitingListService->fillFreeSpots((string) $eventId);
         }
 
-        return $rejected;
+        return new BulkTransitionResultDTO(changed: $rejected, skippedInvalid: $skipped);
     }
 
     public function moveToWaitingList(string $registrationId): EventRegistrationResponseDTO
@@ -335,6 +414,51 @@ final readonly class EventRegistrationService implements EventRegistrationServic
         return $registration instanceof EventRegistration
             ? EventRegistrationResponseDTO::fromEntity($registration)
             : null;
+    }
+
+    /**
+     * Free spots of the event for one more confirmation, or null when it has no limit.
+     */
+    private function freeSpots(string $eventId): ?int
+    {
+        $limit = $this->configRepository->findByEventOrDefault($eventId)->participantLimit();
+
+        if ($limit === null) {
+            return null;
+        }
+
+        return max(0, $limit - $this->registrationRepository->countConfirmedByEvent($eventId));
+    }
+
+    /**
+     * Sort key of a bulk confirmation: the waiting list first, by position, then pending
+     * registrations by the time they registered.
+     *
+     * @return array{int, int, int|float, string}
+     */
+    private function confirmationOrder(EventRegistration $registration): array
+    {
+        return [
+            $registration->isOnWaitingList() ? 0 : 1,
+            $registration->position() ?? PHP_INT_MAX,
+            $registration->createdAt()?->getTimestamp() ?? PHP_INT_MAX,
+            $registration->id()->value,
+        ];
+    }
+
+    /**
+     * Tell the person their registration was confirmed by the organisers, once the change is
+     * committed.
+     */
+    private function announceConfirmation(EventRegistration $registration): void
+    {
+        $event = RegistrationConfirmed::create(
+            registrationId: $registration->id()->value,
+            eventId: $registration->eventId(),
+            userId: $registration->userId(),
+        );
+
+        DB::afterCommit(static fn () => Event::dispatch($event));
     }
 
     /**

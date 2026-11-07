@@ -61,6 +61,11 @@ return [
     'bulk' => [
         'confirm_description' => '¿Estás seguro de que quieres confirmar las inscripciones seleccionadas?',
         'reject_description' => '¿Estás seguro de que quieres rechazar las inscripciones seleccionadas?',
+        'confirmed_count' => '{1} Se ha confirmado 1 inscripción.|[2,*] Se han confirmado :count inscripciones.',
+        'rejected_count' => '{1} Se ha rechazado 1 inscripción.|[2,*] Se han rechazado :count inscripciones.',
+        'skipped_cannot_confirm' => '{1} Se ha saltado 1 que no se podía confirmar (cancelada, rechazada o ya confirmada).|[2,*] Se han saltado :count que no se podían confirmar (canceladas, rechazadas o ya confirmadas).',
+        'skipped_cannot_reject' => '{1} Se ha saltado 1 que no se podía rechazar (cancelada o ya rechazada).|[2,*] Se han saltado :count que no se podían rechazar (canceladas o ya rechazadas).',
+        'skipped_full' => '{1} Se ha saltado 1 por falta de plazas.|[2,*] Se han saltado :count por falta de plazas.',
     ],
 
     // Modal confirmations
@@ -78,6 +83,8 @@ return [
         'bulk_confirmed' => 'Inscripciones confirmadas',
         'none_to_confirm' => 'No hay inscripciones para confirmar',
         'none_to_reject' => 'No hay inscripciones para rechazar',
+        'bulk_rejected' => 'Inscripciones rechazadas',
+        'event_full' => 'No quedan plazas libres: el evento está completo.',
     ],
 
     // Stats

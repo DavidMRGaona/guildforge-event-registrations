@@ -18,6 +18,11 @@ final class EventFullException extends DomainException
         return new self("Event {$eventId} has no spots available.");
     }
 
+    public static function noSpotsToConfirm(string $eventId): self
+    {
+        return new self("Event {$eventId} has no free spot to confirm one more registration.");
+    }
+
     public static function waitingListFull(string $eventId): self
     {
         return new self("Event {$eventId} waiting list is full.");
