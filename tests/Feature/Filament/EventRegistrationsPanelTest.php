@@ -77,6 +77,32 @@ final class EventRegistrationsPanelTest extends ModuleTestCase
         $this->assertNull(EventRegistrationConfigModel::query()->findOrFail($this->event->id)->max_participants);
     }
 
+    public function test_the_config_tab_saves_the_notification_email_and_shows_it_again(): void
+    {
+        Livewire::test(RegistrationConfigRelationManager::class, ['ownerRecord' => $this->event, 'pageClass' => EditEvent::class])
+            ->set('configData.registration_enabled', true)
+            ->set('configData.notification_email', 'organisers@example.test')
+            ->call('save')
+            ->assertHasNoErrors();
+
+        $this->assertSame('organisers@example.test', EventRegistrationConfigModel::query()->findOrFail($this->event->id)->notification_email);
+
+        Livewire::test(RegistrationConfigRelationManager::class, ['ownerRecord' => $this->event, 'pageClass' => EditEvent::class])
+            ->assertSet('configData.notification_email', 'organisers@example.test');
+    }
+
+    public function test_the_config_tab_clears_the_notification_email_when_emptied(): void
+    {
+        EventRegistrationConfigModel::create(['event_id' => $this->event->id, 'registration_enabled' => true, 'notification_email' => 'organisers@example.test']);
+
+        Livewire::test(RegistrationConfigRelationManager::class, ['ownerRecord' => $this->event, 'pageClass' => EditEvent::class])
+            ->set('configData.notification_email', '')
+            ->call('save')
+            ->assertHasNoErrors();
+
+        $this->assertNull(EventRegistrationConfigModel::query()->findOrFail($this->event->id)->notification_email);
+    }
+
     public function test_registrations_relation_manager_renders_when_registration_is_enabled(): void
     {
         EventRegistrationConfigModel::create(['event_id' => $this->event->id, 'registration_enabled' => true]);

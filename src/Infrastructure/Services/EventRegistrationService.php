@@ -288,6 +288,7 @@ final readonly class EventRegistrationService implements EventRegistrationServic
             membersOnly: $dto->membersOnly,
             customFields: $dto->customFields,
             confirmationMessage: $dto->confirmationMessage,
+            notificationEmail: $dto->notificationEmail,
         );
 
         $this->configRepository->save($config);

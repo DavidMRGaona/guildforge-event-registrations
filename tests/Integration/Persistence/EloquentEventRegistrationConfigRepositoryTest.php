@@ -9,6 +9,7 @@ use App\Infrastructure\Persistence\Eloquent\Models\EventModel;
 use DateTimeImmutable;
 use DateTimeZone;
 use Illuminate\Support\Str;
+use Modules\EventRegistrations\Domain\Entities\EventRegistrationConfig;
 use Modules\EventRegistrations\Domain\Repositories\EventRegistrationConfigRepositoryInterface;
 use Modules\EventRegistrations\Infrastructure\Persistence\Eloquent\Models\EventRegistrationConfigModel;
 use Tests\Support\Modules\ModuleTestCase;
@@ -40,6 +41,16 @@ final class EloquentEventRegistrationConfigRepositoryTest extends ModuleTestCase
 
         $this->assertNotNull($config);
         $this->assertSame('2030-04-12 10:00:00', $config->eventStartsAt()?->format('Y-m-d H:i:s'));
+    }
+
+    public function test_the_notification_email_is_saved_and_read_back(): void
+    {
+        $event = $this->eventStartingAt('2030-04-12 10:00:00');
+
+        $this->repository->save(new EventRegistrationConfig(eventId: $event->id, notificationEmail: 'organisers@example.test'));
+
+        $this->assertSame('organisers@example.test', EventRegistrationConfigModel::query()->findOrFail($event->id)->notification_email);
+        $this->assertSame('organisers@example.test', $this->repository->findByEvent($event->id)?->notificationEmail());
     }
 
     public function test_the_default_config_carries_the_start_of_its_event(): void
