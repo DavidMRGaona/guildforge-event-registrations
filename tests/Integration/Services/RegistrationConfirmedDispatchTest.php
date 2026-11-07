@@ -68,6 +68,8 @@ final class RegistrationConfirmedDispatchTest extends TestCase
         );
 
         $this->registrationRepository->method('findOrFail')->willReturn($registration);
+        // Without a participant limit: the capacity check never stops it
+        $this->configRepository->method('findByEventOrDefault')->willReturn(new EventRegistrationConfig(eventId: 'event-1'));
 
         $this->makeRegistrationService()->confirm($registration->id()->value);
 

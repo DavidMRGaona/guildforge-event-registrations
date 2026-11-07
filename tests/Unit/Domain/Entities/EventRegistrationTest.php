@@ -7,7 +7,9 @@ namespace Modules\EventRegistrations\Tests\Unit\Domain\Entities;
 use Modules\EventRegistrations\Domain\Entities\EventRegistration;
 use Modules\EventRegistrations\Domain\Enums\RegistrationState;
 use Modules\EventRegistrations\Domain\Exceptions\CannotCancelRegistrationException;
+use Modules\EventRegistrations\Domain\Exceptions\InvalidRegistrationTransitionException;
 use Modules\EventRegistrations\Domain\ValueObjects\EventRegistrationId;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 final class EventRegistrationTest extends TestCase
@@ -97,7 +99,7 @@ final class EventRegistrationTest extends TestCase
 
     public function test_it_promotes_from_waiting_list(): void
     {
-        $registration = $this->createRegistration(RegistrationState::WaitingList);
+        $registration = $this->createRegistration();
         $registration->moveToWaitingList(3);
 
         $registration->promoteFromWaitingList();
@@ -118,7 +120,7 @@ final class EventRegistrationTest extends TestCase
 
     public function test_it_updates_position(): void
     {
-        $registration = $this->createRegistration(RegistrationState::WaitingList);
+        $registration = $this->createRegistration();
         $registration->moveToWaitingList(5);
 
         $registration->updatePosition(3);
@@ -187,5 +189,89 @@ final class EventRegistrationTest extends TestCase
 
         $this->assertTrue($waiting->canBePromoted());
         $this->assertFalse($confirmed->canBePromoted());
+    }
+
+    /**
+     * @return array<string, array{RegistrationState}>
+     */
+    public static function statesThatCannotBeConfirmed(): array
+    {
+        return [
+            'confirmed' => [RegistrationState::Confirmed],
+            'cancelled' => [RegistrationState::Cancelled],
+            'rejected' => [RegistrationState::Rejected],
+        ];
+    }
+
+    #[DataProvider('statesThatCannotBeConfirmed')]
+    public function test_it_refuses_to_confirm_from_a_state_that_cannot_be_confirmed(RegistrationState $state): void
+    {
+        $registration = $this->createRegistration($state);
+
+        $this->expectException(InvalidRegistrationTransitionException::class);
+
+        $registration->confirm();
+    }
+
+    public function test_it_confirms_from_the_waiting_list(): void
+    {
+        $registration = $this->createRegistration(RegistrationState::WaitingList);
+
+        $registration->confirm();
+
+        $this->assertSame(RegistrationState::Confirmed, $registration->state());
+    }
+
+    /**
+     * @return array<string, array{RegistrationState}>
+     */
+    public static function statesThatCannotBeRejected(): array
+    {
+        return [
+            'cancelled' => [RegistrationState::Cancelled],
+            'rejected' => [RegistrationState::Rejected],
+        ];
+    }
+
+    #[DataProvider('statesThatCannotBeRejected')]
+    public function test_it_refuses_to_reject_from_a_state_that_cannot_be_rejected(RegistrationState $state): void
+    {
+        $registration = $this->createRegistration($state);
+
+        $this->expectException(InvalidRegistrationTransitionException::class);
+
+        $registration->reject();
+    }
+
+    /**
+     * @return array<string, array{RegistrationState}>
+     */
+    public static function statesThatCannotMoveToTheWaitingList(): array
+    {
+        return [
+            'waiting list' => [RegistrationState::WaitingList],
+            'cancelled' => [RegistrationState::Cancelled],
+            'rejected' => [RegistrationState::Rejected],
+        ];
+    }
+
+    #[DataProvider('statesThatCannotMoveToTheWaitingList')]
+    public function test_it_refuses_to_move_to_the_waiting_list_from_a_state_that_cannot(RegistrationState $state): void
+    {
+        $registration = $this->createRegistration($state);
+
+        $this->expectException(InvalidRegistrationTransitionException::class);
+
+        $registration->moveToWaitingList(1);
+    }
+
+    public function test_it_moves_a_confirmed_registration_to_the_waiting_list(): void
+    {
+        $registration = $this->createRegistration(RegistrationState::Confirmed);
+
+        $registration->moveToWaitingList(3);
+
+        $this->assertSame(RegistrationState::WaitingList, $registration->state());
+        $this->assertSame(3, $registration->position());
     }
 }

@@ -61,6 +61,11 @@ return [
     'bulk' => [
         'confirm_description' => 'Are you sure you want to confirm the selected registrations?',
         'reject_description' => 'Are you sure you want to reject the selected registrations?',
+        'confirmed_count' => '{1} 1 registration confirmed.|[2,*] :count registrations confirmed.',
+        'rejected_count' => '{1} 1 registration rejected.|[2,*] :count registrations rejected.',
+        'skipped_cannot_confirm' => '{1} 1 skipped that could not be confirmed (cancelled, rejected or already confirmed).|[2,*] :count skipped that could not be confirmed (cancelled, rejected or already confirmed).',
+        'skipped_cannot_reject' => '{1} 1 skipped that could not be rejected (cancelled or already rejected).|[2,*] :count skipped that could not be rejected (cancelled or already rejected).',
+        'skipped_full' => '{1} 1 skipped for lack of spots.|[2,*] :count skipped for lack of spots.',
     ],
 
     // Modal confirmations
@@ -78,6 +83,8 @@ return [
         'bulk_confirmed' => 'Registrations confirmed',
         'none_to_confirm' => 'No registrations to confirm',
         'none_to_reject' => 'No registrations to reject',
+        'bulk_rejected' => 'Registrations rejected',
+        'event_full' => 'No free spots left: the event is full.',
     ],
 
     // Stats

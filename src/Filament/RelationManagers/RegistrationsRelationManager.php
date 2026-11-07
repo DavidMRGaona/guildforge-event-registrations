@@ -23,9 +23,11 @@ use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
+use Modules\EventRegistrations\Application\DTOs\BulkTransitionResultDTO;
 use Modules\EventRegistrations\Application\Services\EventRegistrationServiceInterface;
 use Modules\EventRegistrations\Application\Services\WaitingListServiceInterface;
 use Modules\EventRegistrations\Domain\Enums\RegistrationState;
+use Modules\EventRegistrations\Domain\Exceptions\EventFullException;
 use Modules\EventRegistrations\Domain\Repositories\EventRegistrationRepositoryInterface;
 use Modules\EventRegistrations\Infrastructure\Persistence\Eloquent\Models\EventRegistrationConfigModel;
 use Modules\EventRegistrations\Infrastructure\Persistence\Eloquent\Models\EventRegistrationModel;
@@ -248,14 +250,21 @@ final class RegistrationsRelationManager extends RelationManager
                     ->label(__('event-registrations::messages.actions.confirm'))
                     ->icon('heroicon-o-check-circle')
                     ->color('success')
-                    ->visible(fn (EventRegistrationModel $record): bool => $record->state !== RegistrationState::Confirmed && ! $record->state->isFinal())
+                    ->visible(fn (EventRegistrationModel $record): bool => $record->state->canBeConfirmed())
                     ->requiresConfirmation()
                     ->modalHeading(__('event-registrations::messages.actions.confirm'))
                     ->modalDescription(__('event-registrations::messages.modal.confirm_description'))
                     ->modalSubmitActionLabel(__('event-registrations::messages.actions.confirm'))
                     ->action(function (EventRegistrationModel $record): void {
                         $service = resolve(EventRegistrationServiceInterface::class);
-                        $service->confirm((string) $record->id);
+
+                        try {
+                            $service->confirm((string) $record->id);
+                        } catch (EventFullException) {
+                            Notification::make()->title(__('event-registrations::messages.notifications.event_full'))->warning()->send();
+
+                            return;
+                        }
 
                         Notification::make()
                             ->title(__('event-registrations::messages.notifications.confirmed'))
@@ -267,7 +276,7 @@ final class RegistrationsRelationManager extends RelationManager
                     ->label(__('event-registrations::messages.actions.reject'))
                     ->icon('heroicon-o-x-circle')
                     ->color('danger')
-                    ->visible(fn (EventRegistrationModel $record): bool => ! $record->state->isFinal())
+                    ->visible(fn (EventRegistrationModel $record): bool => $record->state->canBeRejected())
                     ->requiresConfirmation()
                     ->modalHeading(__('event-registrations::messages.actions.reject'))
                     ->modalDescription(__('event-registrations::messages.modal.reject_description'))
@@ -319,35 +328,17 @@ final class RegistrationsRelationManager extends RelationManager
                         ->modalDescription(__('event-registrations::messages.bulk.confirm_description'))
                         ->modalSubmitActionLabel(__('event-registrations::messages.actions.confirm'))
                         ->action(function (Collection $records, RelationManager $livewire): void {
-                            $service = resolve(EventRegistrationServiceInterface::class);
-                            $count = 0;
+                            $result = resolve(EventRegistrationServiceInterface::class)->confirmMany(
+                                $records->map(fn ($record): string => (string) $record->getKey())->values()->all()
+                            );
 
-                            foreach ($records as $record) {
-                                /** @var EventRegistrationModel $registration */
-                                $registration = $record;
-
-                                if ($registration->state === RegistrationState::Confirmed) {
-                                    continue;
-                                }
-
-                                $service->confirm((string) $registration->id);
-                                $count++;
-                            }
-
-                            if ($count === 0) {
-                                Notification::make()
-                                    ->title(__('event-registrations::messages.notifications.none_to_confirm'))
-                                    ->warning()
-                                    ->send();
-
-                                return;
-                            }
-
-                            Notification::make()
-                                ->title(__('event-registrations::messages.notifications.bulk_confirmed'))
-                                ->body($count.' '.__('event-registrations::messages.navigation'))
-                                ->success()
-                                ->send();
+                            $this->notifyBulkResult(
+                                $result,
+                                successTitle: 'notifications.bulk_confirmed',
+                                noneTitle: 'notifications.none_to_confirm',
+                                changedLine: 'bulk.confirmed_count',
+                                skippedInvalidLine: 'bulk.skipped_cannot_confirm',
+                            );
 
                             // Force Livewire component refresh to avoid stale state
                             $livewire->dispatch('$refresh');
@@ -363,25 +354,17 @@ final class RegistrationsRelationManager extends RelationManager
                         ->modalDescription(__('event-registrations::messages.bulk.reject_description'))
                         ->modalSubmitActionLabel(__('event-registrations::messages.actions.reject'))
                         ->action(function (Collection $records, RelationManager $livewire): void {
-                            $service = resolve(EventRegistrationServiceInterface::class);
-                            $count = $service->rejectMany(
+                            $result = resolve(EventRegistrationServiceInterface::class)->rejectMany(
                                 $records->map(fn ($record): string => (string) $record->getKey())->values()->all()
                             );
 
-                            if ($count === 0) {
-                                Notification::make()
-                                    ->title(__('event-registrations::messages.notifications.none_to_reject'))
-                                    ->warning()
-                                    ->send();
-
-                                return;
-                            }
-
-                            Notification::make()
-                                ->title(__('event-registrations::messages.notifications.rejected'))
-                                ->body($count.' '.__('event-registrations::messages.navigation'))
-                                ->success()
-                                ->send();
+                            $this->notifyBulkResult(
+                                $result,
+                                successTitle: 'notifications.bulk_rejected',
+                                noneTitle: 'notifications.none_to_reject',
+                                changedLine: 'bulk.rejected_count',
+                                skippedInvalidLine: 'bulk.skipped_cannot_reject',
+                            );
 
                             // Force Livewire component refresh to avoid stale state
                             $livewire->dispatch('$refresh');
@@ -392,6 +375,38 @@ final class RegistrationsRelationManager extends RelationManager
                 ]),
             ])
             ->defaultSort('created_at', 'desc');
+    }
+
+    /**
+     * Say what a bulk confirm or reject did: how many changed and how many it skipped, and
+     * why. A warning when nothing changed.
+     */
+    private function notifyBulkResult(
+        BulkTransitionResultDTO $result,
+        string $successTitle,
+        string $noneTitle,
+        string $changedLine,
+        string $skippedInvalidLine,
+    ): void {
+        $lines = [];
+
+        if ($result->changed > 0) {
+            $lines[] = trans_choice("event-registrations::messages.{$changedLine}", $result->changed);
+        }
+
+        if ($result->skippedInvalid > 0) {
+            $lines[] = trans_choice("event-registrations::messages.{$skippedInvalidLine}", $result->skippedInvalid);
+        }
+
+        if ($result->skippedFull > 0) {
+            $lines[] = trans_choice('event-registrations::messages.bulk.skipped_full', $result->skippedFull);
+        }
+
+        $notification = Notification::make()
+            ->title(__('event-registrations::messages.'.($result->changed > 0 ? $successTitle : $noneTitle)))
+            ->body($lines === [] ? null : implode(' ', $lines));
+
+        ($result->changed > 0 ? $notification->success() : $notification->warning())->send();
     }
 
     /**

@@ -73,6 +73,30 @@ enum RegistrationState: string
     }
 
     /**
+     * Whether the organisers may confirm it: a pending registration, or one on the waiting list.
+     */
+    public function canBeConfirmed(): bool
+    {
+        return $this === self::Pending || $this === self::WaitingList;
+    }
+
+    /**
+     * Whether the organisers may reject it: anything but a cancelled or already rejected one.
+     */
+    public function canBeRejected(): bool
+    {
+        return ! $this->isFinal();
+    }
+
+    /**
+     * Whether it may be moved to the waiting list: a pending or confirmed registration.
+     */
+    public function canMoveToWaitingList(): bool
+    {
+        return $this === self::Pending || $this === self::Confirmed;
+    }
+
+    /**
      * Check if registration can be promoted from waiting list.
      */
     public function canBePromoted(): bool

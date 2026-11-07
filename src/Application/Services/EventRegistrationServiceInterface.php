@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace Modules\EventRegistrations\Application\Services;
 
+use Modules\EventRegistrations\Application\DTOs\BulkTransitionResultDTO;
 use Modules\EventRegistrations\Application\DTOs\EventRegistrationResponseDTO;
 use Modules\EventRegistrations\Application\DTOs\RegisterToEventDTO;
 use Modules\EventRegistrations\Application\DTOs\UpdateRegistrationConfigDTO;
 use Modules\EventRegistrations\Domain\Exceptions\AlreadyRegisteredException;
 use Modules\EventRegistrations\Domain\Exceptions\CannotCancelRegistrationException;
 use Modules\EventRegistrations\Domain\Exceptions\EventFullException;
+use Modules\EventRegistrations\Domain\Exceptions\InvalidRegistrationTransitionException;
 use Modules\EventRegistrations\Domain\Exceptions\MembersOnlyException;
 use Modules\EventRegistrations\Domain\Exceptions\RegistrationClosedException;
 use Modules\EventRegistrations\Domain\Exceptions\RegistrationNotFoundException;
@@ -44,32 +46,46 @@ interface EventRegistrationServiceInterface
     public function cancel(string $eventId, string $userId): void;
 
     /**
-     * Confirm a pending registration (admin action).
+     * Confirm a pending or waiting registration (admin action) while a spot is free; one from
+     * the waiting list moves the people behind it up.
      *
      * @throws RegistrationNotFoundException
+     * @throws InvalidRegistrationTransitionException when its state cannot be confirmed
+     * @throws EventFullException when the event has no free spot
      */
     public function confirm(string $registrationId): EventRegistrationResponseDTO;
 
     /**
-     * Reject a registration (admin action).
+     * Confirm several registrations up to the free spots: the waiting list first, by position,
+     * then pending ones, oldest first. Those whose state cannot be confirmed, and those left
+     * without a spot, are skipped and keep their state.
+     *
+     * @param  array<string>  $registrationIds
+     */
+    public function confirmMany(array $registrationIds): BulkTransitionResultDTO;
+
+    /**
+     * Reject a registration (admin action). An already rejected one is left as it is.
      *
      * @throws RegistrationNotFoundException
+     * @throws InvalidRegistrationTransitionException when it is cancelled
      */
     public function reject(string $registrationId): EventRegistrationResponseDTO;
 
     /**
      * Reject several registrations, then fill the freed spots once, so a waiting person who is
-     * also being rejected is never promoted in between. Registrations already rejected are skipped.
+     * also being rejected is never promoted in between. Cancelled and already rejected
+     * registrations are skipped.
      *
      * @param  array<string>  $registrationIds
-     * @return int How many registrations were rejected
      */
-    public function rejectMany(array $registrationIds): int;
+    public function rejectMany(array $registrationIds): BulkTransitionResultDTO;
 
     /**
      * Move a registration to the waiting list (admin action).
      *
      * @throws RegistrationNotFoundException
+     * @throws InvalidRegistrationTransitionException when it is neither pending nor confirmed
      */
     public function moveToWaitingList(string $registrationId): EventRegistrationResponseDTO;
 
