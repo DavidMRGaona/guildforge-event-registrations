@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\EventRegistrations;
 
 use App\Application\Calendar\Contracts\CalendarAttendanceSourceInterface;
+use App\Application\Mail\DTOs\MailCategoryDTO;
 use App\Application\Modules\DTOs\PermissionDTO;
 use App\Application\Modules\DTOs\SlotRegistrationDTO;
 use App\Application\Surveys\Contracts\SurveySubjectSourceInterface;
@@ -64,6 +65,10 @@ use Modules\EventRegistrations\Policies\EventRegistrationPolicy;
 
 final class EventRegistrationsServiceProvider extends ModuleServiceProvider
 {
+    public const string MAIL_REGISTRATIONS = 'event-registrations.registrations';
+
+    public const string MAIL_REMINDERS = 'event-registrations.reminders';
+
     public function moduleName(): string
     {
         return 'event-registrations';
@@ -277,6 +282,28 @@ final class EventRegistrationsServiceProvider extends ModuleServiceProvider
 
         // Registration data is shared per-event via the controller
         // Global settings can be shared here if needed
+    }
+
+    /**
+     * @return list<MailCategoryDTO>
+     */
+    public function registerMailCategories(): array
+    {
+        return [
+            MailCategoryDTO::mandatory(
+                key: self::MAIL_REGISTRATIONS,
+                section: 'event-registrations::messages.mail.section',
+                label: 'event-registrations::messages.mail.registrations.label',
+                description: 'event-registrations::messages.mail.registrations.description',
+                reason: 'event-registrations::messages.mail.registrations.reason',
+            ),
+            MailCategoryDTO::optional(
+                key: self::MAIL_REMINDERS,
+                section: 'event-registrations::messages.mail.section',
+                label: 'event-registrations::messages.mail.reminders.label',
+                description: 'event-registrations::messages.mail.reminders.description',
+            ),
+        ];
     }
 
     /**

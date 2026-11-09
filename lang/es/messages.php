@@ -173,6 +173,20 @@ return [
         'manage_surveys' => 'Gestionar las encuestas de los eventos',
     ],
 
+    // Mail preferences
+    'mail' => [
+        'section' => 'Inscripciones a eventos',
+        'registrations' => [
+            'label' => 'Mis inscripciones',
+            'description' => 'Inscripción, confirmación, rechazo, cancelación y plaza libre en la lista de espera.',
+            'reason' => 'Confirman algo que has hecho o cambian tus planes.',
+        ],
+        'reminders' => [
+            'label' => 'Recordatorios de eventos',
+            'description' => 'Aviso unas horas antes de un evento en el que tienes plaza.',
+        ],
+    ],
+
     // Emails
     'emails' => [
         'greeting' => '¡Hola, :name!',
