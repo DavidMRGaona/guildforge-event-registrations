@@ -6,7 +6,7 @@ category: events-and-games
 audience: site
 order: 37
 keywords: [mis inscripciones, mis eventos, a qué me he apuntado, dónde estoy inscrito, próximos eventos, eventos pasados, historial, perfil, estado de mi inscripción, puesto en la lista de espera, inscripcines]
-related: [event-registrations.sign-up, event-registrations.cancel, core.account.complete-profile]
+related: [event-registrations.sign-up, event-registrations.cancel, core.account.complete-profile, core.account.mail-preferences]
 ---
 Todas tus inscripciones a eventos están en tu perfil, en una sola lista.
 
