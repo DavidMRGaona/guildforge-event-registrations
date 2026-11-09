@@ -173,6 +173,20 @@ return [
         'manage_surveys' => 'Manage event surveys',
     ],
 
+    // Mail preferences
+    'mail' => [
+        'section' => 'Event registrations',
+        'registrations' => [
+            'label' => 'My registrations',
+            'description' => 'Sign-up, confirmation, rejection, cancellation and a free place on the waiting list.',
+            'reason' => 'They confirm something you did or change your plans.',
+        ],
+        'reminders' => [
+            'label' => 'Event reminders',
+            'description' => 'A notice a few hours before an event you have a place in.',
+        ],
+    ],
+
     // Emails
     'emails' => [
         'greeting' => 'Hello :name,',

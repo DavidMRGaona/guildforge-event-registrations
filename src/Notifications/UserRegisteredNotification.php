@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\EventRegistrations\Notifications;
 
+use App\Application\Mail\Contracts\HasMailCategory;
 use App\Application\Services\TimezoneServiceInterface;
 use App\Infrastructure\Persistence\Eloquent\Models\EventModel;
 use App\Infrastructure\Persistence\Eloquent\Models\UserModel;
@@ -11,12 +12,18 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use Modules\EventRegistrations\EventRegistrationsServiceProvider;
 use Modules\EventRegistrations\Domain\Entities\EventRegistration;
 use Modules\EventRegistrations\Domain\Enums\RegistrationState;
 
-final class UserRegisteredNotification extends Notification implements ShouldQueue
+final class UserRegisteredNotification extends Notification implements HasMailCategory, ShouldQueue
 {
     use Queueable;
+
+    public function mailCategory(): string
+    {
+        return EventRegistrationsServiceProvider::MAIL_REGISTRATIONS;
+    }
 
     public function __construct(
         private readonly EventModel $event,
