@@ -121,6 +121,8 @@ return [
         'notifications' => 'Notifications',
         'notification_email' => 'Notification email',
         'notification_email_help' => 'Receive a notification when someone registers for this event',
+        'confirmation_message' => 'Confirmation message',
+        'confirmation_message_help' => 'Added to the email sent to whoever gets a spot (confirmation, confirmed sign-up or promotion from the waiting list). Plain text, up to 500 characters.',
         'save' => 'Save configuration',
         'saved' => 'Configuration saved',
         'create' => 'Configure registrations',
@@ -194,6 +196,7 @@ return [
         'date' => 'Date',
         'location' => 'Location',
         'view_event' => 'View event',
+        'organiser_message' => 'Message from the organiser',
         'view_events' => 'View events',
 
         // Confirmation email

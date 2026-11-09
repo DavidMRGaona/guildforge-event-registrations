@@ -121,6 +121,8 @@ return [
         'notifications' => 'Notificaciones',
         'notification_email' => 'Email de notificación',
         'notification_email_help' => 'Recibe una notificación cuando alguien se inscribe al evento',
+        'confirmation_message' => 'Mensaje de confirmación',
+        'confirmation_message_help' => 'Se añade al correo que recibe quien consigue plaza (confirmación, inscripción confirmada o salto desde la lista de espera). Solo texto, hasta 500 caracteres.',
         'save' => 'Guardar configuración',
         'saved' => 'Configuración guardada',
         'create' => 'Configurar inscripciones',
@@ -194,6 +196,7 @@ return [
         'date' => 'Fecha',
         'location' => 'Ubicación',
         'view_event' => 'Ver evento',
+        'organiser_message' => 'Mensaje de quien organiza',
         'view_events' => 'Ver eventos',
 
         // Confirmation email

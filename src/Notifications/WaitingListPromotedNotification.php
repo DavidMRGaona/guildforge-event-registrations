@@ -14,14 +14,17 @@ use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 use Modules\EventRegistrations\Domain\Entities\EventRegistration;
 use Modules\EventRegistrations\EventRegistrationsServiceProvider;
+use Modules\EventRegistrations\Notifications\Concerns\AddsOrganiserMessage;
 
 final class WaitingListPromotedNotification extends Notification implements HasMailCategory, ShouldQueue
 {
+    use AddsOrganiserMessage;
     use Queueable;
 
     public function __construct(
         private readonly EventModel $event,
         private readonly EventRegistration $registration,
+        private readonly ?string $organiserMessage = null,
     ) {}
 
     public function mailCategory(): string
@@ -40,7 +43,7 @@ final class WaitingListPromotedNotification extends Notification implements HasM
     public function toMail(object $notifiable): MailMessage
     {
         /** @var UserModel $notifiable */
-        return (new MailMessage)
+        $message = (new MailMessage)
             ->subject(__('event-registrations::messages.emails.promoted_subject', [
                 'event' => $this->event->title,
             ]))
@@ -50,7 +53,9 @@ final class WaitingListPromotedNotification extends Notification implements HasM
             ->line(__('event-registrations::messages.emails.promoted_body', [
                 'event' => $this->event->title,
             ]))
-            ->line(__('event-registrations::messages.emails.promoted_info'))
+            ->line(__('event-registrations::messages.emails.promoted_info'));
+
+        return $this->addOrganiserMessage($message, $this->organiserMessage)
             ->line(__('event-registrations::messages.emails.event_details'))
             ->line('**'.__('event-registrations::messages.emails.date').':** '.app(TimezoneServiceInterface::class)->format($this->event->start_date))
             ->when($this->event->location, fn (MailMessage $message): MailMessage => $message->line('**'.__('event-registrations::messages.emails.location').':** '.$this->event->location))

@@ -37,7 +37,7 @@ final readonly class RegistrationNotificationService implements RegistrationNoti
             return;
         }
 
-        $user->notify(new UserRegisteredNotification($event, $registration));
+        $user->notify(new UserRegisteredNotification($event, $registration, $this->organiserMessage($event)));
     }
 
     public function sendConfirmationEmail(EventRegistration $registration): void
@@ -57,7 +57,7 @@ final readonly class RegistrationNotificationService implements RegistrationNoti
             return;
         }
 
-        $user->notify(new RegistrationConfirmedNotification($event, $registration));
+        $user->notify(new RegistrationConfirmedNotification($event, $registration, $this->organiserMessage($event)));
     }
 
     public function confirmationAlreadyAnnounced(ConfirmationSource $source): bool
@@ -86,7 +86,7 @@ final readonly class RegistrationNotificationService implements RegistrationNoti
             return;
         }
 
-        $user->notify(new WaitingListPromotedNotification($event, $registration));
+        $user->notify(new WaitingListPromotedNotification($event, $registration, $this->organiserMessage($event)));
     }
 
     public function sendCancellationEmail(EventRegistration $registration): void
@@ -160,5 +160,15 @@ final readonly class RegistrationNotificationService implements RegistrationNoti
         $endDate = $event->end_date ?? $event->start_date;
 
         return $endDate->isPast();
+    }
+
+    /**
+     * The message the organiser set for whoever gets a spot, read when the email is queued.
+     */
+    private function organiserMessage(EventModel $event): ?string
+    {
+        $message = EventRegistrationConfigModel::query()->whereKey($event->id)->value('confirmation_message');
+
+        return is_string($message) ? $message : null;
     }
 }

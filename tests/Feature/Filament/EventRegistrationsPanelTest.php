@@ -11,8 +11,11 @@ use App\Infrastructure\Persistence\Eloquent\Models\EventModel;
 use App\Infrastructure\Persistence\Eloquent\Models\UserModel;
 use DateTimeImmutable;
 use DateTimeZone;
+use InvalidArgumentException;
 use Livewire\Features\SupportTesting\Testable;
 use Livewire\Livewire;
+use Modules\EventRegistrations\Application\DTOs\UpdateRegistrationConfigDTO;
+use Modules\EventRegistrations\Application\Services\EventRegistrationServiceInterface;
 use Modules\EventRegistrations\Domain\Enums\RegistrationState;
 use Modules\EventRegistrations\EventRegistrationsServiceProvider;
 use Modules\EventRegistrations\Filament\RelationManagers\RegistrationConfigRelationManager;
@@ -100,6 +103,42 @@ final class EventRegistrationsPanelTest extends ModuleTestCase
             ->assertHasNoErrors();
 
         $this->assertNull(EventRegistrationConfigModel::query()->findOrFail($this->event->id)->notification_email);
+    }
+
+    public function test_the_config_tab_saves_the_confirmation_message(): void
+    {
+        $component = Livewire::test(RegistrationConfigRelationManager::class, ['ownerRecord' => $this->event, 'pageClass' => EditEvent::class])
+            ->set('configData.registration_enabled', true)
+            ->set('configData.confirmation_message', 'Trae tu ejército pintado')
+            ->call('save')
+            ->assertHasNoErrors();
+
+        $this->assertSame('Trae tu ejército pintado', EventRegistrationConfigModel::query()->findOrFail($this->event->id)->confirmation_message);
+
+        $component->set('configData.confirmation_message', '   ')->call('save')->assertHasNoErrors();
+
+        $this->assertNull(EventRegistrationConfigModel::query()->findOrFail($this->event->id)->confirmation_message);
+    }
+
+    public function test_the_config_tab_rejects_a_confirmation_message_over_500_characters(): void
+    {
+        Livewire::test(RegistrationConfigRelationManager::class, ['ownerRecord' => $this->event, 'pageClass' => EditEvent::class])
+            ->set('configData.registration_enabled', true)
+            ->set('configData.confirmation_message', str_repeat('a', 501))
+            ->call('save')
+            ->assertHasErrors(['configData.confirmation_message']);
+
+        $this->assertNull(EventRegistrationConfigModel::query()->find($this->event->id));
+    }
+
+    public function test_the_confirmation_message_is_validated_on_the_server_when_saving_the_config(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+
+        app(EventRegistrationServiceInterface::class)->updateConfig(UpdateRegistrationConfigDTO::fromArray([
+            'event_id' => $this->event->id,
+            'confirmation_message' => str_repeat('a', 501),
+        ]));
     }
 
     public function test_saving_the_config_tab_keeps_the_fields_it_does_not_show(): void

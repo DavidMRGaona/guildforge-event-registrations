@@ -7,6 +7,7 @@ namespace Modules\EventRegistrations\Filament\RelationManagers;
 use App\Filament\Concerns\HasKnowledgeGuideAction;
 use App\Infrastructure\Persistence\Eloquent\Models\EventModel;
 use Filament\Forms\Components\DateTimePicker;
+use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Notifications\Notification;
@@ -19,6 +20,7 @@ use Filament\Schemas\Schema;
 use Illuminate\Database\Eloquent\Model;
 use Modules\EventRegistrations\Application\DTOs\UpdateRegistrationConfigDTO;
 use Modules\EventRegistrations\Application\Services\EventRegistrationServiceInterface;
+use Modules\EventRegistrations\Domain\Entities\EventRegistrationConfig;
 use Modules\EventRegistrations\Domain\Repositories\EventRegistrationConfigRepositoryInterface;
 use Modules\EventRegistrations\Filament\Concerns\CapsDatesAtEventStart;
 use Modules\EventRegistrations\Infrastructure\Persistence\Eloquent\Models\EventRegistrationModel;
@@ -80,6 +82,7 @@ final class RegistrationConfigRelationManager extends RelationManager
             'requires_confirmation' => $config->requiresConfirmation(),
             'members_only' => $config->isMembersOnly(),
             'notification_email' => $config->notificationEmail(),
+            'confirmation_message' => $config->confirmationMessage(),
         ]);
     }
 
@@ -178,6 +181,13 @@ final class RegistrationConfigRelationManager extends RelationManager
                         ->helperText(__('event-registrations::messages.config.notification_email_help'))
                         ->email()
                         ->nullable(),
+                    Textarea::make('confirmation_message')
+                        ->label(__('event-registrations::messages.config.confirmation_message'))
+                        ->helperText(__('event-registrations::messages.config.confirmation_message_help'))
+                        ->rows(3)
+                        ->maxLength(EventRegistrationConfig::CONFIRMATION_MESSAGE_MAX_LENGTH)
+                        ->nullable()
+                        ->columnSpanFull(),
                 ])
                 ->visible(fn (Get $get): bool => (bool) $get('registration_enabled')),
         ];
