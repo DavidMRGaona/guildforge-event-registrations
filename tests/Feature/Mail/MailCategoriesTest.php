@@ -57,10 +57,7 @@ final class MailCategoriesTest extends ModuleTestCase
 
     public function test_the_notification_to_the_event_mailbox_has_no_category(): void
     {
-        $this->assertNotInstanceOf(
-            HasMailCategory::class,
-            (new ReflectionClass(AdminNewRegistrationNotification::class))->newInstanceWithoutConstructor(),
-        );
+        $this->assertFalse(is_subclass_of(AdminNewRegistrationNotification::class, HasMailCategory::class));
     }
 
     public function test_registrations_are_mandatory_and_reminders_optional(): void
@@ -69,7 +66,7 @@ final class MailCategoriesTest extends ModuleTestCase
 
         $registrations = $registry->find(EventRegistrationsServiceProvider::MAIL_REGISTRATIONS);
         $this->assertTrue($registrations?->isMandatory());
-        $this->assertNotNull($registrations->reason);
+        $this->assertNotNull($registrations->mandatoryReason);
         $this->assertFalse($registry->find(EventRegistrationsServiceProvider::MAIL_REMINDERS)?->isMandatory());
     }
 
@@ -118,8 +115,10 @@ final class MailCategoriesTest extends ModuleTestCase
 
     private function countSent(): object
     {
-        $counter = new \stdClass;
-        $counter->count = 0;
+        $counter = new class
+        {
+            public int $count = 0;
+        };
         Event::listen(NotificationSent::class, function () use ($counter): void {
             $counter->count++;
         });

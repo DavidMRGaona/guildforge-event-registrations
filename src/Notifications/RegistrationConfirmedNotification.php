@@ -12,22 +12,22 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
-use Modules\EventRegistrations\EventRegistrationsServiceProvider;
 use Modules\EventRegistrations\Domain\Entities\EventRegistration;
+use Modules\EventRegistrations\EventRegistrationsServiceProvider;
 
 final class RegistrationConfirmedNotification extends Notification implements HasMailCategory, ShouldQueue
 {
     use Queueable;
 
-    public function mailCategory(): string
-    {
-        return EventRegistrationsServiceProvider::MAIL_REGISTRATIONS;
-    }
-
     public function __construct(
         private readonly EventModel $event,
         private readonly EventRegistration $registration,
     ) {}
+
+    public function mailCategory(): string
+    {
+        return EventRegistrationsServiceProvider::MAIL_REGISTRATIONS;
+    }
 
     /**
      * @return array<string>
