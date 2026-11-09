@@ -57,7 +57,7 @@ final class MailCategoriesTest extends ModuleTestCase
 
     public function test_the_notification_to_the_event_mailbox_has_no_category(): void
     {
-        $this->assertFalse(is_subclass_of(AdminNewRegistrationNotification::class, HasMailCategory::class));
+        $this->assertNotContains(HasMailCategory::class, class_implements(AdminNewRegistrationNotification::class) ?: []);
     }
 
     public function test_registrations_are_mandatory_and_reminders_optional(): void
@@ -100,7 +100,7 @@ final class MailCategoriesTest extends ModuleTestCase
 
         $user->notifyNow(new EventReminderNotification($event));
 
-        $this->assertSame(0, $sent->count);
+        $this->assertSame(0, count($sent));
     }
 
     public function test_a_reminder_goes_out_when_the_person_keeps_it_on(): void
@@ -110,19 +110,20 @@ final class MailCategoriesTest extends ModuleTestCase
 
         $user->notifyNow(new EventReminderNotification(EventModel::factory()->published()->create()));
 
-        $this->assertSame(1, $sent->count);
+        $this->assertSame(1, count($sent));
     }
 
-    private function countSent(): object
+    /**
+     * @return \ArrayObject<int, true>
+     */
+    private function countSent(): \ArrayObject
     {
-        $counter = new class
-        {
-            public int $count = 0;
-        };
-        Event::listen(NotificationSent::class, function () use ($counter): void {
-            $counter->count++;
+        /** @var \ArrayObject<int, true> $sent */
+        $sent = new \ArrayObject;
+        Event::listen(NotificationSent::class, function () use ($sent): void {
+            $sent[] = true;
         });
 
-        return $counter;
+        return $sent;
     }
 }
