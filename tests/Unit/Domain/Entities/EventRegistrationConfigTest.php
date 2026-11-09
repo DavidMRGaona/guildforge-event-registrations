@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\EventRegistrations\Tests\Unit\Domain\Entities;
 
 use DateTimeImmutable;
+use InvalidArgumentException;
 use Modules\EventRegistrations\Domain\Entities\EventRegistrationConfig;
 use Modules\EventRegistrations\Domain\Enums\CancellationClosedReason;
 use PHPUnit\Framework\TestCase;
@@ -398,5 +399,42 @@ final class EventRegistrationConfigTest extends TestCase
             $config->cancellationClosedReason(new DateTimeImmutable('2030-04-12 14:00:00')),
         );
         $this->assertFalse($config->canCancelNow(new DateTimeImmutable('2030-04-12 14:00:00')));
+    }
+
+    public function test_the_confirmation_message_accepts_the_maximum_length_and_trims_it(): void
+    {
+        $config = $this->createConfig();
+
+        $config->setConfirmationMessage('  '.str_repeat('a', EventRegistrationConfig::CONFIRMATION_MESSAGE_MAX_LENGTH).'  ');
+
+        $this->assertSame(500, mb_strlen((string) $config->confirmationMessage()));
+    }
+
+    public function test_the_confirmation_message_counts_characters_not_bytes(): void
+    {
+        $config = $this->createConfig();
+
+        $config->setConfirmationMessage(str_repeat('ñ', 500));
+
+        $this->assertSame(500, mb_strlen((string) $config->confirmationMessage()));
+    }
+
+    public function test_a_confirmation_message_over_the_limit_is_rejected(): void
+    {
+        $config = $this->createConfig();
+
+        $this->expectException(InvalidArgumentException::class);
+
+        $config->setConfirmationMessage(str_repeat('a', 501));
+    }
+
+    public function test_a_blank_confirmation_message_is_stored_as_null(): void
+    {
+        $config = $this->createConfig();
+        $config->setConfirmationMessage('Trae tus dados');
+
+        $config->setConfirmationMessage("  \n ");
+
+        $this->assertNull($config->confirmationMessage());
     }
 }

@@ -15,14 +15,17 @@ use Illuminate\Notifications\Notification;
 use Modules\EventRegistrations\Domain\Entities\EventRegistration;
 use Modules\EventRegistrations\Domain\Enums\RegistrationState;
 use Modules\EventRegistrations\EventRegistrationsServiceProvider;
+use Modules\EventRegistrations\Notifications\Concerns\AddsOrganiserMessage;
 
 final class UserRegisteredNotification extends Notification implements HasMailCategory, ShouldQueue
 {
+    use AddsOrganiserMessage;
     use Queueable;
 
     public function __construct(
         private readonly EventModel $event,
         private readonly EventRegistration $registration,
+        private readonly ?string $organiserMessage = null,
     ) {}
 
     public function mailCategory(): string
@@ -60,6 +63,8 @@ final class UserRegisteredNotification extends Notification implements HasMailCa
             $message->line(__('event-registrations::messages.emails.waiting_list_info'));
         } elseif ($this->registration->state() === RegistrationState::Pending) {
             $message->line(__('event-registrations::messages.emails.registered_pending'));
+        } elseif ($this->registration->state() === RegistrationState::Confirmed) {
+            $this->addOrganiserMessage($message, $this->organiserMessage);
         }
 
         return $message

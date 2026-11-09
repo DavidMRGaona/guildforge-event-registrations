@@ -5,10 +5,13 @@ declare(strict_types=1);
 namespace Modules\EventRegistrations\Domain\Entities;
 
 use DateTimeImmutable;
+use InvalidArgumentException;
 use Modules\EventRegistrations\Domain\Enums\CancellationClosedReason;
 
 final class EventRegistrationConfig
 {
+    public const int CONFIRMATION_MESSAGE_MAX_LENGTH = 500;
+
     /**
      * @param  array<array{name: string, label: string, type: string, required: bool, options?: array<string>}>  $customFields
      */
@@ -323,6 +326,18 @@ final class EventRegistrationConfig
      */
     public function setConfirmationMessage(?string $message): void
     {
+        $message = $message === null ? null : trim($message);
+
+        if ($message === '') {
+            $message = null;
+        }
+
+        if ($message !== null && mb_strlen($message) > self::CONFIRMATION_MESSAGE_MAX_LENGTH) {
+            throw new InvalidArgumentException(
+                'The confirmation message cannot exceed '.self::CONFIRMATION_MESSAGE_MAX_LENGTH.' characters.',
+            );
+        }
+
         $this->confirmationMessage = $message;
     }
 

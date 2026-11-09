@@ -1,11 +1,11 @@
 ---
 id: event-registrations.panel.configure
 title: Abrir las inscripciones de un evento
-summary: Habilita las inscripciones de un evento y decide sus plazas, su lista de espera, sus fechas, si se revisan a mano y si son solo para socios.
+summary: Habilita las inscripciones de un evento y decide sus plazas, su lista de espera, sus fechas, si se revisan a mano, si son solo para socios y el mensaje del correo de confirmación.
 category: activities
 audience: panel
 order: 160
-keywords: [habilitar inscripciones, abrir inscripciones, activar inscripciones, configurar inscripciones, plazas, aforo, máximo de participantes, lista de espera, fecha de apertura, fecha de cierre, fecha límite de cancelación, confirmación manual, revisar inscripciones, solo socios, cerrar inscripciones]
+keywords: [habilitar inscripciones, abrir inscripciones, activar inscripciones, configurar inscripciones, plazas, aforo, máximo de participantes, lista de espera, fecha de apertura, fecha de cierre, fecha límite de cancelación, confirmación manual, revisar inscripciones, solo socios, cerrar inscripciones, mensaje de confirmación, correo de confirmación, mensaje propio]
 related: [event-registrations.panel.overview, event-registrations.panel.manage-registrations, event-registrations.panel.settings, core.panel.manage-events, core.panel.association-role]
 conditions:
   permissions:
@@ -46,6 +46,15 @@ Ni el cierre ni la fecha límite pueden ser posteriores al inicio del evento: el
 
 - **Requiere confirmación manual**: cada inscripción queda **Pendiente** hasta que la confirmas en la pestaña **Inscripciones**. Las pendientes no ocupan plaza.
 - **Solo socios**: solo se pueden inscribir quienes tienen el rol de {{association_role}}, el que se elige en **Configuración del sitio** → **Autenticación**. Los demás ven el botón **Solo para socios**, sin poder pulsarlo.
+
+## Mensaje de confirmación
+
+En **Notificaciones** puedes escribir un **Mensaje de confirmación**, por ejemplo «Trae tu ejército pintado» o «Te esperamos en la sala 2». Se añade, con el título «Mensaje de quien organiza», al correo que recibe quien consigue plaza: cuando confirmas una inscripción pendiente, cuando alguien se inscribe y queda confirmado de inmediato, y cuando sube desde la lista de espera. Quien queda en lista de espera o pendiente no lo recibe todavía.
+
+- Es solo texto, con un máximo de 500 caracteres. Los enlaces, los asteriscos o el HTML salen tal cual, sin funcionar, y los saltos de línea se convierten en espacios.
+- Vacío, el correo sale como siempre.
+- Los correos que ya se han enviado no cambian. Si editas el mensaje, el nuevo se usa desde la siguiente plaza que se confirme.
+- Los correos de confirmación se pueden desactivar en los ajustes del módulo; en ese caso el mensaje no se envía.
 
 ## Cerrar o quitar las inscripciones
 
