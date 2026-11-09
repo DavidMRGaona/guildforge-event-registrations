@@ -381,15 +381,6 @@ final class EventRegistrationsServiceProvider extends ModuleServiceProvider
     }
 
     /**
-     * @return array<string, array{icon?: string, sort?: int}>
-     */
-    public function registerNavigationGroups(): array
-    {
-        // Uses existing 'Contenido' navigation group from events
-        return [];
-    }
-
-    /**
      * Register slot components for the frontend: the registration button on the event
      * detail page and the "Mis inscripciones" tab of the profile.
      *
