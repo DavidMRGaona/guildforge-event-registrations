@@ -5,8 +5,8 @@ summary: Apúntate a un evento desde su página, entiende qué te dice el botón
 category: events-and-games
 audience: site
 order: 25
-keywords: [inscribirme, inscribirse, apuntarme, apuntarse, reservar plaza, quiero ir, asistir, ir al evento, plaza, lista de espera, unirse a lista de espera, evento completo, inscripciones cerradas, solo para socios, pendiente, confirmado, correo de inscripción, incribirme, apuntrame]
-related: [event-registrations.overview, event-registrations.cancel, event-registrations.my-registrations, core.account.verify-email]
+keywords: [inscribirme, inscribirse, apuntarme, apuntarse, reservar plaza, quiero ir, asistir, ir al evento, plaza, lista de espera, unirse a lista de espera, evento completo, inscripciones cerradas, solo para socios, pendiente, confirmado, correo de inscripción, recordatorio, no quiero recordatorios, desactivar recordatorio, incribirme, apuntrame]
+related: [event-registrations.overview, event-registrations.cancel, event-registrations.my-registrations, core.account.verify-email, core.account.mail-preferences]
 ---
 Te inscribes desde la página del evento, en el bloque que hay encima de la descripción.
 
@@ -51,6 +51,8 @@ Según lo que tenga activado tu web:
 - Si la organización rechaza tu inscripción: «Inscripción rechazada: (evento)».
 - Si tienes plaza, unas horas antes del evento te llega un recordatorio: «Recordatorio: (evento), (fecha)».
 
+Los correos de tu inscripción te llegan siempre, porque confirman lo que has hecho o te cambian los planes. El recordatorio sí puedes quitarlo: en **Mi perfil**, pestaña **Correos**, desactiva **Recordatorios de eventos** en la sección **Inscripciones a eventos**. La guía «Elegir qué correos recibes» lo explica.
+
 ## Si algo no sale bien
 
 - **El botón está desactivado y te pide verificar tu email**: «Para inscribirte, verifica tu email.». Pulsa **Ver cómo** y sigue la guía de verificación.
@@ -62,5 +64,6 @@ Según lo que tenga activado tu web:
 - **«Solo los socios pueden inscribirse en este evento»**: es solo para quien tiene el rol de {{association_role}}.
 - **«Tu sesión ha caducado. Recarga la página e inténtalo de nuevo.»**: recarga la página y vuelve a pulsar el botón.
 - **No te llega el correo**: mira en la carpeta de correo no deseado.
+- **No te llega el recordatorio**: en tu perfil, pestaña **Correos**, comprueba que **Recordatorios de eventos** esté activado y que no tengas los correos en pausa.
 
 [[action:events.index|Ver los eventos]]
