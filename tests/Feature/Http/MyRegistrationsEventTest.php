@@ -88,8 +88,13 @@ final class MyRegistrationsEventTest extends ModuleTestCase
     public function test_the_number_of_queries_does_not_grow_with_the_registrations(): void
     {
         $this->register(EventModel::factory()->published()->create(), RegistrationState::Confirmed);
-        // The first request fills caches the core keeps (settings, authorization): not what is measured
+
+        // The first request of a test always runs one query more: the core reads the settings table
+        // (maintenance middleware) and keeps it in the settings cache for an hour, and every test
+        // starts with an empty cache. That query does not depend on the registrations, so it is
+        // fired once before measuring and the two measures start from the same state.
         $this->queriesForMyRegistrations();
+
         $withOne = $this->queriesForMyRegistrations();
 
         foreach (range(1, 4) as $ignored) {
@@ -97,10 +102,16 @@ final class MyRegistrationsEventTest extends ModuleTestCase
         }
         $withFive = $this->queriesForMyRegistrations();
 
+        // The same statements, not only the same count, so a failure names the query that changed
         $this->assertSame($withOne, $withFive);
     }
 
-    private function queriesForMyRegistrations(): int
+    /**
+     * The statements of one request, with the bound ids folded (`in (?, ?, ?)` is `in (?)`).
+     *
+     * @return list<string>
+     */
+    private function queriesForMyRegistrations(): array
     {
         $this->actingAs($this->user);
         DB::flushQueryLog();
@@ -108,10 +119,13 @@ final class MyRegistrationsEventTest extends ModuleTestCase
 
         $this->getJson('/mis-inscripciones')->assertOk();
 
-        $count = count(DB::getQueryLog());
+        $queries = array_map(
+            static fn (array $entry): string => (string) preg_replace('/\(\?(, \?)+\)/', '(?)', $entry['query']),
+            DB::getQueryLog(),
+        );
         DB::disableQueryLog();
 
-        return $count;
+        return $queries;
     }
 
     private function register(EventModel $event, RegistrationState $state, ?int $position = null): EventRegistrationModel
