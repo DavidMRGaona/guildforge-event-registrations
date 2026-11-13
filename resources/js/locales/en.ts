@@ -8,6 +8,9 @@ export default {
         membersOnly: 'Members only',
         membersOnlyNotice: 'Only members of the association can register.',
     },
+    eventRegistrationsForm: {
+        required: 'This field is required.',
+    },
     eventRegistrationsRejection: {
         button: 'Registration rejected',
     },

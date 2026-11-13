@@ -8,6 +8,9 @@ export default {
         membersOnly: 'Solo para socios',
         membersOnlyNotice: 'Solo pueden inscribirse los socios de la asociación.',
     },
+    eventRegistrationsForm: {
+        required: 'Este campo es obligatorio.',
+    },
     eventRegistrationsRejection: {
         button: 'Inscripción rechazada',
     },

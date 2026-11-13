@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { FormCheckbox, FormSelect } from '@/components/form';
 import LoadingSpinner from '@/components/ui/LoadingSpinner.vue';
 import { ref, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
@@ -38,12 +39,35 @@ const isValid = computed(() => {
     return true;
 });
 
+/** A ticked box is sent as text, the only kind of value the server accepts per field. */
+const CHECKED = '1';
+
+function isChecked(name: string): boolean {
+    return formData.value[name] === CHECKED;
+}
+
+function setChecked(name: string, checked: boolean): void {
+    formData.value[name] = checked ? CHECKED : '';
+}
+
+function setChoice(name: string, value: string | number | null): void {
+    formData.value[name] = value === null ? '' : String(value);
+}
+
+function optionsOf(field: CustomField): { value: string; label: string }[] {
+    return (field.options ?? []).map((option) => ({ value: option, label: option }));
+}
+
+function errorIdOf(name: string): string {
+    return `${name}-error`;
+}
+
 function validate(): boolean {
     errors.value = {};
 
     for (const field of props.customFields) {
         if (field.required && !formData.value[field.name]) {
-            errors.value[field.name] = t('validation.required', { attribute: field.label });
+            errors.value[field.name] = t('eventRegistrationsForm.required');
         }
     }
 
@@ -76,6 +100,7 @@ function handleSubmit(): void {
             <div class="space-y-4">
                 <div v-for="field in customFields" :key="field.name">
                     <label
+                        v-if="field.type !== 'checkbox'"
                         :for="field.name"
                         class="mb-1 block text-sm font-medium text-base-secondary"
                     >
@@ -90,6 +115,8 @@ function handleSubmit(): void {
                         v-model="formData[field.name]"
                         :type="field.type"
                         :required="field.required"
+                        :aria-invalid="errors[field.name] ? 'true' : undefined"
+                        :aria-describedby="errors[field.name] ? errorIdOf(field.name) : undefined"
                         class="w-full rounded-lg border border-default bg-surface px-3 py-2 text-base-primary focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
                         :class="{ 'border-error': errors[field.name] }"
                     />
@@ -100,42 +127,46 @@ function handleSubmit(): void {
                         :id="field.name"
                         v-model="formData[field.name]"
                         :required="field.required"
+                        :aria-invalid="errors[field.name] ? 'true' : undefined"
+                        :aria-describedby="errors[field.name] ? errorIdOf(field.name) : undefined"
                         rows="3"
                         class="w-full rounded-lg border border-default bg-surface px-3 py-2 text-base-primary focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
                         :class="{ 'border-error': errors[field.name] }"
                     ></textarea>
 
                     <!-- Select -->
-                    <select
+                    <FormSelect
                         v-else-if="field.type === 'select'"
                         :id="field.name"
-                        v-model="formData[field.name]"
-                        :required="field.required"
-                        class="w-full rounded-lg border border-default bg-surface px-3 py-2 text-base-primary focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
-                        :class="{ 'border-error': errors[field.name] }"
-                    >
-                        <option value="">{{ t('common.select') }}...</option>
-                        <option v-for="option in field.options" :key="option" :value="option">
-                            {{ option }}
-                        </option>
-                    </select>
+                        :model-value="formData[field.name] ?? ''"
+                        :options="optionsOf(field)"
+                        :placeholder="`${t('common.select')}...`"
+                        :error="errors[field.name] ?? ''"
+                        :described-by="errors[field.name] ? errorIdOf(field.name) : undefined"
+                        @update:model-value="setChoice(field.name, $event)"
+                    />
 
-                    <!-- Checkbox -->
-                    <div v-else-if="field.type === 'checkbox'" class="flex items-center">
-                        <input
+                    <!-- Checkbox: its own label, on a 44 px target -->
+                    <div
+                        v-else-if="field.type === 'checkbox'"
+                        class="flex min-h-[44px] items-center"
+                    >
+                        <FormCheckbox
                             :id="field.name"
-                            v-model="formData[field.name]"
-                            type="checkbox"
-                            :required="field.required"
-                            class="h-4 w-4 rounded border-default bg-surface text-accent focus:ring-accent"
-                        />
-                        <label :for="field.name" class="ml-2 text-sm text-base-secondary">
+                            :model-value="isChecked(field.name)"
+                            @update:model-value="setChecked(field.name, $event)"
+                        >
                             {{ field.label }}
-                        </label>
+                            <span v-if="field.required" class="text-error">*</span>
+                        </FormCheckbox>
                     </div>
 
                     <!-- Error message -->
-                    <p v-if="errors[field.name]" class="mt-1 text-sm text-error">
+                    <p
+                        v-if="errors[field.name]"
+                        :id="errorIdOf(field.name)"
+                        class="mt-1 text-sm text-error"
+                    >
                         {{ errors[field.name] }}
                     </p>
                 </div>
