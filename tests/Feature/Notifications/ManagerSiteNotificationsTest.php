@@ -10,8 +10,10 @@ use App\Application\SiteNotifications\DTOs\SiteNotificationItemDTO;
 use App\Application\SiteNotifications\Services\SiteNotificationServiceInterface;
 use App\Infrastructure\Persistence\Eloquent\Models\EventModel;
 use App\Infrastructure\Persistence\Eloquent\Models\UserModel;
+use App\Infrastructure\SiteNews\Jobs\AnnounceSiteNewsJob;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Queue;
 use Modules\EventRegistrations\Domain\Entities\EventRegistration;
 use Modules\EventRegistrations\Domain\Enums\RegistrationState;
 use Modules\EventRegistrations\Domain\Events\UserRegisteredToEvent;
@@ -48,6 +50,10 @@ final class ManagerSiteNotificationsTest extends ModuleTestCase
     protected function setUp(): void
     {
         parent::setUp();
+
+        // Publishing an event also announces it in everybody's bell (core#613): these tests
+        // count only the module's own notices
+        Queue::fake([AnnounceSiteNewsJob::class]);
 
         $this->registerOnAdminPanel();
     }
