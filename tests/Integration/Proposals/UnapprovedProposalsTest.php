@@ -12,6 +12,7 @@ use App\Infrastructure\Persistence\Eloquent\Models\UserModel;
 use Carbon\CarbonImmutable;
 use DateTimeImmutable;
 use Illuminate\Contracts\Console\Kernel;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Notification;
 use Modules\EventRegistrations\Console\Commands\SendEventRemindersCommand;
@@ -91,7 +92,7 @@ final class UnapprovedProposalsTest extends ModuleTestCase
             $this->proposalWithRegistrant($status, $this->now->addHours(5), $this->now->addHours(9));
         }
 
-        $this->artisan('event-registrations:send-reminders')->assertSuccessful();
+        $this->assertSame(0, Artisan::call('event-registrations:send-reminders'));
 
         Notification::assertNothingSent();
         $this->assertSame(0, EventRegistrationModel::query()->whereNotNull('reminder_sent_at')->count());
@@ -165,7 +166,7 @@ final class UnapprovedProposalsTest extends ModuleTestCase
         $this->app->make(Kernel::class)->registerCommand($this->app->make(SendEventRemindersCommand::class));
         [, $user] = $this->proposalWithRegistrant(ProposalStatus::Approved, $this->now->addHours(5), $this->now->addHours(9));
 
-        $this->artisan('event-registrations:send-reminders')->assertSuccessful();
+        $this->assertSame(0, Artisan::call('event-registrations:send-reminders'));
 
         Notification::assertSentTo($user, EventReminderNotification::class);
     }
