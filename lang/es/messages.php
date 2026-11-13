@@ -275,4 +275,15 @@ return [
         'reminder_hours_before' => 'Antelación del recordatorio (horas)',
         'send_registration_email' => 'Enviar email de inscripción',
     ],
+    'proposal_request' => [
+        'label' => 'Inscripciones',
+        'question' => '¿Quieres inscripciones?',
+        'capacity' => 'Aforo',
+        'capacity_help' => 'Número máximo de personas. Déjalo vacío si no hay límite.',
+        'waiting_list' => 'Lista de espera',
+        'already_configured' => 'El evento ya tiene configuradas las inscripciones.',
+        'without_capacity' => 'Inscripciones sin límite de aforo',
+        'with_capacity' => 'Inscripciones con aforo de :capacity',
+        'with_capacity_and_waiting_list' => 'Inscripciones con aforo de :capacity y lista de espera',
+    ],
 ];
