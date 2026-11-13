@@ -88,6 +88,8 @@ final class MyRegistrationsEventTest extends ModuleTestCase
     public function test_the_number_of_queries_does_not_grow_with_the_registrations(): void
     {
         $this->register(EventModel::factory()->published()->create(), RegistrationState::Confirmed);
+        // The first request fills caches the core keeps (settings, authorization): not what is measured
+        $this->queriesForMyRegistrations();
         $withOne = $this->queriesForMyRegistrations();
 
         foreach (range(1, 4) as $ignored) {
