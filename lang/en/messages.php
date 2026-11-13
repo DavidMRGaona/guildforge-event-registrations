@@ -178,6 +178,7 @@ return [
     // Mail preferences
     'mail' => [
         'section' => 'Event registrations',
+        'subject_event' => 'Event',
         'registrations' => [
             'label' => 'My registrations',
             'description' => 'Sign-up, confirmation, rejection, cancellation and a free place on the waiting list.',
@@ -187,6 +188,18 @@ return [
             'label' => 'Event reminders',
             'description' => 'A notice a few hours before an event you have a place in.',
         ],
+    ],
+
+    // Notices in the bell
+    'notices' => [
+        'registered' => 'Your registration for ":event" is pending review',
+        'registered_confirmed' => 'Your registration for ":event" is confirmed',
+        'registered_waiting_list' => 'You are on the waiting list for ":event"',
+        'confirmed' => 'Your registration for ":event" has been confirmed',
+        'promoted' => 'A spot opened up for you in ":event"',
+        'cancelled' => 'Your registration for ":event" has been cancelled',
+        'rejected' => 'Your registration for ":event" was not accepted',
+        'reminder' => 'Reminder: ":event" starts soon',
     ],
 
     // Emails

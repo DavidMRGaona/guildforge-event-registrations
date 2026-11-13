@@ -6,6 +6,7 @@ namespace Modules\EventRegistrations;
 
 use App\Application\Calendar\Contracts\CalendarAttendanceSourceInterface;
 use App\Application\Mail\DTOs\MailCategoryDTO;
+use App\Application\Mail\Services\MailSubjectMuteServiceInterface;
 use App\Application\Modules\DTOs\PermissionDTO;
 use App\Application\Modules\DTOs\SlotRegistrationDTO;
 use App\Application\Surveys\Contracts\SurveySubjectSourceInterface;
@@ -61,6 +62,7 @@ use Modules\EventRegistrations\Listeners\SendRegistrationConfirmedEmail;
 use Modules\EventRegistrations\Listeners\SendRegistrationRejectedEmail;
 use Modules\EventRegistrations\Listeners\SendUserRegisteredEmail;
 use Modules\EventRegistrations\Listeners\SendWaitingListPromotedEmail;
+use Modules\EventRegistrations\Notifications\EventReminderNotification;
 use Modules\EventRegistrations\Policies\EventRegistrationPolicy;
 
 final class EventRegistrationsServiceProvider extends ModuleServiceProvider
@@ -269,6 +271,9 @@ final class EventRegistrationsServiceProvider extends ModuleServiceProvider
 
         // Events are core records: a deletion before the end cancels them as survey subjects
         EventModel::deleted(fn (EventModel $event) => $this->app->make(AnnounceDeletedEventCancellation::class)->handle($event));
+
+        // ...and takes its mutes and bell notices with it, so nothing links to a page that is gone
+        EventModel::deleted(fn (EventModel $event) => $this->app->make(MailSubjectMuteServiceInterface::class)->forgetSubject(EventReminderNotification::SUBJECT_TYPE, (string) $event->id));
     }
 
     /**
@@ -296,12 +301,14 @@ final class EventRegistrationsServiceProvider extends ModuleServiceProvider
                 label: 'event-registrations::messages.mail.registrations.label',
                 description: 'event-registrations::messages.mail.registrations.description',
                 reason: 'event-registrations::messages.mail.registrations.reason',
+                site: true,
             ),
             MailCategoryDTO::optional(
                 key: self::MAIL_REMINDERS,
                 section: 'event-registrations::messages.mail.section',
                 label: 'event-registrations::messages.mail.reminders.label',
                 description: 'event-registrations::messages.mail.reminders.description',
+                site: true,
             ),
         ];
     }

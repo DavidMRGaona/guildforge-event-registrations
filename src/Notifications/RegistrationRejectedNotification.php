@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Modules\EventRegistrations\Notifications;
 
 use App\Application\Mail\Contracts\HasMailCategory;
+use App\Application\Mail\Contracts\HasMailSubject;
+use App\Application\SiteNotifications\Contracts\HasSiteNotification;
 use App\Infrastructure\Persistence\Eloquent\Models\EventModel;
 use App\Infrastructure\Persistence\Eloquent\Models\UserModel;
 use Illuminate\Bus\Queueable;
@@ -13,9 +15,11 @@ use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 use Modules\EventRegistrations\Domain\Entities\EventRegistration;
 use Modules\EventRegistrations\EventRegistrationsServiceProvider;
+use Modules\EventRegistrations\Notifications\Concerns\DeliversSiteNotice;
 
-final class RegistrationRejectedNotification extends Notification implements HasMailCategory, ShouldQueue
+final class RegistrationRejectedNotification extends Notification implements HasMailCategory, HasMailSubject, HasSiteNotification, ShouldQueue
 {
+    use DeliversSiteNotice;
     use Queueable;
 
     public function __construct(
@@ -33,7 +37,7 @@ final class RegistrationRejectedNotification extends Notification implements Has
      */
     public function via(object $notifiable): array
     {
-        return ['mail'];
+        return ['mail', HasSiteNotification::CHANNEL];
     }
 
     public function toMail(object $notifiable): MailMessage
@@ -63,5 +67,15 @@ final class RegistrationRejectedNotification extends Notification implements Has
             'registration_id' => $this->registration->id()->value,
             'type' => 'registration_rejected',
         ];
+    }
+
+    private function siteNoticeTitle(): string
+    {
+        return __('event-registrations::messages.notices.rejected', ['event' => $this->event->title]);
+    }
+
+    private function siteNoticeIcon(): string
+    {
+        return 'calendar-days';
     }
 }

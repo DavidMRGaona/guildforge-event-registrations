@@ -178,6 +178,7 @@ return [
     // Mail preferences
     'mail' => [
         'section' => 'Inscripciones a eventos',
+        'subject_event' => 'Evento',
         'registrations' => [
             'label' => 'Mis inscripciones',
             'description' => 'Inscripción, confirmación, rechazo, cancelación y plaza libre en la lista de espera.',
@@ -187,6 +188,18 @@ return [
             'label' => 'Recordatorios de eventos',
             'description' => 'Aviso unas horas antes de un evento en el que tienes plaza.',
         ],
+    ],
+
+    // Notices in the bell
+    'notices' => [
+        'registered' => 'Tu inscripción a «:event» está pendiente de revisión',
+        'registered_confirmed' => 'Tu inscripción a «:event» está confirmada',
+        'registered_waiting_list' => 'Estás en la lista de espera de «:event»',
+        'confirmed' => 'Tu inscripción a «:event» ha sido confirmada',
+        'promoted' => 'Hay plaza para ti en «:event»',
+        'cancelled' => 'Tu inscripción a «:event» ha sido cancelada',
+        'rejected' => 'Tu inscripción a «:event» no ha sido aceptada',
+        'reminder' => 'Recordatorio: «:event» empieza pronto',
     ],
 
     // Emails
