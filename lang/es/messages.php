@@ -188,6 +188,10 @@ return [
             'label' => 'Recordatorios de eventos',
             'description' => 'Aviso unas horas antes de un evento en el que tienes plaza.',
         ],
+        'management' => [
+            'label' => 'Inscripciones nuevas',
+            'description' => 'Aviso en la web cuando alguien se inscribe en un evento, para quien gestiona las inscripciones.',
+        ],
     ],
 
     // Notices in the bell
@@ -200,6 +204,10 @@ return [
         'cancelled' => 'Tu inscripción a «:event» ha sido cancelada',
         'rejected' => 'Tu inscripción a «:event» no ha sido aceptada',
         'reminder' => 'Recordatorio: «:event» empieza pronto',
+        'manager_registered' => ':user se inscribió en «:event»',
+        'manager_registered_grouped' => '{0} :user se inscribió en «:event»|{1} :user y 1 más se inscribieron en «:event»|[2,*] :user y :count más se inscribieron en «:event»',
+        'manager_state' => 'Estado: :state',
+        'manager_state_position' => 'Estado: :state (puesto :position)',
     ],
 
     // Emails
