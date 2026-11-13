@@ -21,6 +21,12 @@ Los inscritos de un evento están en la pestaña **Inscripciones** de su ficha. 
 
 Arriba, un resumen cuenta las inscripciones de cada estado, por ejemplo «12 Confirmados · 3 Lista de espera · 2 Pendientes». Cada fila muestra el **Usuario**, el **Email**, el **Estado**, la **Posición** en la lista de espera, la fecha en que se confirmó (**Confirmado el**) y la **Fecha de inscripción**. Puedes buscar por nombre o email y filtrar por **Estado**.
 
+## Aviso de inscripciones nuevas
+
+Si puedes editar el evento y cambiar sus inscripciones, cada inscripción nueva te deja un aviso en la campana de la web, por ejemplo «Ana se inscribió en «Jornada de rol»», con su estado («Estado: Pendiente») y un enlace a esta pestaña. Las que llegan a un mismo evento mientras no lo abres se juntan en un solo aviso: «Ana y 4 más se inscribieron en «Jornada de rol»». No te avisa de tu propia inscripción ni de eventos ya terminados.
+
+El aviso solo sale en la web, nunca por correo. Lo quitas en **Mi perfil**, pestaña **Correos**, con el interruptor **En la web** de **Inscripciones nuevas**. El correo al **Email de notificación** del evento sigue saliendo igual, con o sin estos avisos.
+
 ## Las acciones de cada fila
 
 | Acción | Cuándo sale | Qué hace | Correo |

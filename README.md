@@ -110,13 +110,15 @@ Los valores guardados desde el panel se conservan en la base de datos del core, 
 | Plaza disponible | Usuario | Cuando pasa de la lista de espera a confirmado |
 | Inscripción cancelada | Usuario | Cuando cancela su inscripción o sale de la lista de espera |
 | Recordatorio | Usuario | Una vez, las horas configuradas antes del inicio, si está confirmada y el recordatorio está activado (`event-registrations:send-reminders`, cada hora) |
-| Nueva inscripción | Email de notificación del evento | Con cada inscripción, si el evento tiene ese email configurado |
+| Nueva inscripción | Email de notificación del evento | Con cada inscripción, si el evento tiene ese email configurado (además, aviso en la campana a quien gestiona: ver abajo) |
 
 No se envían emails de eventos ya terminados.
 
 ### Avisos en la campana (core ≥ 3.58)
 
 Cada email a una cuenta (todos menos «Nueva inscripción») deja además un aviso en la campana de la web, con un enlace a `/eventos/<slug>`. Las categorías `event-registrations.registrations` (obligatoria) y `event-registrations.reminders` declaran `site: true`, así que el perfil muestra «En la web» junto a «Por correo». El aviso se vuelve a comprobar al entregarlo: si el evento ya no está publicado, no se guarda. El asunto es el evento (`event-registrations.event`): silenciarlo en el perfil o en el pie de un correo calla también sus avisos, y al borrar el evento se olvidan los avisos y los silencios (`MailSubjectMuteServiceInterface::forgetSubject()`).
+
+**A quien gestiona** (#114): cada inscripción nueva (`UserRegisteredToEvent`, listener `NotifyRegistrationManagers`) deja un aviso solo en la web (`NewRegistrationToManageNotification`, categoría opcional `event-registrations.management`, `mail: false`) a quien tiene a la vez `admin.access`, `events.update`, `registrations.view_any` y `registrations.update` (`PermissionHolderFinder::usersWhoCan()`), es decir, a quien puede abrir la pestaña **Inscripciones** del evento a la que enlaza. La categoría solo la ve en su perfil quien cumple lo mismo, y se vuelve a comprobar al entregar el aviso (también que el evento siga existiendo). Las inscripciones de un evento sin leer se agrupan (`event-registrations.signups:<id>`, «Ana y 4 más se inscribieron en «…»»), con quien se inscribe como `actorId`: nunca se avisa de la propia inscripción. Tampoco de eventos ya terminados. El correo «Nueva inscripción» al email del evento no cambia.
 
 ### Widget del dashboard
 

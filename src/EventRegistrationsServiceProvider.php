@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\EventRegistrations;
 
+use App\Application\Authorization\Services\AuthorizationServiceInterface;
 use App\Application\Calendar\Contracts\CalendarAttendanceSourceInterface;
 use App\Application\Mail\DTOs\MailCategoryDTO;
 use App\Application\Mail\Services\MailSubjectMuteServiceInterface;
@@ -58,6 +59,7 @@ use Modules\EventRegistrations\Infrastructure\Services\SystemClock;
 use Modules\EventRegistrations\Infrastructure\Services\WaitingListService;
 use Modules\EventRegistrations\Infrastructure\Surveys\EventSurveySubjectSource;
 use Modules\EventRegistrations\Listeners\AnnounceDeletedEventCancellation;
+use Modules\EventRegistrations\Listeners\NotifyRegistrationManagers;
 use Modules\EventRegistrations\Listeners\PromoteFromWaitingListOnCancellation;
 use Modules\EventRegistrations\Listeners\SendRegistrationCancelledEmail;
 use Modules\EventRegistrations\Listeners\SendRegistrationConfirmedEmail;
@@ -65,6 +67,7 @@ use Modules\EventRegistrations\Listeners\SendRegistrationRejectedEmail;
 use Modules\EventRegistrations\Listeners\SendUserRegisteredEmail;
 use Modules\EventRegistrations\Listeners\SendWaitingListPromotedEmail;
 use Modules\EventRegistrations\Notifications\EventReminderNotification;
+use Modules\EventRegistrations\Notifications\NewRegistrationToManageNotification;
 use Modules\EventRegistrations\Policies\EventRegistrationPolicy;
 
 final class EventRegistrationsServiceProvider extends ModuleServiceProvider
@@ -72,6 +75,8 @@ final class EventRegistrationsServiceProvider extends ModuleServiceProvider
     public const string MAIL_REGISTRATIONS = 'event-registrations.registrations';
 
     public const string MAIL_REMINDERS = 'event-registrations.reminders';
+
+    public const string MAIL_MANAGEMENT = 'event-registrations.management';
 
     public function moduleName(): string
     {
@@ -267,6 +272,11 @@ final class EventRegistrationsServiceProvider extends ModuleServiceProvider
         );
 
         Event::listen(
+            UserRegisteredToEvent::class,
+            NotifyRegistrationManagers::class
+        );
+
+        Event::listen(
             RegistrationRejected::class,
             SendRegistrationRejectedEmail::class
         );
@@ -311,6 +321,17 @@ final class EventRegistrationsServiceProvider extends ModuleServiceProvider
                 label: 'event-registrations::messages.mail.reminders.label',
                 description: 'event-registrations::messages.mail.reminders.description',
                 site: true,
+            ),
+            // Bell only: the mail about a new registration goes to the address saved in the event
+            MailCategoryDTO::optional(
+                key: self::MAIL_MANAGEMENT,
+                section: 'event-registrations::messages.mail.section',
+                label: 'event-registrations::messages.mail.management.label',
+                description: 'event-registrations::messages.mail.management.description',
+                audience: static fn (object $user): bool => app(AuthorizationServiceInterface::class)
+                    ->canAll($user, NewRegistrationToManageNotification::MANAGE_PERMISSIONS),
+                site: true,
+                mail: false,
             ),
         ];
     }

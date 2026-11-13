@@ -188,6 +188,10 @@ return [
             'label' => 'Event reminders',
             'description' => 'A notice a few hours before an event you have a place in.',
         ],
+        'management' => [
+            'label' => 'New registrations',
+            'description' => 'A notice on the site when someone signs up for an event, for whoever manages registrations.',
+        ],
     ],
 
     // Notices in the bell
@@ -200,6 +204,10 @@ return [
         'cancelled' => 'Your registration for ":event" has been cancelled',
         'rejected' => 'Your registration for ":event" was not accepted',
         'reminder' => 'Reminder: ":event" starts soon',
+        'manager_registered' => ':user signed up for ":event"',
+        'manager_registered_grouped' => '{0} :user signed up for ":event"|{1} :user and 1 more signed up for ":event"|[2,*] :user and :count more signed up for ":event"',
+        'manager_state' => 'State: :state',
+        'manager_state_position' => 'State: :state (position :position)',
     ],
 
     // Emails
