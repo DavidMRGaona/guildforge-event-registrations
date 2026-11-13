@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace Modules\EventRegistrations\Notifications;
 
 use App\Application\Mail\Contracts\HasMailCategory;
+use App\Application\Mail\Contracts\HasMailSubject;
 use App\Application\Services\TimezoneServiceInterface;
+use App\Application\SiteNotifications\Contracts\HasSiteNotification;
 use App\Infrastructure\Persistence\Eloquent\Models\EventModel;
 use App\Infrastructure\Persistence\Eloquent\Models\UserModel;
 use Illuminate\Bus\Queueable;
@@ -16,10 +18,12 @@ use Modules\EventRegistrations\Domain\Entities\EventRegistration;
 use Modules\EventRegistrations\Domain\Enums\RegistrationState;
 use Modules\EventRegistrations\EventRegistrationsServiceProvider;
 use Modules\EventRegistrations\Notifications\Concerns\AddsOrganiserMessage;
+use Modules\EventRegistrations\Notifications\Concerns\DeliversSiteNotice;
 
-final class UserRegisteredNotification extends Notification implements HasMailCategory, ShouldQueue
+final class UserRegisteredNotification extends Notification implements HasMailCategory, HasMailSubject, HasSiteNotification, ShouldQueue
 {
     use AddsOrganiserMessage;
+    use DeliversSiteNotice;
     use Queueable;
 
     public function __construct(
@@ -38,7 +42,7 @@ final class UserRegisteredNotification extends Notification implements HasMailCa
      */
     public function via(object $notifiable): array
     {
-        return ['mail'];
+        return ['mail', HasSiteNotification::CHANNEL];
     }
 
     public function toMail(object $notifiable): MailMessage
@@ -112,5 +116,19 @@ final class UserRegisteredNotification extends Notification implements HasMailCa
             'position' => $this->registration->position(),
             'type' => 'user_registered',
         ];
+    }
+
+    private function siteNoticeTitle(): string
+    {
+        return __(match ($this->registration->state()) {
+            RegistrationState::Confirmed => 'event-registrations::messages.notices.registered_confirmed',
+            RegistrationState::WaitingList => 'event-registrations::messages.notices.registered_waiting_list',
+            default => 'event-registrations::messages.notices.registered',
+        }, ['event' => $this->event->title]);
+    }
+
+    private function siteNoticeIcon(): string
+    {
+        return 'calendar-check';
     }
 }

@@ -53,6 +53,10 @@ Según lo que tenga activado tu web:
 
 Los correos de tu inscripción te llegan siempre, porque confirman lo que has hecho o te cambian los planes. El recordatorio sí puedes quitarlo: en **Mi perfil**, pestaña **Correos**, desactiva **Recordatorios de eventos** en la sección **Inscripciones a eventos**. La guía «Elegir qué correos recibes» lo explica.
 
+## Avisos en la campana
+
+Los mismos avisos aparecen también en la campana de la web, junto a tu perfil, en cuanto pasan: inscripción recibida o confirmada, lista de espera, plaza libre, cancelación, rechazo y recordatorio. Cada aviso te lleva a la página del evento. Si el evento deja de estar publicado, el aviso no se guarda. Los de tu inscripción te llegan siempre; los recordatorios los quitas en **Mi perfil**, pestaña **Correos**, con el interruptor **En la web** de **Recordatorios de eventos**.
+
 ## Si algo no sale bien
 
 - **El botón está desactivado y te pide verificar tu email**: «Para inscribirte, verifica tu email.». Pulsa **Ver cómo** y sigue la guía de verificación.
@@ -64,6 +68,6 @@ Los correos de tu inscripción te llegan siempre, porque confirman lo que has he
 - **«Solo los socios pueden inscribirse en este evento»**: es solo para quien tiene el rol de {{association_role}}.
 - **«Tu sesión ha caducado. Recarga la página e inténtalo de nuevo.»**: recarga la página y vuelve a pulsar el botón.
 - **No te llega el correo**: mira en la carpeta de correo no deseado.
-- **No te llega el recordatorio**: en tu perfil, pestaña **Correos**, comprueba que **Recordatorios de eventos** esté activado y que no tengas los correos en pausa.
+- **No te llega el recordatorio**: en tu perfil, pestaña **Correos**, comprueba que **Recordatorios de eventos** esté activado (por correo y en la web) y que no tengas los correos en pausa.
 
 [[action:events.index|Ver los eventos]]

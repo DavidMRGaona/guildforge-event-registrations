@@ -120,8 +120,10 @@ final class MailCategoriesTest extends ModuleTestCase
     {
         /** @var \ArrayObject<int, true> $sent */
         $sent = new \ArrayObject;
-        Event::listen(NotificationSent::class, function () use ($sent): void {
-            $sent[] = true;
+        Event::listen(NotificationSent::class, function (NotificationSent $event) use ($sent): void {
+            if ($event->channel === 'mail') {
+                $sent[] = true;
+            }
         });
 
         return $sent;

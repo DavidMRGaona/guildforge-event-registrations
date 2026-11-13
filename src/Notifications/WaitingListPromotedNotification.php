@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace Modules\EventRegistrations\Notifications;
 
 use App\Application\Mail\Contracts\HasMailCategory;
+use App\Application\Mail\Contracts\HasMailSubject;
 use App\Application\Services\TimezoneServiceInterface;
+use App\Application\SiteNotifications\Contracts\HasSiteNotification;
 use App\Infrastructure\Persistence\Eloquent\Models\EventModel;
 use App\Infrastructure\Persistence\Eloquent\Models\UserModel;
 use Illuminate\Bus\Queueable;
@@ -15,10 +17,12 @@ use Illuminate\Notifications\Notification;
 use Modules\EventRegistrations\Domain\Entities\EventRegistration;
 use Modules\EventRegistrations\EventRegistrationsServiceProvider;
 use Modules\EventRegistrations\Notifications\Concerns\AddsOrganiserMessage;
+use Modules\EventRegistrations\Notifications\Concerns\DeliversSiteNotice;
 
-final class WaitingListPromotedNotification extends Notification implements HasMailCategory, ShouldQueue
+final class WaitingListPromotedNotification extends Notification implements HasMailCategory, HasMailSubject, HasSiteNotification, ShouldQueue
 {
     use AddsOrganiserMessage;
+    use DeliversSiteNotice;
     use Queueable;
 
     public function __construct(
@@ -37,7 +41,7 @@ final class WaitingListPromotedNotification extends Notification implements HasM
      */
     public function via(object $notifiable): array
     {
-        return ['mail'];
+        return ['mail', HasSiteNotification::CHANNEL];
     }
 
     public function toMail(object $notifiable): MailMessage
@@ -73,5 +77,15 @@ final class WaitingListPromotedNotification extends Notification implements HasM
             'registration_id' => $this->registration->id()->value,
             'type' => 'waiting_list_promoted',
         ];
+    }
+
+    private function siteNoticeTitle(): string
+    {
+        return __('event-registrations::messages.notices.promoted', ['event' => $this->event->title]);
+    }
+
+    private function siteNoticeIcon(): string
+    {
+        return 'ticket';
     }
 }

@@ -114,6 +114,10 @@ Los valores guardados desde el panel se conservan en la base de datos del core, 
 
 No se envían emails de eventos ya terminados.
 
+### Avisos en la campana (core ≥ 3.58)
+
+Cada email a una cuenta (todos menos «Nueva inscripción») deja además un aviso en la campana de la web, con un enlace a `/eventos/<slug>`. Las categorías `event-registrations.registrations` (obligatoria) y `event-registrations.reminders` declaran `site: true`, así que el perfil muestra «En la web» junto a «Por correo». El aviso se vuelve a comprobar al entregarlo: si el evento ya no está publicado, no se guarda. El asunto es el evento (`event-registrations.event`): silenciarlo en el perfil o en el pie de un correo calla también sus avisos, y al borrar el evento se olvidan los avisos y los silencios (`MailSubjectMuteServiceInterface::forgetSubject()`).
+
 ### Widget del dashboard
 
 `RegistrationStatsWidget` muestra los totales de inscripciones confirmadas, en lista de espera y pendientes de todos los eventos. Lo ven los usuarios con el permiso `registrations.view_any`, y se puede ocultar u ordenar desde la configuración del dashboard (**Panel de control**).
