@@ -9,6 +9,7 @@ use App\Application\Mail\DTOs\MailCategoryDTO;
 use App\Application\Mail\Services\MailSubjectMuteServiceInterface;
 use App\Application\Modules\DTOs\PermissionDTO;
 use App\Application\Modules\DTOs\SlotRegistrationDTO;
+use App\Application\Proposals\Contracts\EventProposalRequestInterface;
 use App\Application\Surveys\Contracts\SurveySubjectSourceInterface;
 use App\Filament\Forms\Components\EndSurveyField;
 use App\Filament\Resources\EventResource;
@@ -23,6 +24,7 @@ use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Support\Facades\Event;
 use Inertia\Inertia;
 use Livewire\Livewire;
+use Modules\EventRegistrations\Application\Proposals\RegistrationsProposalRequest;
 use Modules\EventRegistrations\Application\Services\EventRegistrationServiceInterface;
 use Modules\EventRegistrations\Application\Services\MembershipCheckerInterface;
 use Modules\EventRegistrations\Application\Services\PublishedEventCheckerInterface;
@@ -380,6 +382,16 @@ final class EventRegistrationsServiceProvider extends ModuleServiceProvider
                 module: 'event-registrations',
             ),
         ];
+    }
+
+    /**
+     * Registrations asked for in event proposals made from the web (core >= 3.64).
+     *
+     * @return list<class-string<EventProposalRequestInterface>>
+     */
+    public function registerEventProposalRequests(): array
+    {
+        return [RegistrationsProposalRequest::class];
     }
 
     /**

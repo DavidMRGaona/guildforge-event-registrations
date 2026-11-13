@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\EventRegistrations\Listeners;
 
 use App\Application\Services\TimezoneServiceInterface;
+use App\Domain\Proposals\Enums\ProposalStatus;
 use App\Domain\Surveys\Events\SurveySubjectCancelled;
 use App\Infrastructure\Persistence\Eloquent\Models\EventModel;
 use DateTimeImmutable;
@@ -26,6 +27,11 @@ final readonly class AnnounceDeletedEventCancellation
 
     public function handle(EventModel $event): void
     {
+        // An unapproved proposal was never a survey subject: nothing to cancel
+        if (ProposalStatus::isUnapproved($event->proposalStatus())) {
+            return;
+        }
+
         $now = $this->timezone->toStorage($this->clock->now());
 
         if (DateTimeImmutable::createFromInterface($event->end_date) <= $now) {

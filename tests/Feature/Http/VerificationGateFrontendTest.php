@@ -28,7 +28,7 @@ final class VerificationGateFrontendTest extends ModuleTestCase
 
         $this->assertIsArray($manifest);
         // At least 3.10, which shares the verification state; later bumps keep the guarantee
-        $this->assertMatchesRegularExpression('/^\^3\.(\d+)$/', (string) ($manifest['requires']['core'] ?? ''));
+        $this->assertMatchesRegularExpression('/^\^3\.\d+(\.\d+)?$/', (string) ($manifest['requires']['core'] ?? ''));
         $this->assertTrue(version_compare(substr((string) $manifest['requires']['core'], 1), '3.10', '>='));
     }
 

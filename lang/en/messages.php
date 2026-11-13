@@ -275,4 +275,15 @@ return [
         'reminder_hours_before' => 'Reminder lead time (hours)',
         'send_registration_email' => 'Send registration email',
     ],
+    'proposal_request' => [
+        'label' => 'Registrations',
+        'question' => 'Do you want registrations?',
+        'capacity' => 'Capacity',
+        'capacity_help' => 'Maximum number of people. Leave empty for no limit.',
+        'waiting_list' => 'Waiting list',
+        'already_configured' => 'The event already has registrations configured.',
+        'without_capacity' => 'Registrations with no capacity limit',
+        'with_capacity' => 'Registrations with a capacity of :capacity',
+        'with_capacity_and_waiting_list' => 'Registrations with a capacity of :capacity and a waiting list',
+    ],
 ];

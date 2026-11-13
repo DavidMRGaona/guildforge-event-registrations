@@ -32,6 +32,7 @@ final readonly class EventAttendanceSource implements CalendarAttendanceSourceIn
             ->where('state', RegistrationState::Confirmed->value)
             ->whereIn('event_id', EventModel::query()
                 ->select('id')
+                ->where('is_published', true)
                 ->where('start_date', '<', $to)
                 ->where('end_date', '>', $from))
             ->distinct()
