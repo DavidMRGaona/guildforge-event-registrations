@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Modules\EventRegistrations\Tests\Feature\Filament;
 
 use App\Application\Services\TimezoneServiceInterface;
-use Modules\EventRegistrations\Filament\Pages\RegistrationsSettings;
 use App\Filament\Resources\EventResource\Pages\EditEvent;
 use App\Infrastructure\Persistence\Eloquent\Models\EventModel;
 use App\Infrastructure\Persistence\Eloquent\Models\UserModel;
@@ -18,6 +17,7 @@ use Modules\EventRegistrations\Application\DTOs\UpdateRegistrationConfigDTO;
 use Modules\EventRegistrations\Application\Services\EventRegistrationServiceInterface;
 use Modules\EventRegistrations\Domain\Enums\RegistrationState;
 use Modules\EventRegistrations\EventRegistrationsServiceProvider;
+use Modules\EventRegistrations\Filament\Pages\RegistrationsSettings;
 use Modules\EventRegistrations\Filament\RelationManagers\RegistrationConfigRelationManager;
 use Modules\EventRegistrations\Filament\RelationManagers\RegistrationsRelationManager;
 use Modules\EventRegistrations\Filament\Widgets\RegistrationStatsWidget;

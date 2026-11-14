@@ -4,12 +4,11 @@ declare(strict_types=1);
 
 namespace Modules\EventRegistrations\Tests\Feature\Filament;
 
+use App\Application\Modules\DTOs\PermissionDTO;
 use App\Application\Modules\Services\ModuleManagerServiceInterface;
 use App\Application\Modules\Services\ModuleSettingsStoreInterface;
 use App\Domain\Modules\ValueObjects\ModuleName;
 use App\Filament\Clusters\SettingsCluster;
-use Illuminate\Auth\Access\AuthorizationException;
-use Illuminate\Http\Exceptions\HttpResponseException;
 use Livewire\Livewire;
 use Modules\EventRegistrations\EventRegistrationsServiceProvider;
 use Modules\EventRegistrations\Filament\Pages\RegistrationsSettings;
@@ -62,12 +61,14 @@ final class RegistrationsSettingsPageTest extends ModuleTestCase
 
     public function test_the_module_permission_is_declared_and_never_granted_by_default(): void
     {
-        $permissions = collect((new EventRegistrationsServiceProvider($this->app))->registerPermissions())
-            ->keyBy(fn ($permission): string => $permission->name);
+        $declared = array_values(array_filter(
+            (new EventRegistrationsServiceProvider($this->app))->registerPermissions(),
+            static fn (PermissionDTO $permission): bool => $permission->name === 'registrations.manage_settings',
+        ));
 
-        $this->assertTrue($permissions->has('registrations.manage_settings'));
-        $this->assertSame([], $permissions['registrations.manage_settings']->roles);
-        $this->assertFalse($permissions['registrations.manage_settings']->adminOnly);
+        $this->assertCount(1, $declared);
+        $this->assertSame([], $declared[0]->roles);
+        $this->assertFalse($declared[0]->adminOnly);
     }
 
     public function test_the_module_permission_opens_the_page(): void
@@ -121,17 +122,15 @@ final class RegistrationsSettingsPageTest extends ModuleTestCase
     public function test_saving_without_the_permission_is_refused_and_stores_nothing(): void
     {
         $this->seedStoredSettings(['reminder_hours_before' => 48]);
-        $this->actingAs($this->editorWithPermissions([self::MANAGE_SETTINGS]));
-        $component = Livewire::test(RegistrationsSettings::class);
-        // The permission is taken away after the page was open: Livewire methods are still callable
         $this->actingAs($this->editorWithPermissions(['modules.configure']));
 
+        $page = new RegistrationsSettings;
+
         try {
-            $component
-                ->set('data.reminder_hours_before', 2)
-                ->call('save');
+            // Livewire methods can be called directly: save() must not rely on the page being hidden
+            $page->save();
             $this->fail('Saving without the module permission must be refused.');
-        } catch (HttpException|HttpResponseException|AuthorizationException) {
+        } catch (HttpException) {
             $this->addToAssertionCount(1);
         }
 
