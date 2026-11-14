@@ -9,6 +9,7 @@ use App\Application\Modules\Services\ModuleManagerServiceInterface;
 use App\Application\Modules\Services\ModuleSettingsStoreInterface;
 use App\Domain\Modules\ValueObjects\ModuleName;
 use App\Filament\Clusters\SettingsCluster;
+use App\Filament\Pages\ModuleSettingsPage;
 use App\Filament\Support\ModuleSettingsPages;
 use Livewire\Livewire;
 use Modules\EventRegistrations\EventRegistrationsServiceProvider;
@@ -142,6 +143,19 @@ final class RegistrationsSettingsPageTest extends ModuleTestCase
 
         $stored = app(ModuleManagerServiceInterface::class)->getSettings(new ModuleName('event-registrations'));
         $this->assertSame(48, (int) $stored['reminder_hours_before']);
+    }
+
+    public function test_the_generic_settings_page_hands_over_to_the_module_page(): void
+    {
+        // Since core#666 the generic page of «Módulos» no longer edits the module: it redirects here
+        $this->actingAsPanelAdmin();
+
+        Livewire::test(ModuleSettingsPage::class, ['module' => 'event-registrations'])
+            ->assertRedirect(RegistrationsSettings::getUrl());
+
+        $page = app(ModuleSettingsPage::class);
+        $page->module = 'event-registrations';
+        $this->assertFalse($page->hasSettings());
     }
 
     /**
