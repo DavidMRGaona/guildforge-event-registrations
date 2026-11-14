@@ -9,6 +9,7 @@ use App\Application\Modules\Services\ModuleManagerServiceInterface;
 use App\Application\Modules\Services\ModuleSettingsStoreInterface;
 use App\Domain\Modules\ValueObjects\ModuleName;
 use App\Filament\Clusters\SettingsCluster;
+use App\Filament\Support\ModuleSettingsPages;
 use Livewire\Livewire;
 use Modules\EventRegistrations\EventRegistrationsServiceProvider;
 use Modules\EventRegistrations\Filament\Pages\RegistrationsSettings;
@@ -45,6 +46,11 @@ final class RegistrationsSettingsPageTest extends ModuleTestCase
 
         $this->assertSame(RegistrationsSettings::class, $provider->getSettingsPage());
         $this->assertContains(RegistrationsSettings::class, $provider->registerFilamentPages());
+    }
+
+    public function test_the_core_accepts_the_declared_page(): void
+    {
+        $this->assertNotNull(app(ModuleSettingsPages::class)->pageUrl('event-registrations'));
     }
 
     public function test_the_generic_schema_is_empty(): void

@@ -53,7 +53,6 @@ Las pestañas **Configuración** e **Inscripciones** están en la ficha del even
 | **Eliminar inscripciones** | Usar **Borrar** en una inscripción. |
 | **Exportar inscripciones** | Usar **Exportar** en la pestaña **Inscripciones**. |
 | **Gestionar los ajustes del módulo de inscripciones** | Abrir **Sistema** → **Configuración** → **Inscripciones**. |
-| **Gestionar los ajustes del módulo de inscripciones** | Abrir **Sistema** → **Configuración** → **Inscripciones**. |
 
 **Ver listado de inscripciones** y **Gestionar configuración de inscripciones** deciden además qué guías de inscripciones ves en esta ayuda. Los permisos se dan a cada rol en **Roles**, en la pestaña del módulo, y ninguno se concede solo.
 

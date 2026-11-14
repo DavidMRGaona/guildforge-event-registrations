@@ -55,4 +55,4 @@ Estos interruptores valen para todo el sitio. Además, cada persona elige en su 
 
 Para que salga cualquier correo, el correo de la web tiene que estar configurado.
 
-[[action:filament.admin.pages.modules-page|Ver los módulos]]
+[[action:filament.admin.configuracion.pages.inscripciones|Abrir los ajustes]]

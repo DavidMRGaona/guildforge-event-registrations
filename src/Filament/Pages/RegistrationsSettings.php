@@ -8,6 +8,7 @@ use App\Application\Modules\Services\ModuleManagerServiceInterface;
 use App\Domain\Modules\ValueObjects\ModuleName;
 use App\Filament\Clusters\SettingsCluster;
 use App\Filament\Concerns\ChecksPermissions;
+use App\Filament\Concerns\HasKnowledgeGuideAction;
 use Filament\Actions\Action;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
@@ -27,6 +28,7 @@ use Filament\Schemas\Schema;
 final class RegistrationsSettings extends Page implements HasForms
 {
     use ChecksPermissions;
+    use HasKnowledgeGuideAction;
     use InteractsWithForms;
 
     public const string PERMISSION = 'registrations.manage_settings';
@@ -123,6 +125,14 @@ final class RegistrationsSettings extends Page implements HasForms
                     ]),
             ])
             ->statePath('data');
+    }
+
+    /**
+     * @return array<Action>
+     */
+    protected function getHeaderActions(): array
+    {
+        return array_filter([$this->knowledgeGuideAction('event-registrations.panel.settings')]);
     }
 
     /**
