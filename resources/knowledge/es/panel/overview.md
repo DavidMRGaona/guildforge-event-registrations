@@ -38,7 +38,7 @@ Cuando queda una plaza libre, porque alguien cancela, se rechaza, se borra o se 
 
 - En la ficha de cada evento (**Contenido** → **Eventos**), la pestaña **Configuración** abre y ajusta sus inscripciones, y la pestaña **Inscripciones** lista a los inscritos.
 - En el escritorio, un widget suma las inscripciones de todos los eventos: **Confirmados**, **Lista de espera** y **Pendientes**.
-- En **Administración** → **Módulos**, la tarjeta del módulo tiene **Configuración**: los valores por defecto y los correos.
+- En **Sistema** → **Configuración** → **Inscripciones** están los valores por defecto y los correos. Hace falta el permiso para gestionar los ajustes del módulo.
 
 Si tu web tiene encuestas, el formulario del evento trae además el campo **Encuesta al terminar**, con su propia ayuda.
 
@@ -52,6 +52,8 @@ Las pestañas **Configuración** e **Inscripciones** están en la ficha del even
 | **Editar inscripciones** | Usar **Editar** en una inscripción. |
 | **Eliminar inscripciones** | Usar **Borrar** en una inscripción. |
 | **Exportar inscripciones** | Usar **Exportar** en la pestaña **Inscripciones**. |
+| **Gestionar los ajustes del módulo de inscripciones** | Abrir **Sistema** → **Configuración** → **Inscripciones**. |
+| **Gestionar los ajustes del módulo de inscripciones** | Abrir **Sistema** → **Configuración** → **Inscripciones**. |
 
 **Ver listado de inscripciones** y **Gestionar configuración de inscripciones** deciden además qué guías de inscripciones ves en esta ayuda. Los permisos se dan a cada rol en **Roles**, en la pestaña del módulo, y ninguno se concede solo.
 

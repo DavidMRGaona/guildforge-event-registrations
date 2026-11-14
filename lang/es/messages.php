@@ -173,6 +173,7 @@ return [
         'manage_config' => 'Gestionar configuración de inscripciones',
         'export' => 'Exportar inscripciones',
         'manage_surveys' => 'Gestionar las encuestas de los eventos',
+        'manage_settings' => 'Gestionar los ajustes del módulo de inscripciones',
     ],
 
     // Mail preferences
@@ -267,6 +268,10 @@ return [
 
     // Settings
     'settings' => [
+        'navigation' => 'Inscripciones',
+        'title' => 'Ajustes de inscripciones',
+        'save' => 'Guardar configuración',
+        'saved' => 'Configuración guardada',
         'general' => 'General',
         'default_registration_enabled' => 'Inscripciones habilitadas por defecto',
         'default_registration_enabled_help' => 'Si está activado, las inscripciones estarán habilitadas por defecto en los nuevos eventos',

@@ -83,7 +83,7 @@ La comprobación se hace en dos sitios con la misma regla: al inscribirse (el se
 
 ### Ajustes del módulo
 
-Se editan en el panel: **Módulos** → Inscripciones a eventos → **Configurar**. Los valores por defecto se aplican a los eventos que todavía no tienen configuración propia.
+Se editan en el panel: **Sistema** → **Configuración** → **Inscripciones**. Hace falta el permiso «Gestionar los ajustes del módulo de inscripciones», que no se concede a ningún rol por defecto. Los valores por defecto se aplican a los eventos que todavía no tienen configuración propia.
 
 | Ajuste | Descripción |
 |--------|-------------|

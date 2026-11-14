@@ -74,7 +74,8 @@ final class EventRegistrationsGuidesTest extends ModuleTestCase
             'event-registrations.panel.overview',
         ], $this->visibleGuides($this->userWith('events.update', 'event-registrations:registrations.view_any'), GuideAudience::Panel));
 
-        $this->assertSame(['event-registrations.panel.settings'], $this->visibleGuides($this->userWith('modules.configure'), GuideAudience::Panel));
+        $this->assertSame(['event-registrations.panel.settings'], $this->visibleGuides($this->userWith('event-registrations:registrations.manage_settings'), GuideAudience::Panel));
+        $this->assertSame([], $this->visibleGuides($this->userWith('modules.configure'), GuideAudience::Panel));
 
         $this->assertSame([], $this->visibleGuides(UserModel::factory()->editor()->create(), GuideAudience::Panel));
     }

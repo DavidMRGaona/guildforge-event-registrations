@@ -6,17 +6,17 @@ category: activities
 audience: panel
 order: 180
 keywords: [ajustes, configuración, configurar inscripciones, valores por defecto, por defecto, plazas por defecto, lista de espera, confirmación, correos, emails, avisos, notificaciones, recordatorio, recordar evento, horas antes, desactivar correos]
-related: [event-registrations.panel.overview, event-registrations.panel.configure, core.panel.modules, core.panel.mail]
+related: [event-registrations.panel.overview, event-registrations.panel.configure, core.panel.mail]
 conditions:
   permissions:
-    all: ['modules.configure']
+    all: ['event-registrations:registrations.manage_settings']
 ---
-La configuración del módulo decide con qué valores empieza cada evento y qué correos reciben quienes se inscriben.
+La página de ajustes del módulo decide con qué valores empieza cada evento y qué correos reciben quienes se inscriben.
 
 ## Abrir la configuración
 
-1. En el menú lateral, abre **Administración** y elige **Módulos**.
-2. En la tarjeta **Inscripciones a eventos**, pulsa **Configuración**.
+1. En el menú lateral, abre **Sistema** y elige **Configuración**.
+2. Entra en **Inscripciones**.
 3. Cambia lo que necesites y pulsa **Guardar configuración**.
 
 ## General: los valores por defecto
