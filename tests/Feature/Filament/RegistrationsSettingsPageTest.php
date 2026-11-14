@@ -121,14 +121,17 @@ final class RegistrationsSettingsPageTest extends ModuleTestCase
     public function test_saving_without_the_permission_is_refused_and_stores_nothing(): void
     {
         $this->seedStoredSettings(['reminder_hours_before' => 48]);
+        $this->actingAs($this->editorWithPermissions([self::MANAGE_SETTINGS]));
+        $component = Livewire::test(RegistrationsSettings::class);
+        // The permission is taken away after the page was open: Livewire methods are still callable
         $this->actingAs($this->editorWithPermissions(['modules.configure']));
 
         try {
-            Livewire::test(RegistrationsSettings::class)
+            $component
                 ->set('data.reminder_hours_before', 2)
                 ->call('save');
             $this->fail('Saving without the module permission must be refused.');
-        } catch (HttpException|HttpResponseException|AuthorizationException $e) {
+        } catch (HttpException|HttpResponseException|AuthorizationException) {
             $this->addToAssertionCount(1);
         }
 
@@ -142,5 +145,7 @@ final class RegistrationsSettingsPageTest extends ModuleTestCase
     private function seedStoredSettings(array $values): void
     {
         app(ModuleSettingsStoreInterface::class)->store('event-registrations', $values);
+        // What the module manager reads at boot
+        config()->set('modules.settings.event-registrations', $values);
     }
 }

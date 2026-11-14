@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Modules\EventRegistrations\Tests\Feature\Filament;
 
 use App\Application\Services\TimezoneServiceInterface;
-use App\Filament\Pages\ModuleSettingsPage;
+use Modules\EventRegistrations\Filament\Pages\RegistrationsSettings;
 use App\Filament\Resources\EventResource\Pages\EditEvent;
 use App\Infrastructure\Persistence\Eloquent\Models\EventModel;
 use App\Infrastructure\Persistence\Eloquent\Models\UserModel;
@@ -385,7 +385,7 @@ final class EventRegistrationsPanelTest extends ModuleTestCase
 
     public function test_the_settings_form_offers_only_the_emails_the_module_sends(): void
     {
-        Livewire::test(ModuleSettingsPage::class, ['module' => 'event-registrations'])
+        Livewire::test(RegistrationsSettings::class)
             ->assertOk()
             ->assertFormFieldExists('send_registration_email')
             ->assertFormFieldExists('send_confirmation_email')
@@ -404,7 +404,7 @@ final class EventRegistrationsPanelTest extends ModuleTestCase
             'send_rejection_email' => true,
         ]);
 
-        Livewire::test(ModuleSettingsPage::class, ['module' => 'event-registrations'])
+        Livewire::test(RegistrationsSettings::class)
             ->assertOk()
             ->assertSet('data.default_registration_enabled', true)
             ->assertSet('data.send_promotion_email', false);
