@@ -36,7 +36,7 @@ final class AdminNewRegistrationNotificationTest extends ModuleTestCase
             state: RegistrationState::Pending,
         );
 
-        $url = (new AdminNewRegistrationNotification($event, $registration, $admin))->toMail($admin)->actionUrl;
+        $url = (string) (new AdminNewRegistrationNotification($event, $registration, $admin))->toMail($admin)->actionUrl;
         parse_str((string) parse_url($url, PHP_URL_QUERY), $query);
 
         // The panel finds events by slug: the link must carry it, not the id

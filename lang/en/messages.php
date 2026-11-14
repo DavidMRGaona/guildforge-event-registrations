@@ -173,6 +173,7 @@ return [
         'manage_config' => 'Manage registration configuration',
         'export' => 'Export registrations',
         'manage_surveys' => 'Manage event surveys',
+        'manage_settings' => 'Manage the registrations module settings',
     ],
 
     // Mail preferences
@@ -267,6 +268,10 @@ return [
 
     // Settings
     'settings' => [
+        'navigation' => 'Registrations',
+        'title' => 'Registrations settings',
+        'save' => 'Save settings',
+        'saved' => 'Settings saved',
         'general' => 'General',
         'default_registration_enabled' => 'Registration enabled by default',
         'default_registration_enabled_help' => 'If enabled, registration will be enabled by default on new events',

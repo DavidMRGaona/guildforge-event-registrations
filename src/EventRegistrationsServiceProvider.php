@@ -16,10 +16,8 @@ use App\Filament\Forms\Components\EndSurveyField;
 use App\Filament\Resources\EventResource;
 use App\Infrastructure\Persistence\Eloquent\Models\EventModel;
 use App\Modules\ModuleServiceProvider;
-use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Toggle;
+use Filament\Pages\Page;
 use Filament\Schemas\Components\Component;
-use Filament\Schemas\Components\Section;
 use Filament\Widgets\Widget;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Support\Facades\Event;
@@ -42,6 +40,7 @@ use Modules\EventRegistrations\Domain\Events\WaitingListPromoted;
 use Modules\EventRegistrations\Domain\Repositories\EventRegistrationConfigRepositoryInterface;
 use Modules\EventRegistrations\Domain\Repositories\EventRegistrationRepositoryInterface;
 use Modules\EventRegistrations\Domain\Services\Clock;
+use Modules\EventRegistrations\Filament\Pages\RegistrationsSettings;
 use Modules\EventRegistrations\Filament\RelationManagers\RegistrationConfigRelationManager;
 use Modules\EventRegistrations\Filament\RelationManagers\RegistrationsRelationManager;
 use Modules\EventRegistrations\Filament\Widgets\RegistrationStatsWidget;
@@ -395,6 +394,13 @@ final class EventRegistrationsServiceProvider extends ModuleServiceProvider
                 group: __('event-registrations::messages.navigation'),
                 module: 'event-registrations',
             ),
+            // Editing the defaults and emails of the whole module: never handed out by default
+            new PermissionDTO(
+                name: RegistrationsSettings::PERMISSION,
+                label: __('event-registrations::messages.permissions.manage_settings'),
+                group: __('event-registrations::messages.navigation'),
+                module: 'event-registrations',
+            ),
             // Seeing what attendees think is not editing the event: never handed out by default
             new PermissionDTO(
                 name: EventSurveySubjectSource::MANAGE_PERMISSION,
@@ -491,58 +497,28 @@ final class EventRegistrationsServiceProvider extends ModuleServiceProvider
     }
 
     /**
+     * The defaults and emails live on a page of the module in the settings cluster (core >= 3.74).
+     *
      * @return array<Component>
      */
     public function getSettingsSchema(): array
     {
-        return [
-            Section::make(__('event-registrations::messages.settings.general'))
-                ->schema([
-                    Toggle::make('default_registration_enabled')
-                        ->label(__('event-registrations::messages.settings.default_registration_enabled'))
-                        ->helperText(__('event-registrations::messages.settings.default_registration_enabled_help'))
-                        ->default(false),
-                    Toggle::make('default_waiting_list_enabled')
-                        ->label(__('event-registrations::messages.settings.default_waiting_list'))
-                        ->default(true),
-                    Toggle::make('default_requires_confirmation')
-                        ->label(__('event-registrations::messages.settings.default_requires_confirmation'))
-                        ->default(false),
-                    TextInput::make('default_max_participants')
-                        ->label(__('event-registrations::messages.settings.default_max_participants'))
-                        ->numeric()
-                        ->nullable(),
-                    TextInput::make('default_max_waiting_list')
-                        ->label(__('event-registrations::messages.settings.default_max_waiting_list'))
-                        ->numeric()
-                        ->nullable(),
-                ]),
-            Section::make(__('event-registrations::messages.settings.emails'))
-                ->schema([
-                    Toggle::make('send_registration_email')
-                        ->label(__('event-registrations::messages.settings.send_registration_email'))
-                        ->default(true),
-                    Toggle::make('send_confirmation_email')
-                        ->label(__('event-registrations::messages.settings.send_confirmation_email'))
-                        ->default(true),
-                    Toggle::make('send_promotion_email')
-                        ->label(__('event-registrations::messages.settings.send_promotion_email'))
-                        ->default(true),
-                    Toggle::make('send_cancellation_email')
-                        ->label(__('event-registrations::messages.settings.send_cancellation_email'))
-                        ->default(true),
-                    Toggle::make('send_reminder_email')
-                        ->label(__('event-registrations::messages.settings.send_reminder_email'))
-                        ->helperText(__('event-registrations::messages.settings.send_reminder_email_help'))
-                        ->default(false),
-                    TextInput::make('reminder_hours_before')
-                        ->label(__('event-registrations::messages.settings.reminder_hours_before'))
-                        ->numeric()
-                        ->integer()
-                        ->minValue(1)
-                        ->maxValue(168)
-                        ->default(24),
-                ]),
-        ];
+        return [];
+    }
+
+    /**
+     * @return class-string<Page>
+     */
+    public function getSettingsPage(): string
+    {
+        return RegistrationsSettings::class;
+    }
+
+    /**
+     * @return list<class-string<Page>>
+     */
+    public function registerFilamentPages(): array
+    {
+        return [RegistrationsSettings::class];
     }
 }
