@@ -19,6 +19,7 @@ use Illuminate\Notifications\Notification;
 use Modules\EventRegistrations\Domain\Enums\RegistrationState;
 use Modules\EventRegistrations\EventRegistrationsServiceProvider;
 use Modules\EventRegistrations\Filament\RelationManagers\RegistrationsRelationManager;
+use Modules\EventRegistrations\Policies\RegistrationListAccess;
 
 /**
  * Tells whoever manages registrations, in the bell only, that someone signed up for an event
@@ -30,16 +31,11 @@ final class NewRegistrationToManageNotification extends Notification implements 
     use Queueable;
 
     /**
-     * Managing is changing registrations, and the notice links to the registrations tab of the
-     * event in the panel: whoever gets it must be able to open that tab (panel, event edit page,
-     * registrations list). Shared by the recipients, the check on delivery and the category audience.
+     * Whoever gets the notice must be able to open the registrations tab it links to and to change
+     * what is in it: the rule of the tab itself, so the two cannot differ. Shared by the recipients,
+     * the check on delivery and the category audience.
      */
-    public const array MANAGE_PERMISSIONS = [
-        'admin.access',
-        'events.update',
-        'event-registrations:registrations.view_any',
-        'event-registrations:registrations.update',
-    ];
+    public const array MANAGE_PERMISSIONS = RegistrationListAccess::MANAGE_PERMISSIONS;
 
     private const string GROUP_KEY_PREFIX = 'event-registrations.signups:';
 

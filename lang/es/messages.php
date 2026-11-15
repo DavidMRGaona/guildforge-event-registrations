@@ -299,4 +299,15 @@ return [
         'with_capacity' => 'Inscripciones con aforo de :capacity',
         'with_capacity_and_waiting_list' => 'Inscripciones con aforo de :capacity y lista de espera',
     ],
+
+    // The person's public profile (core >= 3.79): only they and the staff who can open the event's registrations tab in the panel see these
+    'public_profile' => [
+        'upcoming' => [
+            'label' => 'Próximos eventos',
+            'description' => 'Los próximos eventos en los que tienes la inscripción confirmada. Solo los ves tú y el personal que puede abrir la pestaña de inscripciones de ese evento en el panel.',
+        ],
+        'attended' => [
+            'label' => 'Eventos asistidos',
+        ],
+    ],
 ];

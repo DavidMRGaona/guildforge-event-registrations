@@ -31,6 +31,7 @@ use Modules\EventRegistrations\Domain\Exceptions\EventFullException;
 use Modules\EventRegistrations\Domain\Repositories\EventRegistrationRepositoryInterface;
 use Modules\EventRegistrations\Infrastructure\Persistence\Eloquent\Models\EventRegistrationConfigModel;
 use Modules\EventRegistrations\Infrastructure\Persistence\Eloquent\Models\EventRegistrationModel;
+use Modules\EventRegistrations\Policies\RegistrationListAccess;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 final class RegistrationsRelationManager extends RelationManager
@@ -85,7 +86,8 @@ final class RegistrationsRelationManager extends RelationManager
 
     private static function userCanViewRegistrations(): bool
     {
-        return auth()->user()?->can('viewAny', EventRegistrationModel::class) ?? false;
+        // The same rule the public profile follows: it lives in one class so the two cannot drift
+        return app(RegistrationListAccess::class)->mayListRegistrations(auth()->user());
     }
 
     public function form(Schema $schema): Schema

@@ -10,6 +10,8 @@ use App\Application\Mail\DTOs\MailCategoryDTO;
 use App\Application\Mail\Services\MailSubjectMuteServiceInterface;
 use App\Application\Modules\DTOs\PermissionDTO;
 use App\Application\Modules\DTOs\SlotRegistrationDTO;
+use App\Application\Profiles\Contracts\ProfileSectionInterface;
+use App\Application\Profiles\Contracts\ProfileStatInterface;
 use App\Application\Proposals\Contracts\EventProposalRequestInterface;
 use App\Application\Surveys\Contracts\SurveySubjectSourceInterface;
 use App\Filament\Forms\Components\EndSurveyField;
@@ -49,6 +51,9 @@ use Modules\EventRegistrations\Infrastructure\Persistence\Eloquent\Models\EventR
 use Modules\EventRegistrations\Infrastructure\Persistence\Eloquent\Models\EventRegistrationModel;
 use Modules\EventRegistrations\Infrastructure\Persistence\Eloquent\Repositories\EloquentEventRegistrationConfigRepository;
 use Modules\EventRegistrations\Infrastructure\Persistence\Eloquent\Repositories\EloquentEventRegistrationRepository;
+use Modules\EventRegistrations\Infrastructure\Profiles\AttendedEventsProfileStat;
+use Modules\EventRegistrations\Infrastructure\Profiles\RegistrationsVisibleOnProfile;
+use Modules\EventRegistrations\Infrastructure\Profiles\UpcomingEventsProfileSection;
 use Modules\EventRegistrations\Infrastructure\Services\AssociationMembershipChecker;
 use Modules\EventRegistrations\Infrastructure\Services\EloquentPublishedEventChecker;
 use Modules\EventRegistrations\Infrastructure\Services\EventRegistrationService;
@@ -132,6 +137,9 @@ final class EventRegistrationsServiceProvider extends ModuleServiceProvider
         );
 
         $this->app->bind(Clock::class, SystemClock::class);
+
+        // Answered once per request or job: the profile's section and stat ask the same question
+        $this->app->scoped(RegistrationsVisibleOnProfile::class);
     }
 
     public function boot(): void
@@ -439,6 +447,26 @@ final class EventRegistrationsServiceProvider extends ModuleServiceProvider
     public function registerCalendarAttendanceSources(): array
     {
         return [EventAttendanceSource::class];
+    }
+
+    /**
+     * The upcoming events of the person, on their public profile (core >= 3.79).
+     *
+     * @return array<class-string<ProfileSectionInterface>>
+     */
+    public function registerProfileSections(): array
+    {
+        return [UpcomingEventsProfileSection::class];
+    }
+
+    /**
+     * The number of events the person attended, on their public profile (core >= 3.79).
+     *
+     * @return array<class-string<ProfileStatInterface>>
+     */
+    public function registerProfileStats(): array
+    {
+        return [AttendedEventsProfileStat::class];
     }
 
     /**
