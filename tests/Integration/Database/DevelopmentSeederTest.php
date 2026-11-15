@@ -33,7 +33,10 @@ final class DevelopmentSeederTest extends ModuleTestCase
         EventRegistrationModel::query()->delete();
         EventRegistrationConfigModel::query()->delete();
         EventModel::query()->delete();
-        UserModel::where('email', 'like', '%@example.local')->forceDelete();
+        // One by one, so the model events run (the core releases the account's profile rows first)
+        foreach (UserModel::where('email', 'like', '%@example.local')->get() as $user) {
+            $user->forceDelete();
+        }
 
         $this->app['env'] = 'production';
         $this->assertTrue($this->app->environment('production'));
