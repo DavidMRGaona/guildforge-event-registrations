@@ -155,3 +155,13 @@ export interface EventSurveyLinks {
     /** The help guide on these surveys for this person, from the surveys module */
     guideId: string | null;
 }
+
+/** An event of «Próximos eventos» on the public profile, as the server's section hands it over */
+export interface ProfileUpcomingEvent {
+    title: string;
+    /** A path of the site, from the event's own route */
+    url: string;
+    /** ISO 8601 with the display zone's offset */
+    startsAt: string | null;
+    location: string | null;
+}

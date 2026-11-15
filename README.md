@@ -19,7 +19,7 @@ Inscripciones a los eventos de GuildForge: aforo, lista de espera con promoción
 
 ## Requisitos
 
-- GuildForge core `^3.38` (almacenamiento de fechas en UTC, zona horaria de visualización, contrato de encuestas y campo «Encuesta al terminar», calendario personal)
+- GuildForge core `^3.79` (almacenamiento de fechas en UTC, zona horaria de visualización, contrato de encuestas y campo «Encuesta al terminar», calendario personal, perfil público)
 - PHP >= 8.5, Laravel >= 13, Filament 5
 
 El core rechaza el módulo si no se cumplen (`module.json` → `requires`).
@@ -142,6 +142,15 @@ Con una inscripción activa (pendiente, confirmada o en lista de espera), el bot
 
 `UserRegistrations` es la pestaña «Mis inscripciones» del perfil (slot `profile-sections`). Pide `GET /mis-inscripciones` al abrirse; si la sesión ha caducado, ofrece recargar la página para volver a iniciar sesión.
 
+### Perfil público (core ≥ 3.79)
+
+El módulo aporta al perfil público (`/miembros/<alias>`) la sección **«Próximos eventos»** (`event-registrations.upcoming`, columna lateral, activada por defecto) y el contador **«Eventos asistidos»** (`event-registrations.attended`).
+
+- **Próximos eventos**: hasta 5 eventos publicados en los que la persona tiene la inscripción confirmada y que aún no han terminado (uno en curso cuenta), por orden de inicio. Las fechas se muestran en la zona de visualización del sitio.
+- **Eventos asistidos**: eventos publicados ya terminados en los que la inscripción está confirmada. El módulo no registra la asistencia real, así que «confirmada en un evento que ya acabó» es lo más cercano que pueden decir sus datos; las inscripciones pendientes, en lista de espera, rechazadas o canceladas nunca cuentan. Sin ninguno, no se dibuja.
+- **Quién lo ve**: el módulo no tiene una lista pública de inscritos. Una persona ve sus propias inscripciones en «Mis inscripciones», y la lista de inscritos de un evento solo se ve en la pestaña «Inscripciones» de la ficha del evento en el panel. Por eso el perfil lo enseña únicamente al **dueño** y a quien podría abrir esa pestaña: acceso al panel (`admin.access`), `events.view_any`, `events.update` y `registrations.view_any`; la administración pasa siempre. Para cualquier otra persona (invitados, otros miembros, personal sin alguno de esos permisos, y quien solo tiene `registrations.view`) la sección no se dibuja y el contador no existe. Son permisos de rol, no de evento, así que la respuesta es una por persona y se calcula una sola vez por petición.
+- **Una sola regla**: `Policies/RegistrationListAccess` guarda esos permisos (`TAB_PERMISSIONS`) y los usan la pestaña, el perfil y el aviso de la campana a quien gestiona inscripciones (`MANAGE_PERMISSIONS`, que añade `registrations.update`). Así el aviso nunca llega a quien después recibiría un 403 al abrir la pestaña.
+
 ### Verificación de email
 
 Con *Requerir verificación de email* activo en el core, el servidor rechaza las rutas que requieren sesión a las cuentas que deben verificar su email (en una petición JSON, un 403 con `error: "email_verification_required"` y la cabecera `X-Email-Verification-Required: 1`; en una visita normal, una redirección a la página de verificación). Las cuentas que no deben verificar (verificadas, creadas antes de que se empezara a exigir o con el ajuste apagado) y los visitantes sin sesión no notan ningún cambio.
@@ -241,7 +250,7 @@ src/modules/event-registrations/
 │   ├── Domain/             # Entidades, enums, eventos, excepciones, repositorios, reloj (Clock)
 │   ├── Filament/           # Relation managers, páginas y widget del dashboard
 │   ├── Http/               # Controlador y form requests
-│   ├── Infrastructure/     # Persistencia Eloquent y servicios
+│   ├── Infrastructure/     # Persistencia Eloquent, servicios y perfil público (Profiles/)
 │   ├── Listeners/          # Emails y promoción de la lista de espera
 │   ├── Notifications/      # Emails
 │   └── Policies/           # Autorización

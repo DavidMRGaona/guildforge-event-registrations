@@ -38,6 +38,7 @@ final class ManagerSiteNotificationsTest extends ModuleTestCase
     use InteractsWithModulePanel;
 
     private const array MANAGER_PERMISSIONS = [
+        'events.view_any',
         'events.update',
         'event-registrations:registrations.view_any',
         'event-registrations:registrations.update',
@@ -101,6 +102,21 @@ final class ManagerSiteNotificationsTest extends ModuleTestCase
         $this->assertStringStartsWith('/admin/', $items[0]->url);
         $this->assertStringContainsString('jornada-de-rol/edit', $items[0]->url);
         $this->assertStringContainsString('relation=', $items[0]->url);
+    }
+
+    public function test_nobody_is_told_who_could_not_open_the_tab_the_notice_links_to(): void
+    {
+        $event = $this->upcomingEvent(['title' => 'Jornada de rol']);
+        $cannotListEvents = $this->editorWithPermissions(['events.update', 'event-registrations:registrations.view_any', 'event-registrations:registrations.update']);
+        $cannotChange = $this->editorWithPermissions(['events.view_any', 'events.update', 'event-registrations:registrations.view_any']);
+        $manager = $this->editorWithPermissions(self::MANAGER_PERMISSIONS);
+
+        $this->register($event, UserModel::factory()->create(['name' => 'Ana', 'display_name' => null]), RegistrationState::Pending);
+
+        $notices = app(SiteNotificationServiceInterface::class);
+        $this->assertCount(1, $notices->latest($manager, 10));
+        $this->assertSame([], $notices->latest($cannotListEvents, 10));
+        $this->assertSame([], $notices->latest($cannotChange, 10));
     }
 
     public function test_the_waiting_list_position_is_in_the_body(): void

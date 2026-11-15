@@ -299,4 +299,15 @@ return [
         'with_capacity' => 'Registrations with a capacity of :capacity',
         'with_capacity_and_waiting_list' => 'Registrations with a capacity of :capacity and a waiting list',
     ],
+
+    // The person's public profile (core >= 3.79): only they and the staff who can open the event's registrations tab in the panel see these
+    'public_profile' => [
+        'upcoming' => [
+            'label' => 'Upcoming events',
+            'description' => 'The next events you are confirmed in. Only you and the staff who can open the registrations tab of that event in the panel see them.',
+        ],
+        'attended' => [
+            'label' => 'Events attended',
+        ],
+    ],
 ];
