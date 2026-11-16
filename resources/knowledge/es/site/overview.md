@@ -57,6 +57,6 @@ Si tu web tiene encuestas, en la página del evento verás también las que te t
 
 - **Inscribirte en un evento**, para apuntarte paso a paso.
 - **Cancelar tu inscripción a un evento**, si al final no puedes ir.
-- **Ver tus inscripciones a eventos**, para tenerlas todas a mano en tu perfil.
+- **Ver tus inscripciones a eventos**, para tenerlas todas a mano en Ajustes de la cuenta.
 
 [[action:events.index|Ver los eventos]]

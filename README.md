@@ -5,7 +5,7 @@ Inscripciones a los eventos de GuildForge: aforo, lista de espera con promoción
 ## Características
 
 - **Inscripción desde la ficha del evento**: el botón se inyecta solo en la página del evento.
-- **Mis inscripciones en el perfil**: una pestaña del perfil lista las inscripciones del usuario, separadas en próximos eventos, eventos pasados y «Eventos no disponibles» (las de eventos que no están publicados), con la fecha, el lugar, el estado y la posición en la lista de espera.
+- **Mis inscripciones en Ajustes de la cuenta**: una pestaña de Ajustes de la cuenta lista las inscripciones del usuario, separadas en próximos eventos, eventos pasados y «Eventos no disponibles» (las de eventos que no están publicados), con la fecha, el lugar, el estado y la posición en la lista de espera.
 - **Aforo y lista de espera**: máximo de participantes y de plazas en espera. Cuando se libera una plaza confirmada (el inscrito cancela, o desde el panel se rechaza, se pasa a lista de espera, se cambia de estado o se elimina), las primeras personas de la lista pasan a confirmadas hasta llenar las plazas libres. Quien se pasa a lista de espera desde el panel va al final y no recupera la plaza en ese momento, aunque nadie más espere. Desde el inicio del evento no se promociona a nadie.
 - **Confirmación manual**: las inscripciones quedan pendientes hasta que alguien las confirma desde el panel.
 - **Fechas**: apertura y cierre de inscripciones y fecha límite para cancelar. El inicio del evento cierra inscripciones, cancelaciones y lista de espera aunque las fechas configuradas sean posteriores, y desde ese momento nadie pasa de la lista de espera a confirmado. Las acciones del panel (confirmar, rechazar, mover a lista de espera, editar, eliminar) no tienen ese límite.
@@ -116,9 +116,9 @@ No se envían emails de eventos ya terminados.
 
 ### Avisos en la campana (core ≥ 3.58)
 
-Cada email a una cuenta (todos menos «Nueva inscripción») deja además un aviso en la campana de la web, con un enlace a `/eventos/<slug>`. Las categorías `event-registrations.registrations` (obligatoria) y `event-registrations.reminders` declaran `site: true`, así que el perfil muestra «En la web» junto a «Por correo». El aviso se vuelve a comprobar al entregarlo: si el evento ya no está publicado, no se guarda. El asunto es el evento (`event-registrations.event`): silenciarlo en el perfil o en el pie de un correo calla también sus avisos, y al borrar el evento se olvidan los avisos y los silencios (`MailSubjectMuteServiceInterface::forgetSubject()`).
+Cada email a una cuenta (todos menos «Nueva inscripción») deja además un aviso en la campana de la web, con un enlace a `/eventos/<slug>`. Las categorías `event-registrations.registrations` (obligatoria) y `event-registrations.reminders` declaran `site: true`, así que Ajustes de la cuenta muestra «En la web» junto a «Por correo». El aviso se vuelve a comprobar al entregarlo: si el evento ya no está publicado, no se guarda. El asunto es el evento (`event-registrations.event`): silenciarlo en Ajustes de la cuenta o en el pie de un correo calla también sus avisos, y al borrar el evento se olvidan los avisos y los silencios (`MailSubjectMuteServiceInterface::forgetSubject()`).
 
-**A quien gestiona** (#114): cada inscripción nueva (`UserRegisteredToEvent`, listener `NotifyRegistrationManagers`) deja un aviso solo en la web (`NewRegistrationToManageNotification`, categoría opcional `event-registrations.management`, `mail: false`) a quien tiene a la vez `admin.access`, `events.update`, `registrations.view_any` y `registrations.update` (`PermissionHolderFinder::usersWhoCan()`), es decir, a quien puede abrir la pestaña **Inscripciones** del evento a la que enlaza. La categoría solo la ve en su perfil quien cumple lo mismo, y se vuelve a comprobar al entregar el aviso (también que el evento siga existiendo). Las inscripciones de un evento sin leer se agrupan (`event-registrations.signups:<id>`, «Ana y 4 más se inscribieron en «…»»), con quien se inscribe como `actorId`: nunca se avisa de la propia inscripción. Tampoco de eventos ya terminados. El correo «Nueva inscripción» al email del evento no cambia.
+**A quien gestiona** (#114): cada inscripción nueva (`UserRegisteredToEvent`, listener `NotifyRegistrationManagers`) deja un aviso solo en la web (`NewRegistrationToManageNotification`, categoría opcional `event-registrations.management`, `mail: false`) a quien tiene a la vez `admin.access`, `events.update`, `registrations.view_any` y `registrations.update` (`PermissionHolderFinder::usersWhoCan()`), es decir, a quien puede abrir la pestaña **Inscripciones** del evento a la que enlaza. La categoría solo la ve en Ajustes de la cuenta quien cumple lo mismo, y se vuelve a comprobar al entregar el aviso (también que el evento siga existiendo). Las inscripciones de un evento sin leer se agrupan (`event-registrations.signups:<id>`, «Ana y 4 más se inscribieron en «…»»), con quien se inscribe como `actorId`: nunca se avisa de la propia inscripción. Tampoco de eventos ya terminados. El correo «Nueva inscripción» al email del evento no cambia.
 
 ### Widget del dashboard
 
@@ -241,7 +241,7 @@ src/modules/event-registrations/
 ├── resources/
 │   ├── css/                # Estilos del módulo
 │   ├── js/components/      # Componentes Vue
-│   ├── js/locales/         # Textos de la ficha del evento y del perfil (es, en)
+│   ├── js/locales/         # Textos de la ficha del evento y de Ajustes de la cuenta (es, en)
 │   ├── js/types/           # Tipos TypeScript
 │   └── views/filament/     # Vistas Blade del panel
 ├── routes/web.php          # Rutas JSON

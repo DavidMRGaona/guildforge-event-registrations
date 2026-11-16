@@ -35,7 +35,7 @@ Sirven para los eventos cuyas inscripciones nunca se han guardado en su pestaña
 
 Cada interruptor activa o apaga un correo a la persona inscrita. Nunca se envían correos de eventos que ya han terminado.
 
-Estos interruptores valen para todo el sitio. Además, cada persona elige en su perfil, pestaña **Correos**, qué correos opcionales recibe:
+Estos interruptores valen para todo el sitio. Además, cada persona elige en **Ajustes de la cuenta**, pestaña **Avisos**, qué correos opcionales recibe:
 
 - **Mis inscripciones** (inscripción, confirmación, rechazo, cancelación y plaza libre) es obligatoria: le llega siempre, porque confirma algo que ha hecho o le cambia los planes.
 - **Recordatorios de eventos** es opcional: cada persona puede desactivarlo, o dejar de recibirlo mientras tenga sus correos en pausa.

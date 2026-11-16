@@ -483,7 +483,7 @@ final class EventRegistrationsServiceProvider extends ModuleServiceProvider
 
     /**
      * Register slot components for the frontend: the registration button on the event
-     * detail page and the "Mis inscripciones" tab of the profile.
+     * detail page and the "Mis inscripciones" tab of the account settings.
      *
      * @return array<SlotRegistrationDTO>
      */
@@ -507,7 +507,7 @@ final class EventRegistrationsServiceProvider extends ModuleServiceProvider
                 props: [],
                 dataKeys: ['event'],
             ),
-            // "Mis inscripciones" tab of the profile; the section loads GET /mis-inscripciones itself
+            // "Mis inscripciones" tab of the account settings; the section loads GET /mis-inscripciones itself
             new SlotRegistrationDTO(
                 slot: 'profile-sections',
                 component: 'components/UserRegistrations.vue',
