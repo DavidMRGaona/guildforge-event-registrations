@@ -12,14 +12,14 @@ Si al final no puedes ir, cancela tu inscripción cuanto antes: tu plaza puede p
 
 ## Paso a paso
 
-1. Abre la página del evento. Si no la encuentras, abre **Mi perfil**, pestaña **Mis inscripciones**, y pulsa el nombre del evento.
+1. Abre la página del evento. Si no la encuentras, abre **Ajustes de la cuenta**, pestaña **Mis inscripciones**, y pulsa el nombre del evento.
 2. Pulsa **Cancelar inscripción**.
 3. Confirma con **Confirmar**. Con **Cancelar** cierras la ventana sin cambiar nada.
 
 Tu inscripción desaparece del bloque del evento y te llega el correo «Inscripción cancelada: (evento)», si la web envía ese aviso. Funciona igual si estabas confirmado, pendiente o en la lista de espera: en la lista de espera, dejas tu puesto.
 
 > [!IMPORTANT]
-> Cancelar no se puede deshacer, pero puedes volver a inscribirte mientras las inscripciones sigan abiertas; si ya no quedan plazas, entras en la lista de espera. En tu perfil, la inscripción queda como **Cancelado** hasta entonces.
+> Cancelar no se puede deshacer, pero puedes volver a inscribirte mientras las inscripciones sigan abiertas; si ya no quedan plazas, entras en la lista de espera. En **Ajustes de la cuenta**, la inscripción queda como **Cancelado** hasta entonces.
 
 ## Hasta cuándo
 

@@ -51,11 +51,11 @@ Según lo que tenga activado tu web:
 - Si la organización rechaza tu inscripción: «Inscripción rechazada: (evento)».
 - Si tienes plaza, unas horas antes del evento te llega un recordatorio: «Recordatorio: (evento), (fecha)».
 
-Los correos de tu inscripción te llegan siempre, porque confirman lo que has hecho o te cambian los planes. El recordatorio sí puedes quitarlo: en **Mi perfil**, pestaña **Correos**, desactiva **Recordatorios de eventos** en la sección **Inscripciones a eventos**. La guía «Elegir qué correos recibes» lo explica.
+Los correos de tu inscripción te llegan siempre, porque confirman lo que has hecho o te cambian los planes. El recordatorio sí puedes quitarlo: en **Ajustes de la cuenta**, pestaña **Avisos**, desactiva **Recordatorios de eventos** en la sección **Inscripciones a eventos**. La guía «Elegir qué correos recibes» lo explica.
 
 ## Avisos en la campana
 
-Los mismos avisos aparecen también en la campana de la web, junto a tu perfil, en cuanto pasan: inscripción recibida o confirmada, lista de espera, plaza libre, cancelación, rechazo y recordatorio. Cada aviso te lleva a la página del evento. Si el evento deja de estar publicado, el aviso no se guarda. Los de tu inscripción te llegan siempre; los recordatorios los quitas en **Mi perfil**, pestaña **Correos**, con el interruptor **En la web** de **Recordatorios de eventos**.
+Los mismos avisos aparecen también en la campana de la cabecera de la web, en cuanto pasan: inscripción recibida o confirmada, lista de espera, plaza libre, cancelación, rechazo y recordatorio. Cada aviso te lleva a la página del evento. Si el evento deja de estar publicado, el aviso no se guarda. Los de tu inscripción te llegan siempre; los recordatorios los quitas en **Ajustes de la cuenta**, pestaña **Avisos**, con el interruptor **En la web** de **Recordatorios de eventos**.
 
 ## Si algo no sale bien
 
@@ -63,11 +63,11 @@ Los mismos avisos aparecen también en la campana de la web, junto a tu perfil, 
 - **«Las inscripciones están cerradas»**: estás fuera de las fechas de inscripción del evento.
 - **«El evento ya ha comenzado»**: ya no admite inscripciones.
 - **«El evento está completo»**: no quedan plazas, o la lista de espera también está llena.
-- **«Ya estás inscrito en este evento»**: tu inscripción ya existe. Mírala en tu perfil, pestaña **Mis inscripciones**.
+- **«Ya estás inscrito en este evento»**: tu inscripción ya existe. Mírala en **Ajustes de la cuenta**, pestaña **Mis inscripciones**.
 - **«Tu inscripción en este evento fue rechazada. Si crees que es un error, contacta con la organización.»**: solo la organización puede cambiarla.
 - **«Solo los socios pueden inscribirse en este evento»**: es solo para quien tiene el rol de {{association_role}}.
 - **«Tu sesión ha caducado. Recarga la página e inténtalo de nuevo.»**: recarga la página y vuelve a pulsar el botón.
 - **No te llega el correo**: mira en la carpeta de correo no deseado.
-- **No te llega el recordatorio**: en tu perfil, pestaña **Correos**, comprueba que **Recordatorios de eventos** esté activado (por correo y en la web) y que no tengas los correos en pausa.
+- **No te llega el recordatorio**: en **Ajustes de la cuenta**, pestaña **Avisos**, comprueba que **Recordatorios de eventos** esté activado (por correo y en la web) y que no tengas los correos en pausa.
 
 [[action:events.index|Ver los eventos]]

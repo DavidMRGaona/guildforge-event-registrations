@@ -16,7 +16,7 @@ El módulo de inscripciones deja que la gente de {{site_name}} se apunte a los e
 
 ## Cómo se ve en la web
 
-Un evento con las inscripciones habilitadas muestra en su página un botón para inscribirse, encima de la descripción, con el número de confirmados. Para inscribirse hace falta una cuenta. Cada persona ve sus inscripciones en su perfil, en la pestaña **Mis inscripciones**.
+Un evento con las inscripciones habilitadas muestra en su página un botón para inscribirse, encima de la descripción, con el número de confirmados. Para inscribirse hace falta una cuenta. Cada persona ve sus inscripciones en **Ajustes de la cuenta**, en la pestaña **Mis inscripciones**.
 
 ## Estados de una inscripción
 
