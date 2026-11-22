@@ -309,5 +309,9 @@ return [
         'attended' => [
             'label' => 'Events attended',
         ],
+        'past' => [
+            'label' => 'Latest events attended',
+            'description' => 'The latest events that ended with you confirmed in them. Only you and the staff who can open the registrations tab of that event in the panel see them.',
+        ],
     ],
 ];

@@ -156,8 +156,8 @@ export interface EventSurveyLinks {
     guideId: string | null;
 }
 
-/** An event of «Próximos eventos» on the public profile, as the server's section hands it over */
-export interface ProfileUpcomingEvent {
+/** An event of «Próximos eventos» or «Últimos eventos asistidos» on the public profile, as the server's section hands it over */
+export interface ProfileEvent {
     title: string;
     /** A path of the site, from the event's own route */
     url: string;

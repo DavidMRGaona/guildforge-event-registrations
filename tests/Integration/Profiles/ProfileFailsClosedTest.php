@@ -15,7 +15,7 @@ use RuntimeException;
 use Tests\Support\Modules\ModuleTestCase;
 
 /**
- * When the rule or the query behind the section and the stat fails for somebody who is not the owner,
+ * When the rule or the query behind the sections and the stat fails for somebody who is not the owner,
  * the profile is drawn without them instead of breaking or showing more than it should.
  */
 final class ProfileFailsClosedTest extends ModuleTestCase
@@ -38,15 +38,18 @@ final class ProfileFailsClosedTest extends ModuleTestCase
         $this->staff = $this->editorWithPermissions(['events.view_any', 'events.update', self::VIEW_ANY]);
     }
 
-    public function test_the_staff_who_open_the_tab_see_both_when_nothing_fails(): void
+    public function test_the_staff_who_open_the_tab_see_everything_when_nothing_fails(): void
     {
         $profile = $this->app->make(ProfileRendererInterface::class)->render($this->ownerDto(), $this->staff);
 
-        $this->assertCount(1, $profile->aside);
+        $this->assertSame(
+            ['event-registrations.upcoming', 'event-registrations.past'],
+            array_map(static fn ($section): string => $section->key, $profile->aside),
+        );
         $this->assertCount(1, $profile->stats);
     }
 
-    public function test_a_failing_permission_check_leaves_out_the_section_and_the_stat(): void
+    public function test_a_failing_permission_check_leaves_out_the_sections_and_the_stat(): void
     {
         $authorization = Mockery::mock(AuthorizationServiceInterface::class)->shouldIgnoreMissing();
         $authorization->shouldReceive('canAll')
@@ -62,7 +65,7 @@ final class ProfileFailsClosedTest extends ModuleTestCase
         $this->assertSame('ana-garcia', $profile->header->handle);
     }
 
-    public function test_a_failing_query_leaves_out_the_section_and_the_stat(): void
+    public function test_a_failing_query_leaves_out_the_sections_and_the_stat(): void
     {
         // Both read "now" from the clock to tell upcoming from attended
         $this->app->bind(Clock::class, static function (): never {
