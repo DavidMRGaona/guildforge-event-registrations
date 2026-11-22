@@ -274,6 +274,11 @@ final class ActivityChangePublishingTest extends ModuleTestCase
 
             public function recorded(string $sourceType, string $subjectId): void
             {
+                // The core publishes its own account sources when an account goes: only ours matters
+                if ($sourceType !== 'event-registrations.event') {
+                    return;
+                }
+
                 $this->remaining[$subjectId] = EventRegistrationModel::query()->where('event_id', $subjectId)->where('user_id', $this->leaverId)->count();
             }
         });
@@ -292,7 +297,8 @@ final class ActivityChangePublishingTest extends ModuleTestCase
 
         $user->delete();
 
-        Event::assertNotDispatched(ActivityRecorded::class);
+        // The core publishes its own account sources when an account is deactivated: only ours matters
+        Event::assertNotDispatched(ActivityRecorded::class, static fn (ActivityRecorded $recorded): bool => $recorded->sourceType === self::TYPE);
     }
 
     private function assertPublished(string $eventId): void
