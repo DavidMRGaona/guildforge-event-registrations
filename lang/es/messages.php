@@ -56,6 +56,11 @@ return [
         ],
     ],
 
+    // Activity (through the core's activity contract)
+    'activity' => [
+        'event_label' => 'Eventos asistidos',
+    ],
+
     // Bulk actions
     'bulk' => [
         'confirm_description' => '¿Estás seguro de que quieres confirmar las inscripciones seleccionadas?',

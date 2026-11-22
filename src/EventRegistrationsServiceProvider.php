@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\EventRegistrations;
 
+use App\Application\Activity\Contracts\ActivitySourceInterface;
 use App\Application\Authorization\Services\AuthorizationServiceInterface;
 use App\Application\Calendar\Contracts\CalendarAttendanceSourceInterface;
 use App\Application\Mail\DTOs\MailCategoryDTO;
@@ -17,6 +18,7 @@ use App\Application\Surveys\Contracts\SurveySubjectSourceInterface;
 use App\Filament\Forms\Components\EndSurveyField;
 use App\Filament\Resources\EventResource;
 use App\Infrastructure\Persistence\Eloquent\Models\EventModel;
+use App\Infrastructure\Persistence\Eloquent\Models\UserModel;
 use App\Modules\ModuleServiceProvider;
 use Filament\Pages\Page;
 use Filament\Schemas\Components\Component;
@@ -46,6 +48,8 @@ use Modules\EventRegistrations\Filament\Pages\RegistrationsSettings;
 use Modules\EventRegistrations\Filament\RelationManagers\RegistrationConfigRelationManager;
 use Modules\EventRegistrations\Filament\RelationManagers\RegistrationsRelationManager;
 use Modules\EventRegistrations\Filament\Widgets\RegistrationStatsWidget;
+use Modules\EventRegistrations\Infrastructure\Activity\AnnouncesActivityChanges;
+use Modules\EventRegistrations\Infrastructure\Activity\EventActivitySource;
 use Modules\EventRegistrations\Infrastructure\Calendar\EventAttendanceSource;
 use Modules\EventRegistrations\Infrastructure\Persistence\Eloquent\Models\EventRegistrationConfigModel;
 use Modules\EventRegistrations\Infrastructure\Persistence\Eloquent\Models\EventRegistrationModel;
@@ -74,6 +78,7 @@ use Modules\EventRegistrations\Listeners\SendWaitingListPromotedEmail;
 use Modules\EventRegistrations\Notifications\EventReminderNotification;
 use Modules\EventRegistrations\Notifications\NewRegistrationToManageNotification;
 use Modules\EventRegistrations\Policies\EventRegistrationPolicy;
+use WeakMap;
 
 final class EventRegistrationsServiceProvider extends ModuleServiceProvider
 {
@@ -174,7 +179,8 @@ final class EventRegistrationsServiceProvider extends ModuleServiceProvider
                 ->hourly()
                 ->withoutOverlapping(10);
 
-            // Events have no "ended" signal of their own: the surveys module learns it from here
+            // Events have no "ended" signal of their own: the surveys module learns it from here,
+            // and the activity contract's consumers get each ended event's attendance
             $schedule->command('event-registrations:announce-ended-events')
                 ->everyFifteenMinutes()
                 ->withoutOverlapping(10);
@@ -294,6 +300,32 @@ final class EventRegistrationsServiceProvider extends ModuleServiceProvider
 
         // ...and takes its mutes and bell notices with it, so nothing links to a page that is gone
         EventModel::deleted(fn (EventModel $event) => $this->app->make(MailSubjectMuteServiceInterface::class)->forgetSubject(EventReminderNotification::SUBJECT_TYPE, (string) $event->id));
+
+        $this->registerActivityPublishing();
+    }
+
+    /**
+     * What changes the facts of an event that already ended is published again for the activity
+     * contract. Events, registrations and accounts are saved from many places (panel, repository,
+     * plain models), so this listens to the models.
+     */
+    private function registerActivityPublishing(): void
+    {
+        EventRegistrationModel::saved(fn (EventRegistrationModel $registration) => $this->app->make(AnnouncesActivityChanges::class)->registrationSaved($registration));
+        EventRegistrationModel::deleted(fn (EventRegistrationModel $registration) => $this->app->make(AnnouncesActivityChanges::class)->registrationDeleted($registration));
+        EventModel::saved(fn (EventModel $event) => $this->app->make(AnnouncesActivityChanges::class)->eventSaved($event));
+        EventModel::deleted(fn (EventModel $event) => $this->app->make(AnnouncesActivityChanges::class)->eventDeleted($event));
+
+        // The events are asked before the account goes and published after it did
+        $attended = new WeakMap;
+        UserModel::forceDeleting(function (UserModel $user) use ($attended): void {
+            $attended[$user] = $this->app->make(AnnouncesActivityChanges::class)->attendedEventIds($user);
+        });
+        UserModel::forceDeleted(function (UserModel $user) use ($attended): void {
+            $eventIds = $attended[$user] ?? [];
+            unset($attended[$user]);
+            $this->app->make(AnnouncesActivityChanges::class)->accountRemoved($eventIds);
+        });
     }
 
     /**
@@ -458,6 +490,16 @@ final class EventRegistrationsServiceProvider extends ModuleServiceProvider
     public function registerProfileSections(): array
     {
         return [UpcomingEventsProfileSection::class, PastEventsProfileSection::class];
+    }
+
+    /**
+     * «Eventos asistidos»: who attended each event that ended (core >= 3.86, core#774).
+     *
+     * @return array<class-string<ActivitySourceInterface>>
+     */
+    public function registerActivitySources(): array
+    {
+        return [EventActivitySource::class];
     }
 
     /**
