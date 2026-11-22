@@ -56,6 +56,11 @@ return [
         ],
     ],
 
+    // Activity (through the core's activity contract)
+    'activity' => [
+        'event_label' => 'Attended events',
+    ],
+
     // Bulk actions
     'bulk' => [
         'confirm_description' => 'Are you sure you want to confirm the selected registrations?',

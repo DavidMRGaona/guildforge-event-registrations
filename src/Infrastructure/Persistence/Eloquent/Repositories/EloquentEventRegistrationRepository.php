@@ -62,9 +62,8 @@ final readonly class EloquentEventRegistrationRepository implements EventRegistr
 
     public function delete(EventRegistrationId $id): void
     {
-        EventRegistrationModel::query()
-            ->where('id', $id->value)
-            ->delete();
+        // Through the model, so its deletion is announced (the activity contract reads it)
+        EventRegistrationModel::query()->find($id->value)?->delete();
     }
 
     /**
