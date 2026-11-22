@@ -79,7 +79,11 @@ final readonly class EndedEventActivityAnnouncer
         $announcedAt = $now->format('Y-m-d H:i:s');
 
         try {
-            if (DB::table(self::TABLE)->insertOrIgnore(['event_id' => $event->id, 'ends_at' => $endsAt, 'announced_at' => $announcedAt]) === 1) {
+            // In its own transaction (a savepoint inside another): on PostgreSQL a refused statement
+            // would otherwise leave the surrounding transaction unusable
+            $inserted = DB::transaction(static fn (): int => DB::table(self::TABLE)->insertOrIgnore(['event_id' => $event->id, 'ends_at' => $endsAt, 'announced_at' => $announcedAt]));
+
+            if ($inserted === 1) {
                 return true;
             }
         } catch (QueryException $exception) {
