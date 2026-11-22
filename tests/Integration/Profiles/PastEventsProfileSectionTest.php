@@ -142,6 +142,31 @@ final class PastEventsProfileSectionTest extends ModuleTestCase
         );
     }
 
+    public function test_the_latest_to_end_comes_first_even_when_it_began_earlier(): void
+    {
+        $this->register($this->eventAt('2030-06-01 09:00:00', '2030-06-14 20:00:00', ['title' => 'Torneo de dos semanas']));
+        $this->register($this->eventAt('2030-06-10 18:00:00', '2030-06-10 22:00:00', ['title' => 'Quedada a mitad del torneo']));
+        $this->register($this->eventAt('2030-06-12 10:00:00', '2030-06-12 14:00:00', ['title' => 'Jornada de rol']));
+
+        $this->assertSame(
+            ['Torneo de dos semanas', 'Jornada de rol', 'Quedada a mitad del torneo'],
+            $this->titles($this->owner),
+        );
+    }
+
+    public function test_events_that_end_together_come_latest_created_first(): void
+    {
+        $end = '2030-06-14 20:00:00';
+        $this->register($this->eventAt('2030-06-14 16:00:00', $end, ['title' => 'Creado primero', 'created_at' => new \DateTimeImmutable('2030-05-01 10:00:00 UTC')]));
+        $this->register($this->eventAt('2030-06-14 10:00:00', $end, ['title' => 'Creado después', 'created_at' => new \DateTimeImmutable('2030-05-03 10:00:00 UTC')]));
+        $this->register($this->eventAt('2030-06-14 18:00:00', $end, ['title' => 'Creado en medio', 'created_at' => new \DateTimeImmutable('2030-05-02 10:00:00 UTC')]));
+
+        $this->assertSame(
+            ['Creado después', 'Creado en medio', 'Creado primero'],
+            $this->titles($this->owner),
+        );
+    }
+
     public function test_other_peoples_registrations_are_not_listed(): void
     {
         $other = UserModel::factory()->create();

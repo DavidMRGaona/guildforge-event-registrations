@@ -43,14 +43,18 @@ final readonly class ProfileEvents
     }
 
     /**
-     * The latest ones attended, latest first by their start, as the list draws it; one query.
+     * The latest ones attended: the ones that ended most recently first, so a long event that began
+     * earlier but ended later comes before a short one held in the middle of it. Ties go like
+     * orderedByStart(): the latest created first, then by id. One query.
      *
      * @return Collection<int, EventModel>
      */
     public function lastAttended(string $ownerId, int $limit): Collection
     {
         return $this->attended($ownerId)
-            ->orderedByStart('desc')
+            ->orderByDesc('end_date')
+            ->orderByDesc('created_at')
+            ->orderByDesc('id')
             ->limit($limit)
             ->get(['id', 'title', 'slug', 'start_date', 'location']);
     }
