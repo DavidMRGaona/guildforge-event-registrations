@@ -179,6 +179,67 @@ final class EndedEventActivityAnnouncerTest extends ModuleTestCase
         Event::assertDispatched(ActivityRecorded::class, fn (ActivityRecorded $recorded): bool => $recorded->subjectId === $event->id);
     }
 
+    /**
+     * Another run claimed the same end after this one read the event: the insert is ignored and the
+     * conditional update finds the end already claimed, so nothing is published twice.
+     */
+    public function test_a_run_that_loses_the_claim_to_another_publishes_nothing(): void
+    {
+        $event = $this->pastEvent();
+        $this->register($event);
+        $claimed = false;
+        EventModel::retrieved(function (EventModel $read) use (&$claimed, $event): void {
+            if ($claimed || $read->id !== $event->id) {
+                return;
+            }
+            $claimed = true;
+            DB::table(EndedEventActivityAnnouncer::TABLE)->insert(['event_id' => $event->id, 'ends_at' => $read->getRawOriginal('end_date'), 'announced_at' => '2030-06-15 11:59:59']);
+        });
+        $this->listen();
+
+        $this->assertSame(0, $this->announcer()->announce());
+        $this->assertTrue($claimed);
+        Event::assertNotDispatched(ActivityRecorded::class);
+    }
+
+    public function test_an_event_deleted_after_it_was_read_is_skipped_and_the_rest_go_on(): void
+    {
+        $doomed = $this->pastEvent('Se borra', 10);
+        $kept = $this->pastEvent('Se queda', 11);
+        $this->register($doomed);
+        $this->register($kept);
+        $deleted = false;
+        EventModel::retrieved(function (EventModel $read) use (&$deleted, $doomed): void {
+            if ($deleted || $read->id !== $doomed->id) {
+                return;
+            }
+            $deleted = true;
+            DB::table('events')->where('id', $doomed->id)->delete();
+        });
+        $this->listen();
+
+        $this->assertSame(1, $this->announcer()->announce());
+        $this->assertTrue($deleted);
+        Event::assertDispatchedTimes(ActivityRecorded::class, 1);
+        Event::assertDispatched(ActivityRecorded::class, fn (ActivityRecorded $recorded): bool => $recorded->subjectId === $kept->id);
+        $this->assertSame(0, DB::table(EndedEventActivityAnnouncer::TABLE)->where('event_id', $doomed->id)->count());
+    }
+
+    public function test_an_event_whose_end_moves_away_and_comes_back_to_the_claimed_one_is_not_published_again(): void
+    {
+        $event = $this->pastEvent();
+        $this->register($event);
+        $claimedEnd = DateTimeImmutable::createFromInterface($event->end_date);
+        $this->assertSame(1, $this->announcer()->announce());
+
+        $event->update(['end_date' => new DateTimeImmutable('2030-07-01 10:00:00 UTC')]);
+        $event->update(['end_date' => $claimedEnd]);
+        $this->listen();
+
+        $this->assertSame(0, $this->announcer()->announce());
+        Event::assertNotDispatched(ActivityRecorded::class);
+    }
+
     public function test_an_overdue_event_is_published_after_a_scheduler_gap(): void
     {
         $event = $this->pastEvent('Muy antiguo', 400);

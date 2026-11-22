@@ -8,6 +8,7 @@ use App\Application\Activity\Services\ActivityPublisherInterface;
 use App\Infrastructure\Persistence\Eloquent\Models\EventModel;
 use DateTimeImmutable;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -77,8 +78,19 @@ final readonly class EndedEventActivityAnnouncer
         $endsAt = (string) $event->getRawOriginal('end_date');
         $announcedAt = $now->format('Y-m-d H:i:s');
 
-        if (DB::table(self::TABLE)->insertOrIgnore(['event_id' => $event->id, 'ends_at' => $endsAt, 'announced_at' => $announcedAt]) === 1) {
-            return true;
+        try {
+            if (DB::table(self::TABLE)->insertOrIgnore(['event_id' => $event->id, 'ends_at' => $endsAt, 'announced_at' => $announcedAt]) === 1) {
+                return true;
+            }
+        } catch (QueryException $exception) {
+            // The event was deleted after it was read: the foreign key refuses the claim (PostgreSQL's
+            // ON CONFLICT only covers unique violations), and the deletion was published already.
+            // Any other failure is not this one's to swallow.
+            if (EventModel::query()->whereKey($event->id)->exists()) {
+                throw $exception;
+            }
+
+            return false;
         }
 
         return DB::table(self::TABLE)
