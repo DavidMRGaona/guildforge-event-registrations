@@ -43,13 +43,34 @@ final readonly class ProfileEvents
     }
 
     /**
+     * The latest ones attended, latest first by their start, as the list draws it; one query.
+     *
+     * @return Collection<int, EventModel>
+     */
+    public function lastAttended(string $ownerId, int $limit): Collection
+    {
+        return $this->attended($ownerId)
+            ->orderedByStart('desc')
+            ->limit($limit)
+            ->get(['id', 'title', 'slug', 'start_date', 'location']);
+    }
+
+    /**
      * Events, not registrations: one query.
      */
     public function attendedCount(string $ownerId): int
     {
-        return $this->confirmedIn($ownerId)
-            ->where('end_date', '<', $this->now())
-            ->count();
+        return $this->attended($ownerId)->count();
+    }
+
+    /**
+     * Ended before now: one ending right now is still upcoming, like in upcoming().
+     *
+     * @return Builder<EventModel>
+     */
+    private function attended(string $ownerId): Builder
+    {
+        return $this->confirmedIn($ownerId)->where('end_date', '<', $this->now());
     }
 
     /**

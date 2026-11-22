@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { mount } from '@vue/test-utils';
 import UpcomingEventsSection from '../../resources/js/components/UpcomingEventsSection.vue';
-import type { ProfileUpcomingEvent } from '../../resources/js/types/registration';
+import type { ProfileEvent } from '../../resources/js/types/registration';
 
-function event(overrides: Partial<ProfileUpcomingEvent> = {}): ProfileUpcomingEvent {
+function event(overrides: Partial<ProfileEvent> = {}): ProfileEvent {
     return {
         title: 'Jornada de rol',
         url: '/eventos/jornada-de-rol',

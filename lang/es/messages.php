@@ -309,5 +309,9 @@ return [
         'attended' => [
             'label' => 'Eventos asistidos',
         ],
+        'past' => [
+            'label' => 'Últimos eventos asistidos',
+            'description' => 'Los últimos eventos que han terminado con tu inscripción confirmada. Solo los ves tú y el personal que puede abrir la pestaña de inscripciones de ese evento en el panel.',
+        ],
     ],
 ];

@@ -52,6 +52,7 @@ use Modules\EventRegistrations\Infrastructure\Persistence\Eloquent\Models\EventR
 use Modules\EventRegistrations\Infrastructure\Persistence\Eloquent\Repositories\EloquentEventRegistrationConfigRepository;
 use Modules\EventRegistrations\Infrastructure\Persistence\Eloquent\Repositories\EloquentEventRegistrationRepository;
 use Modules\EventRegistrations\Infrastructure\Profiles\AttendedEventsProfileStat;
+use Modules\EventRegistrations\Infrastructure\Profiles\PastEventsProfileSection;
 use Modules\EventRegistrations\Infrastructure\Profiles\RegistrationsVisibleOnProfile;
 use Modules\EventRegistrations\Infrastructure\Profiles\UpcomingEventsProfileSection;
 use Modules\EventRegistrations\Infrastructure\Services\AssociationMembershipChecker;
@@ -450,13 +451,13 @@ final class EventRegistrationsServiceProvider extends ModuleServiceProvider
     }
 
     /**
-     * The upcoming events of the person, on their public profile (core >= 3.79).
+     * The upcoming and the latest attended events of the person, on their public profile (core >= 3.79).
      *
      * @return array<class-string<ProfileSectionInterface>>
      */
     public function registerProfileSections(): array
     {
-        return [UpcomingEventsProfileSection::class];
+        return [UpcomingEventsProfileSection::class, PastEventsProfileSection::class];
     }
 
     /**
