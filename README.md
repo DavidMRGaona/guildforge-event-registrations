@@ -155,7 +155,9 @@ El módulo aporta al perfil público (`/miembros/<alias>`) la sección **«Próx
 
 La fuente `event-registrations.event` cuenta, para quien la consuma (el módulo de logros), los eventos asistidos: cada evento publicado que ha terminado, con cada inscripción confirmada de una cuenta como hecho `attendee` en el momento en que termina el evento. El módulo no registra entradas, así que «confirmado en un evento terminado» es lo más cercano a «asistió», y es lo mismo que cuenta la estadística `event-registrations.attended` del perfil.
 
-Se publica una vez cuando el evento termina (`event-registrations:announce-ended-events`, cada 15 minutos, con o sin encuesta) y de nuevo cuando cambia algo de un evento ya terminado: una inscripción confirmada, cancelada o eliminada, el evento despublicado, borrado o con el fin movido, o una cuenta eliminada. Solo cuentan eventos publicados e inscripciones confirmadas; la primera ejecución tras actualizar también publica los eventos que terminaron antes.
+Se publica una vez cuando el evento termina (`event-registrations:announce-ended-events`, cada 15 minutos, con o sin encuesta) y de nuevo cuando cambia algo de un evento ya terminado: una inscripción confirmada, cancelada o eliminada, el evento despublicado, borrado o con el fin movido, o una cuenta eliminada. Solo cuentan eventos publicados e inscripciones confirmadas; la primera ejecución tras actualizar también publica los eventos que terminaron antes. Cada evento publicado se anota con el fin que se publicó (`event_registrations_activity_ends`), así que uno cuyo fin se mueve vuelve a publicarse cuando termina de verdad.
+
+**Privacidad.** La fuente da la asistencia a los logros aunque el contador «eventos asistidos» del perfil esté oculto para los demás: son dos cosas distintas. El módulo de logros solo enseña a los demás totales («12 eventos»), nunca un evento concreto, y cada persona puede ocultar sus logros. Si la publicación falla después de anotar el evento, no se reintenta: solo un recálculo del consumidor lo recupera.
 
 ### Verificación de email
 

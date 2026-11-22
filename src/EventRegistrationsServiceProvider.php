@@ -77,6 +77,7 @@ use Modules\EventRegistrations\Listeners\SendWaitingListPromotedEmail;
 use Modules\EventRegistrations\Notifications\EventReminderNotification;
 use Modules\EventRegistrations\Notifications\NewRegistrationToManageNotification;
 use Modules\EventRegistrations\Policies\EventRegistrationPolicy;
+use WeakMap;
 
 final class EventRegistrationsServiceProvider extends ModuleServiceProvider
 {
@@ -177,7 +178,8 @@ final class EventRegistrationsServiceProvider extends ModuleServiceProvider
                 ->hourly()
                 ->withoutOverlapping(10);
 
-            // Events have no "ended" signal of their own: the surveys module learns it from here
+            // Events have no "ended" signal of their own: the surveys module learns it from here,
+            // and the activity contract's consumers get each ended event's attendance
             $schedule->command('event-registrations:announce-ended-events')
                 ->everyFifteenMinutes()
                 ->withoutOverlapping(10);
@@ -312,7 +314,17 @@ final class EventRegistrationsServiceProvider extends ModuleServiceProvider
         EventRegistrationModel::deleted(fn (EventRegistrationModel $registration) => $this->app->make(AnnouncesActivityChanges::class)->registrationDeleted($registration));
         EventModel::saved(fn (EventModel $event) => $this->app->make(AnnouncesActivityChanges::class)->eventSaved($event));
         EventModel::deleted(fn (EventModel $event) => $this->app->make(AnnouncesActivityChanges::class)->eventDeleted($event));
-        UserModel::forceDeleting(fn (UserModel $user) => $this->app->make(AnnouncesActivityChanges::class)->userForceDeleting($user));
+
+        // The events are asked before the account goes and published after it did
+        $attended = new WeakMap;
+        UserModel::forceDeleting(function (UserModel $user) use ($attended): void {
+            $attended[$user] = $this->app->make(AnnouncesActivityChanges::class)->attendedEventIds($user);
+        });
+        UserModel::forceDeleted(function (UserModel $user) use ($attended): void {
+            $eventIds = $attended[$user] ?? [];
+            unset($attended[$user]);
+            $this->app->make(AnnouncesActivityChanges::class)->accountRemoved($eventIds);
+        });
     }
 
     /**

@@ -16,7 +16,8 @@ use Modules\EventRegistrations\Infrastructure\Persistence\Eloquent\Models\EventR
  * Publishes, through the core's ActivityPublisherInterface, every change to the facts of an event
  * that has already ended (EndedEventActivityAnnouncer does the moment it ends): a registration
  * confirmed, cancelled, moved or removed after the end; the event unpublished, published again,
- * deleted, or with its end date moved; an account removed for good. Events are core records and
+ * deleted, or with its end date moved (the announcer publishes it again when it ends at the new
+ * date); an account removed for good. Events are core records and
  * registrations are saved by the panel, the repository and plain models, so the provider wires this
  * to the models rather than to any one path.
  *
@@ -29,7 +30,6 @@ final readonly class AnnouncesActivityChanges
     public function __construct(
         private AttendedEvents $attended,
         private ActivityPublisherInterface $activity,
-        private EndedEventActivityAnnouncer $endings,
     ) {}
 
     /**
@@ -76,11 +76,6 @@ final readonly class AnnouncesActivityChanges
         if ($counted) {
             $this->activity->recorded(EventActivitySource::TYPE, $event->id);
         }
-
-        // Its end moved ahead: the announcer must publish it again when it really ends
-        if ($event->isDirty('end_date') && ! $this->attended->hasEnded(true, $event->end_date)) {
-            $this->endings->release($event->id);
-        }
     }
 
     public function eventDeleted(EventModel $event): void
@@ -91,14 +86,30 @@ final readonly class AnnouncesActivityChanges
     }
 
     /**
-     * The registrations go with the account (a foreign key, no model event), so its events are
-     * published before they do; the consumer reads them once the removal commits. Deactivating an
-     * account keeps its registrations, and its facts with them.
+     * The events an account attended, asked before it is removed (`forceDeleting`): the
+     * registrations go with it (a foreign key, no model event) and nothing could be asked after.
+     *
+     * @return list<string>
      */
-    public function userForceDeleting(UserModel $user): void
+    public function attendedEventIds(UserModel $user): array
     {
-        foreach ($this->attended->attendedBy((string) $user->getKey())->pluck('id') as $eventId) {
-            $this->activity->recorded(EventActivitySource::TYPE, (string) $eventId);
+        return array_values(array_map(
+            static fn (mixed $id): string => (string) $id,
+            $this->attended->attendedBy((string) $user->getKey())->pluck('id')->all(),
+        ));
+    }
+
+    /**
+     * Once the account is gone (`forceDeleted`): a forced deletion opens no transaction, so
+     * publishing earlier would let the consumer read the registrations still there. Deactivating
+     * an account keeps its registrations, and its facts with them.
+     *
+     * @param  list<string>  $eventIds
+     */
+    public function accountRemoved(array $eventIds): void
+    {
+        foreach ($eventIds as $eventId) {
+            $this->activity->recorded(EventActivitySource::TYPE, $eventId);
         }
     }
 

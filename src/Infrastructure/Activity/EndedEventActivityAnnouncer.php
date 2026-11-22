@@ -6,6 +6,7 @@ namespace Modules\EventRegistrations\Infrastructure\Activity;
 
 use App\Application\Activity\Services\ActivityPublisherInterface;
 use App\Infrastructure\Persistence\Eloquent\Models\EventModel;
+use DateTimeImmutable;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 
@@ -15,10 +16,16 @@ use Illuminate\Support\Facades\DB;
  * whose end has passed and that has someone confirmed in it, once. It is independent of the
  * surveys' EndedEventAnnouncer: an event needs no survey, nor registrations switched on, to count.
  *
- * Each event is claimed in a table before it is published, so it goes out once even when two runs
- * overlap. A change to an event that has already ended is published by AnnouncesActivityChanges
- * as it happens; an end date moved into the future releases the claim, so the event is published
- * again when it really ends.
+ * Each event is claimed in a table, with the end it was published for, before it is published, so
+ * it goes out once even when two runs overlap. An event is picked up again only when its end is no
+ * longer the claimed one (it moved and has ended again), which also settles a save that lands
+ * between reading an event and claiming it: the claim keeps the end that was read, so the new end
+ * never matches it. A change to an event that has already ended is published by
+ * AnnouncesActivityChanges as it happens.
+ *
+ * The claim is written before the publication, the same pattern as the surveys' announcer: if
+ * publishing fails after it, the event is not retried, and only a recalculation by the consumer
+ * recovers it.
  *
  * The first run after the table is created also publishes the events that ended before it: with
  * no consumer nothing listens, and a consumer that is installed reads them as a recalculation.
@@ -43,16 +50,13 @@ final readonly class EndedEventActivityAnnouncer
         $published = 0;
 
         $this->attended->endedWithConfirmed()
-            ->whereNotIn('id', DB::table(self::TABLE)->select('event_id'))
+            ->whereNotExists(static fn ($claim) => $claim->from(self::TABLE)
+                ->whereColumn(self::TABLE.'.event_id', 'events.id')
+                ->whereColumn(self::TABLE.'.ends_at', 'events.end_date'))
             ->chunkById(self::CHUNK, function (Collection $events) use ($now, &$published): void {
                 /** @var EventModel $event */
                 foreach ($events as $event) {
-                    $claimed = DB::table(self::TABLE)->insertOrIgnore([
-                        'event_id' => $event->id,
-                        'announced_at' => $now->format('Y-m-d H:i:s'),
-                    ]) === 1;
-
-                    if (! $claimed) {
+                    if (! $this->claim($event, $now)) {
                         continue;
                     }
 
@@ -65,10 +69,21 @@ final readonly class EndedEventActivityAnnouncer
     }
 
     /**
-     * An event whose end moved away must be announced again when it ends.
+     * Claims the event for the end that was read, as stored (the claim and the event compare the
+     * same text). Of two runs that read the same event, one wins.
      */
-    public function release(string $eventId): void
+    private function claim(EventModel $event, DateTimeImmutable $now): bool
     {
-        DB::table(self::TABLE)->where('event_id', $eventId)->delete();
+        $endsAt = (string) $event->getRawOriginal('end_date');
+        $announcedAt = $now->format('Y-m-d H:i:s');
+
+        if (DB::table(self::TABLE)->insertOrIgnore(['event_id' => $event->id, 'ends_at' => $endsAt, 'announced_at' => $announcedAt]) === 1) {
+            return true;
+        }
+
+        return DB::table(self::TABLE)
+            ->where('event_id', $event->id)
+            ->where('ends_at', '!=', $endsAt)
+            ->update(['ends_at' => $endsAt, 'announced_at' => $announcedAt]) === 1;
     }
 }

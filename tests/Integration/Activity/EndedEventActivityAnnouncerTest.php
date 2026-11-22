@@ -7,6 +7,8 @@ namespace Modules\EventRegistrations\Tests\Integration\Activity;
 use App\Application\Activity\Services\ActivityPublisherInterface;
 use App\Domain\Activity\Events\ActivityRecorded;
 use App\Domain\Surveys\Events\SurveySubjectEnded;
+use App\Infrastructure\Persistence\Eloquent\Models\EventModel;
+use DateTimeImmutable;
 use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
@@ -111,11 +113,70 @@ final class EndedEventActivityAnnouncerTest extends ModuleTestCase
         $event = $this->pastEvent();
         $this->register($event);
         // Another run claimed it first
-        DB::table(EndedEventActivityAnnouncer::TABLE)->insert(['event_id' => $event->id, 'announced_at' => '2030-06-05 16:15:00']);
+        DB::table(EndedEventActivityAnnouncer::TABLE)->insert(['event_id' => $event->id, 'ends_at' => $event->getRawOriginal('end_date'), 'announced_at' => '2030-06-05 16:15:00']);
         $this->listen();
 
         $this->assertSame(0, $this->announcer()->announce());
         Event::assertNotDispatched(ActivityRecorded::class);
+    }
+
+    public function test_the_claim_keeps_the_end_that_was_published(): void
+    {
+        $event = $this->pastEvent();
+        $this->register($event);
+        $this->listen();
+
+        $this->announcer()->announce();
+
+        $this->assertSame(
+            $event->getRawOriginal('end_date'),
+            DB::table(EndedEventActivityAnnouncer::TABLE)->where('event_id', $event->id)->value('ends_at'),
+        );
+    }
+
+    public function test_an_event_whose_end_changed_after_it_was_claimed_is_published_again_when_it_ends(): void
+    {
+        $event = $this->pastEvent();
+        $this->register($event);
+        $this->assertSame(1, $this->announcer()->announce());
+
+        $event->update(['end_date' => new DateTimeImmutable('2030-07-01 10:00:00 UTC')]);
+        $this->assertSame(0, $this->announcer()->announce());
+
+        $this->app->instance(Clock::class, FixedClock::at('2030-07-01 10:00:01 UTC'));
+        $this->listen();
+
+        $this->assertSame(1, $this->announcer()->announce());
+        $this->assertSame(0, $this->announcer()->announce());
+    }
+
+    /**
+     * The event is saved with a later end after the announcer read it and before it claimed it: the
+     * claim keeps the end that was read, so the event is announced again when it really ends.
+     */
+    public function test_a_save_between_reading_and_claiming_does_not_lose_the_real_end(): void
+    {
+        $event = $this->pastEvent();
+        $this->register($event);
+        $newEnd = '2030-07-01 10:00:00';
+        $moved = false;
+        EventModel::retrieved(function (EventModel $read) use (&$moved, $event, $newEnd): void {
+            if ($moved || $read->id !== $event->id) {
+                return;
+            }
+            $moved = true;
+            DB::table('events')->where('id', $event->id)->update(['end_date' => $newEnd]);
+        });
+        $this->listen();
+
+        $this->assertSame(1, $this->announcer()->announce());
+        $this->assertTrue($moved);
+
+        $this->app->instance(Clock::class, FixedClock::at('2030-07-01 10:00:01 UTC'));
+        $this->listen();
+
+        $this->assertSame(1, $this->announcer()->announce());
+        Event::assertDispatched(ActivityRecorded::class, fn (ActivityRecorded $recorded): bool => $recorded->subjectId === $event->id);
     }
 
     public function test_an_overdue_event_is_published_after_a_scheduler_gap(): void

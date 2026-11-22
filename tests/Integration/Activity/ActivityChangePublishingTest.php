@@ -12,12 +12,10 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Modules\EventRegistrations\Domain\Enums\RegistrationState;
 use Modules\EventRegistrations\Domain\Repositories\EventRegistrationRepositoryInterface;
-use Modules\EventRegistrations\Domain\Services\Clock;
 use Modules\EventRegistrations\Domain\ValueObjects\EventRegistrationId;
 use Modules\EventRegistrations\Infrastructure\Activity\EndedEventActivityAnnouncer;
 use Modules\EventRegistrations\Infrastructure\Persistence\Eloquent\Models\EventRegistrationModel;
 use Modules\EventRegistrations\Tests\Support\BuildsProfileRegistrations;
-use Modules\EventRegistrations\Tests\Support\FixedClock;
 use Tests\Support\Modules\ModuleTestCase;
 
 /**
@@ -229,24 +227,6 @@ final class ActivityChangePublishingTest extends ModuleTestCase
         $this->assertPublished($event->id);
     }
 
-    public function test_an_event_whose_end_moved_into_the_future_is_published_again_when_it_really_ends(): void
-    {
-        $event = $this->pastEvent();
-        $this->register($event);
-        $announcer = $this->app->make(EndedEventActivityAnnouncer::class);
-        $this->assertSame(1, $announcer->announce());
-
-        $event->update(['end_date' => new DateTimeImmutable('2030-07-01 10:00:00 UTC')]);
-        $this->assertSame(0, $announcer->announce());
-
-        $this->app->instance(Clock::class, FixedClock::at('2030-07-01 10:00:01 UTC'));
-        $this->listen();
-
-        // Built again: the announcer keeps the clock it was resolved with
-        $this->assertSame(1, $this->app->make(EndedEventActivityAnnouncer::class)->announce());
-        $this->assertPublished($event->id);
-    }
-
     public function test_deleting_an_ended_published_event_is_published(): void
     {
         $event = $this->pastEvent();
@@ -272,7 +252,7 @@ final class ActivityChangePublishingTest extends ModuleTestCase
         Event::assertNotDispatched(ActivityRecorded::class);
     }
 
-    public function test_removing_an_account_for_good_publishes_the_events_it_attended(): void
+    public function test_removing_an_account_for_good_publishes_the_events_it_attended_once_it_is_gone(): void
     {
         $attended = $this->pastEvent('Asistido');
         $other = $this->pastEvent('Otro', 20);
@@ -282,12 +262,25 @@ final class ActivityChangePublishingTest extends ModuleTestCase
         $this->register($other, RegistrationState::Cancelled, $leaver);
         $this->register($comingEvent, user: $leaver);
         $this->register($other);
-        $this->listen();
+        // A forced deletion opens no transaction, so what the consumer reads is what is stored when
+        // the publisher is called: the leaver's registrations must be gone by then
+        /** @var \ArrayObject<string, int> $remainingOfLeaver */
+        $remainingOfLeaver = new \ArrayObject;
+        $leaverId = $leaver->id;
+        $this->app->instance(ActivityPublisherInterface::class, new readonly class($remainingOfLeaver, $leaverId) implements ActivityPublisherInterface
+        {
+            /** @param  \ArrayObject<string, int>  $remaining */
+            public function __construct(private \ArrayObject $remaining, private string $leaverId) {}
+
+            public function recorded(string $sourceType, string $subjectId): void
+            {
+                $this->remaining[$subjectId] = EventRegistrationModel::query()->where('event_id', $subjectId)->where('user_id', $this->leaverId)->count();
+            }
+        });
 
         $leaver->forceDelete();
 
-        $this->assertPublished($attended->id);
-        Event::assertDispatchedTimes(ActivityRecorded::class, 1);
+        $this->assertSame([$attended->id => 0], $remainingOfLeaver->getArrayCopy());
     }
 
     public function test_deactivating_an_account_publishes_nothing_because_its_facts_stay(): void

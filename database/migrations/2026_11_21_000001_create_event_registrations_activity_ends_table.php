@@ -10,9 +10,11 @@ return new class extends Migration
 {
     public function up(): void
     {
-        // Events whose activity was published to the activity contract's consumers (once per event)
+        // Events whose activity was published to the activity contract's consumers, with the end
+        // that was published: an event whose end changed since is published again
         Schema::create('event_registrations_activity_ends', function (Blueprint $table): void {
             $table->uuid('event_id')->primary();
+            $table->dateTime('ends_at');
             $table->dateTime('announced_at');
 
             $table->foreign('event_id')
